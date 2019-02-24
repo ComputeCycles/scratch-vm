@@ -11,6 +11,7 @@ const Scratch3PenBlocks = require('../extensions/scratch3_pen');
 const Scratch3WeDo2Blocks = require('../extensions/scratch3_wedo2');
 const Scratch3MusicBlocks = require('../extensions/scratch3_music');
 const Scratch3MicroBitBlocks = require('../extensions/scratch3_microbit');
+const Scratch3PlayspotBlocks = require('../extensions/scratch3_playspot');
 const Scratch3Text2SpeechBlocks = require('../extensions/scratch3_text2speech');
 const Scratch3TranslateBlocks = require('../extensions/scratch3_translate');
 const Scratch3VideoSensingBlocks = require('../extensions/scratch3_video_sensing');
@@ -26,6 +27,7 @@ const builtinExtensions = {
     wedo2: Scratch3WeDo2Blocks,
     music: Scratch3MusicBlocks,
     microbit: Scratch3MicroBitBlocks,
+    playspot: Scratch3PlayspotBlocks,
     text2speech: Scratch3Text2SpeechBlocks,
     translate: Scratch3TranslateBlocks,
     videoSensing: Scratch3VideoSensingBlocks,
