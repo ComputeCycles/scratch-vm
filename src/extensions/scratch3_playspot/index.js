@@ -260,7 +260,11 @@ class Playspot {
      * @param {string} extensionId - the id of the extension
      */
     constructor (runtime, extensionId) {
-        this.broker = `ws://${window.location.hostname}:3000`;
+        let location = 'localhost';
+        if (typeof window !== 'undefined' && window && window.location && window.location.hostname) {
+            location = window.location.hostname;
+        }
+        this.broker = `ws://${location}:3000`;
         this._connected = false;
 
         /**
@@ -485,7 +489,7 @@ class Playspot {
      */
     disconnect () {
         log.info(`disconnecting`);
-        if (this._client) {
+        if (typeof this._client !== 'undefined' && this._client) {
             this._client.end(false, this.removeConnection.bind(this));
         }
     }
@@ -495,7 +499,7 @@ class Playspot {
      * @return {boolean} - whether the micro:bit is connected.
      */
     isConnected () {
-        return this._client && this._connected;
+        return typeof this._client !== 'undefined' && this._client && this._connected;
     }
 
     /**
@@ -563,7 +567,12 @@ class Playspot {
      * @return {boolean} - whether the satelliate is being touched.
      */
     isTouched (satellite) {
-        return satellite && satellite !== NOT_FOUND && this._satellites[satellite].isTouched;
+        return typeof satellite !== 'undefined' &&
+        satellite &&
+        satellite !== NOT_FOUND &&
+        typeof this._satellites[satellite] !== 'undefined' &&
+        this._satellites[satellite] &&
+        this._satellites[satellite].isTouched;
     }
 
     /**
@@ -572,7 +581,10 @@ class Playspot {
      * @return {boolean} - whether the satellite is detecting presence.
      */
     hasPresence (satellite) {
-        return satellite && satellite !== NOT_FOUND && this._satellites[satellite].hasPresence;
+        return typeof satellite !== 'undefined' &&
+        satellite &&
+        satellite !== NOT_FOUND &&
+        this._satellites[satellite].hasPresence;
     }
 
     /**
@@ -583,6 +595,7 @@ class Playspot {
      */
     isMicrobitButtonPressed (microbit, button) {
         return (
+            typeof microbit !== 'undefined' &&
             microbit &&
             microbit !== NOT_FOUND &&
             this._microbits[microbit] !== null &&
@@ -598,7 +611,12 @@ class Playspot {
      * components relative to plane of the microbit.
      */
     accelerationComponents (microbit) {
-        if (microbit && microbit !== NOT_FOUND && this._microbits[microbit] !== null) {
+        if (
+            typeof microbit !== 'undefined' &&
+            microbit &&
+            microbit !== NOT_FOUND &&
+            this._microbits[microbit] !== null
+        ) {
             return this._microbits[microbit].accelerometer;
         }
         return {x: 0.0, y: 0.0, z: 1.0};
