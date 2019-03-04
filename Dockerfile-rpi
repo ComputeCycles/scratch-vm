@@ -14,4 +14,3 @@ RUN npm install || true
 VOLUME /scratch-vm/game
 
 ENTRYPOINT ["node", "/scratch-vm/src/index.js"]
-
