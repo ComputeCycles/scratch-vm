@@ -5,12 +5,13 @@
 FROM arm32v7/node:8
 MAINTAINER Van Simmons <van.simmons@computecycles.com>
 
-RUN mkdir -p /usr/src/app
-WORKDIR /usr/src/app/
-COPY ./ /usr/src/app/
+RUN mkdir -p /scratch-vm
+WORKDIR /scratch-vm
+COPY ./package-lock.json /scratch-vm
+COPY ./package.json /scratch-vm
+COPY ./src /scratch-vm/src
 RUN npm install || true
+VOLUME /scratch-vm/game
 
-EXPOSE 80
-
-ENTRYPOINT ["node", "/src/index.js"]
+ENTRYPOINT ["node", "/scratch-vm/src/index.js"]
 

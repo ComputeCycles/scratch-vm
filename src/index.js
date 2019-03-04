@@ -9,11 +9,11 @@ minilog.enable();
 const virtualMachine = new VirtualMachine();
 const file = new File('DefaultGame.sb3', {
     name: 'DefaultGame.sb3',
-    path: `${process.cwd()}/DefaultGame.sb3`
+    path: `${process.cwd()}/game/DefaultGame.sb3`
 });
 const reader = new FileReader();
 reader.onload = () => {
-    log.info('Loading DefaultGame.sb3');
+    log.info(`Loading ${process.cwd()}/game/DefaultGame.sb3`);
     virtualMachine.loadProject(reader.result);
 };
 reader.onerror = error => {
@@ -22,7 +22,7 @@ reader.onerror = error => {
 };
 
 reader.readAsArrayBuffer(file);
-// virtualMachine.loadProject(reader.result);
+
 virtualMachine.start();
 
 module.exports = VirtualMachine;
