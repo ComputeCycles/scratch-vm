@@ -1,0 +1,30 @@
+version: '3.6'
+
+services:
+
+  watchtower:
+    image: v2tec/watchtower:armhf-latest
+    restart: unless-stopped
+    command: --cleanup
+    volumes:
+      - /root/.docker/config.json:/config.json
+      - /var/run/docker.sock:/var/run/docker.sock    
+
+  mosca:
+    image: computecycles/playspotbroker:rpi-test
+    restart: unless-stopped
+    network_mode: host
+    ports:
+      - 1883:1883
+      - 3000:3000
+    volumes:
+      - /var/db/mosca:/db
+
+  playspotgame-standalone:
+    image: computecycles/scratch-standalone:rpi
+    restart: unless-stopped
+    network_mode: host
+    volumes:
+      - ./:/scratch-vm/game
+
+      
