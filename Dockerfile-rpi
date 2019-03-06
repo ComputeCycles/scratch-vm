@@ -7,10 +7,10 @@ MAINTAINER Van Simmons <van.simmons@computecycles.com>
 
 RUN mkdir -p /scratch-vm
 WORKDIR /scratch-vm
-COPY ./package-lock.json /scratch-vm
-COPY ./package.json /scratch-vm
-COPY ./src /scratch-vm/src
+COPY ./package-lock.json .
+COPY ./package.json .
+COPY ./src ./src
 RUN npm install || true
-VOLUME /scratch-vm/game
+VOLUME ./game
 
-ENTRYPOINT ["node", "/scratch-vm/src/index.js"]
+ENTRYPOINT ["node", "./src/index.js"]
