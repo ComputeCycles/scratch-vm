@@ -31,6 +31,7 @@ const _sensitivities = Object.freeze({
 });
 
 const _images = Object.freeze({
+    Empty: 'Empty',
     Farm: 'Farm',
     FarmFrame: 'FarmFrame',
     Jungle: 'Jungle',
