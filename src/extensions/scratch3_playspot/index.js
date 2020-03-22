@@ -638,14 +638,16 @@ class Playspot {
 
         this._onStatusTimer = () => {
             log.info('status timeout timer fired');
+            clearTimeout(this._fetchSatellitesTimeout);
             this._fetchSatellitesTimeout = null;
 
             // Not interested in status messages now
-            this._client.unsubscribe('sat/+/online');
-
-            // subscribe to radar and touch
-            this._client.subscribe('sat/+/ev/radar');
-            this._client.subscribe('sat/+/ev/touch');
+            if (this._client) {
+                this._client.unsubscribe('sat/+/online');
+                // subscribe to radar and touch
+                this._client.subscribe('sat/+/ev/radar');
+                this._client.subscribe('sat/+/ev/touch');
+            }
 
             // The VM to refreshBlocks
             this._runtime.emit(this._runtime.constructor.PERIPHERAL_CONNECTED);
@@ -768,14 +770,13 @@ class Playspot {
 
                 let error;
                 if (statusCode !== 200) {
-                    error = new Error('Request Failed.\n' +
-                                    `Status Code: ${statusCode}`);
+                    error = new Error(`Request Failed.\nStatus Code: ${statusCode}`);
                 } else if (!/^application\/json/.test(contentType)) {
                     error = new Error('Invalid content-type.\n' +
                                     `Expected application/json but received ${contentType}`);
                 }
                 if (error) {
-                    log.info(`Error: ${error.message}`);
+                    // log.info(`Error: ${error.message}`);
                     // Consume response data to free up memory
                     resp.resume();
                     this.performConnection();
