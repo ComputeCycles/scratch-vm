@@ -875,7 +875,7 @@ class Playspot {
      */
     playSoundByName (args) {
         const outboundTopic = `sat/${args.SATELLITE}/cmd/fx`;
-        const string = [this._soundsByName[args.SOUND]];
+        const string = [this._soundsByName[args.SOUNDNAME]];
         const utf8Encode = new TextEncoder();
         const arr = utf8Encode.encode(string);
         this._client.publish(outboundTopic, arr);
@@ -1230,13 +1230,13 @@ class Scratch3PlayspotBlocks {
                 },
                 {
                     opcode: 'playSoundOnAll',
-                    text: 'Play Sound [SOUND] on all of: [SATELLITES]',
+                    text: 'Play Sound [SOUNDNAME] on all of: [SATELLITES]',
                     blockType: BlockType.COMMAND,
                     arguments: {
                         SATELLITES: {
                             type: ArgumentType.REPORTER
                         },
-                        SOUND: {
+                        SOUNDNAME: {
                             type: ArgumentType.REPORTER
                         }
                     }
@@ -1502,10 +1502,10 @@ class Scratch3PlayspotBlocks {
      * @param {object} args - a satellite id and a sound id.
      */
     playSoundOnAll (args) {
-        if (this._peripheral.isConnected && args.SATELLITES && args.SOUND) {
+        if (this._peripheral.isConnected && args.SATELLITES && args.SOUNDNAME) {
             const sats = args.SATELLITES.split(' ');
             for (let i = 0; i < sats.length; i++) {
-                const cmd = {SATELLITE: sats[i], SOUND: args.SOUND};
+                const cmd = {SATELLITE: sats[i], SOUNDNAME: args.SOUNDNAME};
                 this._peripheral.playSoundByName(cmd);
             }
         }
