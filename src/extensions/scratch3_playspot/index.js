@@ -325,7 +325,7 @@ class Playspot {
             const sounds = {Silence: 'AS: STOP'};
             wavs.forEach(currentValue => {
                 const val = currentValue.replace('.wav', '');
-                this._sounds[val] = `AS: 1,${currentValue}`;
+                sounds[val] = `AS: 1,${currentValue}`;
             });
             this._sounds = Object.freeze(sounds);
 
