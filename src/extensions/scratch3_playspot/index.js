@@ -606,7 +606,6 @@ class Playspot {
                 allSounds = this._runtime.createNewGlobalVariable('All_Sounds', false, Variable.LIST_TYPE);
             }
             stage.variables[allSounds.id].value = wavs.map(currentValue => currentValue.replace('.wav', ''));
-            this._runtime.emit(this._runtime.constructor.PERIPHERAL_LIST_UPDATE, this._sounds);
         };
 
         this._presenceHandler = (sender, payload) => {
