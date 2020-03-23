@@ -322,13 +322,6 @@ class Playspot {
             });
             this._soundsByName = Object.freeze(soundsByName);
 
-            const sounds = {Silence: 'AS: STOP'};
-            wavs.forEach(currentValue => {
-                const val = currentValue.replace('.wav', '');
-                sounds[val] = `AS: 1,${currentValue}`;
-            });
-            this._sounds = Object.freeze(sounds);
-
             // Setup the AllSounds variable
             const stage = this._runtime.getTargetForStage();
             let allSounds = stage.lookupVariableByNameAndType('All_Sounds', Variable.LIST_TYPE);
@@ -943,7 +936,7 @@ class Scratch3PlayspotBlocks {
                 },
                 {
                     opcode: 'playSound',
-                    text: 'Play Sound [SOUND] on [SATELLITE]',
+                    text: '[SOUND] [SATELLITE]',
                     blockType: BlockType.COMMAND,
                     arguments: {
                         SATELLITE: {
