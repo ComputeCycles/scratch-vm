@@ -245,13 +245,9 @@ const _sequences = Object.freeze({
     'mix_ReadySetGo1': 'LS: -1,mix_ReadySetGo1.txt'
 });
 
-const _soundsByName = {
-    Silence: 'AS: STOP'
-};
+const _soundsByName = {};
 
-const _sounds = {
-    Silence: 'AS: STOP'
-};
+const _sounds = {};
 
 const NOT_FOUND = ' ';
 
@@ -319,14 +315,15 @@ class Playspot {
             const files = json.files;
             const names = files.map(currentValue => (currentValue.filename));
             const wavs = names.filter(currentValue => (currentValue.includes('.wav')));
-            const soundsByName = {};
+            const soundsByName = {Silence: 'AS: STOP'};
             wavs.forEach(currentValue => {
                 const val = currentValue.replace('.wav', '');
                 soundsByName[val] = `AS: 1,${currentValue}`;
             });
             this._soundsByName = Object.freeze(soundsByName);
 
-            const sounds = wavs.forEach(currentValue => {
+            const sounds = {Silence: 'AS: STOP'};
+            wavs.forEach(currentValue => {
                 const val = currentValue.replace('.wav', '');
                 this._sounds[val] = `AS: 1,${currentValue}`;
             });
@@ -339,6 +336,7 @@ class Playspot {
                 allSounds = this._runtime.createNewGlobalVariable('All_Sounds', false, Variable.LIST_TYPE);
             }
             stage.variables[allSounds.id].value = wavs.map(currentValue => currentValue.replace('.wav', ''));
+            this._runtime.emit(this._runtime.constructor.PERIPHERAL_LIST_UPDATE, this._satellites);
         };
 
         this._presenceHandler = (sender, payload) => {
