@@ -247,7 +247,7 @@ const _sequences = Object.freeze({
 
 const _soundsByName = {};
 
-const _sounds = {};
+const _sounds = {Silence: 'AS: STOP'};
 
 const NOT_FOUND = ' ';
 
