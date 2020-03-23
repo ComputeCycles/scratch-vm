@@ -245,7 +245,9 @@ const _sequences = Object.freeze({
     'mix_ReadySetGo1': 'LS: -1,mix_ReadySetGo1.txt'
 });
 
-const _soundsByName = {};
+const _soundsByName = {
+    Silence: 'AS: STOP'
+};
 
 const _sounds = {
     Silence: 'AS: STOP'
