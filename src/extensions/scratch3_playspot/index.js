@@ -861,7 +861,7 @@ class Playspot {
      */
     playSound (args) {
         const outboundTopic = `sat/${args.SATELLITE}/cmd/fx`;
-        const string = [this._soundsByName[args.SOUNDNAME]];
+        const string = [this._soundsByName[args.SOUND]];
         const utf8Encode = new TextEncoder();
         const arr = utf8Encode.encode(string);
         this._client.publish(outboundTopic, arr);
