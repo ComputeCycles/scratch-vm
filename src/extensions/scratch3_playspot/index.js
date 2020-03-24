@@ -324,7 +324,7 @@ class Playspot {
         this._onStatusTimer = this._onStatusTimer.bind(this);
         this._onConnectTimer = this._onConnectTimer.bind(this);
 
-        this._performConnectTimeout = setTimeout(this._onConnectTimer, 4000);
+        this._performConnectTimeout = setTimeout(this._onConnectTimer, 10000);
     }
 
     /**
