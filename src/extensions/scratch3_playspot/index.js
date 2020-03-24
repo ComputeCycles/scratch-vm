@@ -437,7 +437,7 @@ class Playspot {
      */
     displayLightSequence (args) {
         const outboundTopic = `sat/${args.SATELLITE}/cmd/fx`;
-        const string = [_sequences[args.SEQUENCE]];
+        const string = [this._sequencesByName[args.SEQUENCE]];
         const utf8Encode = new TextEncoder();
         const arr = utf8Encode.encode(string);
         this._client.publish(outboundTopic, arr);
@@ -450,7 +450,7 @@ class Playspot {
      */
     displayLightSequenceByName (args) {
         const outboundTopic = `sat/${args.SATELLITE}/cmd/fx`;
-        const string = [_sequencesByName[args.SEQUENCENAME]];
+        const string = [this._sequencesByName[args.SEQUENCENAME]];
         const utf8Encode = new TextEncoder();
         const arr = utf8Encode.encode(string);
         this._client.publish(outboundTopic, arr);
@@ -793,7 +793,7 @@ class Scratch3PlayspotBlocks {
                         SEQUENCE: {
                             type: ArgumentType.STRING,
                             menu: 'lights',
-                            defaultValue: 'Blank'
+                            defaultValue: 'Stop'
                         }
                     }
                 },
