@@ -74,180 +74,18 @@ const _images = Object.freeze({
     WeatherFrame: 'WeatherFrame'
 });
 
+const _sequencesByName = {};
+
 const _sequences = Object.freeze({
     'Clear': 'LS: CLEAR',
     'Pause': 'LS: PAUSE',
     'Stop': 'LS: STOP',
-    'Stop and Clear': 'LS: STOPCLEAR',
-    'MusicPuzzle_01_spin1': 'LS: -1,MusicPuzzle_01_spin1.txt',
-    'MusicPuzzle_01_spin2': 'LS: -1,MusicPuzzle_01_spin2.txt',
-    'MusicPuzzle_01_spin3': 'LS: -1,MusicPuzzle_01_spin3.txt',
-    'MusicPuzzle_01_spin4': 'LS: -1,MusicPuzzle_01_spin4.txt',
-    'MusicPuzzle_01_spin5': 'LS: -1,MusicPuzzle_01_spin5.txt',
-    'MusicPuzzle_02_spin1': 'LS: -1,MusicPuzzle_02_spin1.txt',
-    'MusicPuzzle_02_spin2': 'LS: -1,MusicPuzzle_02_spin2.txt',
-    'MusicPuzzle_02_spin3': 'LS: -1,MusicPuzzle_02_spin3.txt',
-    'MusicPuzzle_02_spin4': 'LS: -1,MusicPuzzle_02_spin4.txt',
-    'MusicPuzzle_02_spin5': 'LS: -1,MusicPuzzle_02_spin5.txt',
-    'MusicPuzzle_03_spin1': 'LS: -1,MusicPuzzle_03_spin1.txt',
-    'MusicPuzzle_03_spin2': 'LS: -1,MusicPuzzle_03_spin2.txt',
-    'MusicPuzzle_03_spin3': 'LS: -1,MusicPuzzle_03_spin3.txt',
-    'MusicPuzzle_03_spin4': 'LS: -1,MusicPuzzle_03_spin4.txt',
-    'MusicPuzzle_03_spin5': 'LS: -1,MusicPuzzle_03_spin5.txt',
-    'MusicPuzzle_04_spin1': 'LS: -1,MusicPuzzle_04_spin1.txt',
-    'MusicPuzzle_04_spin2': 'LS: -1,MusicPuzzle_04_spin2.txt',
-    'MusicPuzzle_04_spin3': 'LS: -1,MusicPuzzle_04_spin3.txt',
-    'MusicPuzzle_04_spin4': 'LS: -1,MusicPuzzle_04_spin4.txt',
-    'MusicPuzzle_04_spin5': 'LS: -1,MusicPuzzle_04_spin5.txt',
-    'MusicPuzzle_05_spin1': 'LS: -1,MusicPuzzle_05_spin1.txt',
-    'MusicPuzzle_05_spin2': 'LS: -1,MusicPuzzle_05_spin2.txt',
-    'MusicPuzzle_05_spin3': 'LS: -1,MusicPuzzle_05_spin3.txt',
-    'MusicPuzzle_05_spin4': 'LS: -1,MusicPuzzle_05_spin4.txt',
-    'MusicPuzzle_05_spin5': 'LS: -1,MusicPuzzle_05_spin5.txt',
-    'MusicPuzzle_idle1': 'LS: -1,MusicPuzzle_idle1.txt',
-    'MusicPuzzle_idle2': 'LS: -1,MusicPuzzle_idle2.txt',
-    'MusicPuzzle_idle3': 'LS: -1,MusicPuzzle_idle3.txt',
-    'MusicPuzzle_idle4': 'LS: -1,MusicPuzzle_idle4.txt',
-    'MusicPuzzle_idle5': 'LS: -1,MusicPuzzle_idle5.txt',
-    'agent_sat_countdown': 'LS: -1,agent_sat_countdown.txt',
-    'agent_sat_gameover': 'LS: -1,agent_sat_gameover.txt',
-    'agent_sat_load_blue_blue': 'LS: -1,agent_sat_load_blue_blue.txt',
-    'agent_sat_load_blue_green': 'LS: -1,agent_sat_load_blue_green.txt',
-    'agent_sat_load_blue_pink': 'LS: -1,agent_sat_load_blue_pink.txt',
-    'agent_sat_load_blue_red': 'LS: -1,agent_sat_load_blue_red.txt',
-    'agent_sat_load_blue_turquis': 'LS: -1,agent_sat_load_blue_turquis.txt',
-    'agent_sat_load_blue_yellow': 'LS: -1,agent_sat_load_blue_yellow.txt',
-    'agent_sat_load_green_blue': 'LS: -1,agent_sat_load_green_blue.txt',
-    'agent_sat_load_green_green': 'LS: -1,agent_sat_load_green_green.txt',
-    'agent_sat_load_green_pink': 'LS: -1,agent_sat_load_green_pink.txt',
-    'agent_sat_load_green_red': 'LS: -1,agent_sat_load_green_red.txt',
-    'agent_sat_load_green_turquis': 'LS: -1,agent_sat_load_green_turquis.txt',
-    'agent_sat_load_green_yellow': 'LS: -1,agent_sat_load_green_yellow.txt',
-    'agent_sat_load_pink_blue': 'LS: -1,agent_sat_load_pink_blue.txt',
-    'agent_sat_load_pink_green': 'LS: -1,agent_sat_load_pink_green.txt',
-    'agent_sat_load_pink_pink': 'LS: -1,agent_sat_load_pink_pink.txt',
-    'agent_sat_load_pink_red': 'LS: -1,agent_sat_load_pink_red.txt',
-    'agent_sat_load_pink_turquis': 'LS: -1,agent_sat_load_pink_turquis.txt',
-    'agent_sat_load_pink_yellow': 'LS: -1,agent_sat_load_pink_yellow.txt',
-    'agent_sat_load_red_blue': 'LS: -1,agent_sat_load_red_blue.txt',
-    'agent_sat_load_red_green': 'LS: -1,agent_sat_load_red_green.txt',
-    'agent_sat_load_red_pink': 'LS: -1,agent_sat_load_red_pink.txt',
-    'agent_sat_load_red_red': 'LS: -1,agent_sat_load_red_red.txt',
-    'agent_sat_load_red_turquis': 'LS: -1,agent_sat_load_red_turquis.txt',
-    'agent_sat_load_red_yellow': 'LS: -1,agent_sat_load_red_yellow.txt',
-    'agent_sat_load_turquis_blue': 'LS: -1,agent_sat_load_turquis_blue.txt',
-    'agent_sat_load_turquis_green': 'LS: -1,agent_sat_load_turquis_green.txt',
-    'agent_sat_load_turquis_pink': 'LS: -1,agent_sat_load_turquis_pink.txt',
-    'agent_sat_load_turquis_red': 'LS: -1,agent_sat_load_turquis_red.txt',
-    'agent_sat_load_turquis_turquis': 'LS: -1,agent_sat_load_turquis_turquis.txt',
-    'agent_sat_load_turquis_yellow': 'LS: -1,agent_sat_load_turquis_yellow.txt',
-    'agent_sat_load_yellow_blue': 'LS: -1,agent_sat_load_yellow_blue.txt',
-    'agent_sat_load_yellow_green': 'LS: -1,agent_sat_load_yellow_green.txt',
-    'agent_sat_load_yellow_pink': 'LS: -1,agent_sat_load_yellow_pink.txt',
-    'agent_sat_load_yellow_red': 'LS: -1,agent_sat_load_yellow_red.txt',
-    'agent_sat_load_yellow_turquis': 'LS: -1,agent_sat_load_yellow_turquis.txt',
-    'agent_sat_load_yellow_yellow': 'LS: -1,agent_sat_load_yellow_yellow.txt',
-    'agent_sat_locket_blue_blue': 'LS: -1,agent_sat_locket_blue_blue.txt',
-    'agent_sat_locket_blue_green': 'LS: -1,agent_sat_locket_blue_green.txt',
-    'agent_sat_locket_blue_pink': 'LS: -1,agent_sat_locket_blue_pink.txt',
-    'agent_sat_locket_blue_red': 'LS: -1,agent_sat_locket_blue_red.txt',
-    'agent_sat_locket_blue_turquis': 'LS: -1,agent_sat_locket_blue_turquis.txt',
-    'agent_sat_locket_blue_yellow': 'LS: -1,agent_sat_locket_blue_yellow.txt',
-    'agent_sat_locket_green_blue': 'LS: -1,agent_sat_locket_green_blue.txt',
-    'agent_sat_locket_green_green': 'LS: -1,agent_sat_locket_green_green.txt',
-    'agent_sat_locket_green_pink': 'LS: -1,agent_sat_locket_green_pink.txt',
-    'agent_sat_locket_green_red': 'LS: -1,agent_sat_locket_green_red.txt',
-    'agent_sat_locket_green_turquis': 'LS: -1,agent_sat_locket_green_turquis.txt',
-    'agent_sat_locket_green_yellow': 'LS: -1,agent_sat_locket_green_yellow.txt',
-    'agent_sat_locket_pink_blue': 'LS: -1,agent_sat_locket_pink_blue.txt',
-    'agent_sat_locket_pink_green': 'LS: -1,agent_sat_locket_pink_green.txt',
-    'agent_sat_locket_pink_pink': 'LS: -1,agent_sat_locket_pink_pink.txt',
-    'agent_sat_locket_pink_red': 'LS: -1,agent_sat_locket_pink_red.txt',
-    'agent_sat_locket_pink_turquis': 'LS: -1,agent_sat_locket_pink_turquis.txt',
-    'agent_sat_locket_pink_yellow': 'LS: -1,agent_sat_locket_pink_yellow.txt',
-    'agent_sat_locket_red_blue': 'LS: -1,agent_sat_locket_red_blue.txt',
-    'agent_sat_locket_red_green': 'LS: -1,agent_sat_locket_red_green.txt',
-    'agent_sat_locket_red_pink': 'LS: -1,agent_sat_locket_red_pink.txt',
-    'agent_sat_locket_red_red': 'LS: -1,agent_sat_locket_red_red.txt',
-    'agent_sat_locket_red_turquis': 'LS: -1,agent_sat_locket_red_turquis.txt',
-    'agent_sat_locket_red_yellow': 'LS: -1,agent_sat_locket_red_yellow.txt',
-    'agent_sat_locket_turquis_blue': 'LS: -1,agent_sat_locket_turquis_blue.txt',
-    'agent_sat_locket_turquis_green': 'LS: -1,agent_sat_locket_turquis_green.txt',
-    'agent_sat_locket_turquis_pink': 'LS: -1,agent_sat_locket_turquis_pink.txt',
-    'agent_sat_locket_turquis_red': 'LS: -1,agent_sat_locket_turquis_red.txt',
-    'agent_sat_locket_turquis_turquis': 'LS: -1,agent_sat_locket_turquis_turquis.txt',
-    'agent_sat_locket_turquis_yellow': 'LS: -1,agent_sat_locket_turquis_yellow.txt',
-    'agent_sat_locket_yellow_blue': 'LS: -1,agent_sat_locket_yellow_blue.txt',
-    'agent_sat_locket_yellow_green': 'LS: -1,agent_sat_locket_yellow_green.txt',
-    'agent_sat_locket_yellow_pink': 'LS: -1,agent_sat_locket_yellow_pink.txt',
-    'agent_sat_locket_yellow_red': 'LS: -1,agent_sat_locket_yellow_red.txt',
-    'agent_sat_locket_yellow_turquis': 'LS: -1,agent_sat_locket_yellow_turquis.txt',
-    'agent_sat_locket_yellow_yellow': 'LS: -1,agent_sat_locket_yellow_yellow.txt',
-    'agent_sat_unlock_blue_blue': 'LS: -1,agent_sat_unlock_blue_blue.txt',
-    'agent_sat_unlock_blue_green': 'LS: -1,agent_sat_unlock_blue_green.txt',
-    'agent_sat_unlock_blue_pink': 'LS: -1,agent_sat_unlock_blue_pink.txt',
-    'agent_sat_unlock_blue_red': 'LS: -1,agent_sat_unlock_blue_red.txt',
-    'agent_sat_unlock_blue_turquis': 'LS: -1,agent_sat_unlock_blue_turquis.txt',
-    'agent_sat_unlock_blue_yellow': 'LS: -1,agent_sat_unlock_blue_yellow.txt',
-    'agent_sat_unlock_green_blue': 'LS: -1,agent_sat_unlock_green_blue.txt',
-    'agent_sat_unlock_green_green': 'LS: -1,agent_sat_unlock_green_green.txt',
-    'agent_sat_unlock_green_pink': 'LS: -1,agent_sat_unlock_green_pink.txt',
-    'agent_sat_unlock_green_red': 'LS: -1,agent_sat_unlock_green_red.txt',
-    'agent_sat_unlock_green_turquis': 'LS: -1,agent_sat_unlock_green_turquis.txt',
-    'agent_sat_unlock_green_yellow': 'LS: -1,agent_sat_unlock_green_yellow.txt',
-    'agent_sat_unlock_pink_blue': 'LS: -1,agent_sat_unlock_pink_blue.txt',
-    'agent_sat_unlock_pink_green': 'LS: -1,agent_sat_unlock_pink_green.txt',
-    'agent_sat_unlock_pink_pink': 'LS: -1,agent_sat_unlock_pink_pink.txt',
-    'agent_sat_unlock_pink_red': 'LS: -1,agent_sat_unlock_pink_red.txt',
-    'agent_sat_unlock_pink_turquis': 'LS: -1,agent_sat_unlock_pink_turquis.txt',
-    'agent_sat_unlock_pink_yellow': 'LS: -1,agent_sat_unlock_pink_yellow.txt',
-    'agent_sat_unlock_red_blue': 'LS: -1,agent_sat_unlock_red_blue.txt',
-    'agent_sat_unlock_red_green': 'LS: -1,agent_sat_unlock_red_green.txt',
-    'agent_sat_unlock_red_pink': 'LS: -1,agent_sat_unlock_red_pink.txt',
-    'agent_sat_unlock_red_red': 'LS: -1,agent_sat_unlock_red_red.txt',
-    'agent_sat_unlock_red_turquis': 'LS: -1,agent_sat_unlock_red_turquis.txt',
-    'agent_sat_unlock_red_yellow': 'LS: -1,agent_sat_unlock_red_yellow.txt',
-    'agent_sat_unlock_turquis_blue': 'LS: -1,agent_sat_unlock_turquis_blue.txt',
-    'agent_sat_unlock_turquis_green': 'LS: -1,agent_sat_unlock_turquis_green.txt',
-    'agent_sat_unlock_turquis_pink': 'LS: -1,agent_sat_unlock_turquis_pink.txt',
-    'agent_sat_unlock_turquis_red': 'LS: -1,agent_sat_unlock_turquis_red.txt',
-    'agent_sat_unlock_turquis_turquis': 'LS: -1,agent_sat_unlock_turquis_turquis.txt',
-    'agent_sat_unlock_turquis_yellow': 'LS: -1,agent_sat_unlock_turquis_yellow.txt',
-    'agent_sat_unlock_yellow_blue': 'LS: -1,agent_sat_unlock_yellow_blue.txt',
-    'agent_sat_unlock_yellow_green': 'LS: -1,agent_sat_unlock_yellow_green.txt',
-    'agent_sat_unlock_yellow_pink': 'LS: -1,agent_sat_unlock_yellow_pink.txt',
-    'agent_sat_unlock_yellow_red': 'LS: -1,agent_sat_unlock_yellow_red.txt',
-    'agent_sat_unlock_yellow_turquis': 'LS: -1,agent_sat_unlock_yellow_turquis.txt',
-    'agent_sat_unlock_yellow_yellow': 'LS: -1,agent_sat_unlock_yellow_yellow.txt',
-    'beepsMixed': 'LS: -1,beepsMixed.txt',
-    'menu_choise1_to_choise2': 'LS: -1,menu_choise1_to_choise2.txt',
-    'menu_choise1_to_selected1': 'LS: -1,menu_choise1_to_selected1.txt',
-    'menu_choise2_to_choise3': 'LS: -1,menu_choise2_to_choise3.txt',
-    'menu_choise2_to_selected2': 'LS: -1,menu_choise2_to_selected2.txt',
-    'menu_choise3_to_choise4': 'LS: -1,menu_choise3_to_choise4.txt',
-    'menu_choise3_to_selected3': 'LS: -1,menu_choise3_to_selected3.txt',
-    'menu_choise4_to_choise1': 'LS: -1,menu_choise4_to_choise1.txt',
-    'menu_choise4_to_selected4': 'LS: -1,menu_choise4_to_selected4.txt',
-    'menu_game1_active': 'LS: -1,menu_game1_active.txt',
-    'menu_game1_cancel': 'LS: -1,menu_game1_cancel.txt',
-    'menu_game1_timeout': 'LS: -1,menu_game1_timeout.txt',
-    'menu_game2_active': 'LS: -1,menu_game2_active.txt',
-    'menu_game2_cancel': 'LS: -1,menu_game2_cancel.txt',
-    'menu_game2_timeout': 'LS: -1,menu_game2_timeout.txt',
-    'menu_game3_active': 'LS: -1,menu_game3_active.txt',
-    'menu_game3_cancel': 'LS: -1,menu_game3_cancel.txt',
-    'menu_game3_timeout': 'LS: -1,menu_game3_timeout.txt',
-    'menu_game4_active': 'LS: -1,menu_game4_active.txt',
-    'menu_game4_cancel': 'LS: -1,menu_game4_cancel.txt',
-    'menu_game4_timeout': 'LS: -1,menu_game4_timeout.txt',
-    'menu_idle': 'LS: -1,menu_idle.txt',
-    'menu_idle_to_choise1': 'LS: -1,menu_idle_to_choise1.txt',
-    'mix_ReadySetGo1': 'LS: -1,mix_ReadySetGo1.txt'
+    'Stop and Clear': 'LS: STOPCLEAR'
 });
 
 const _soundsByName = {};
 
-const _sounds = {Silence: 'AS: STOP'};
+const _sounds = Object.freeze({Silence: 'AS: STOP'});
 
 const NOT_FOUND = ' ';
 
@@ -309,11 +147,8 @@ class Playspot {
             this._runtime.emit(this._runtime.constructor.PERIPHERAL_LIST_UPDATE, this._satellites);
         };
 
-        this._firmwareHandler = payload => {
-            log.info(`firmware handler fired`);
-            const json = JSON.parse(payload);
-            const files = json.files;
-            const names = files.map(currentValue => (currentValue.filename));
+        this._setupSoundVar = names => {
+            const stage = this._runtime.getTargetForStage();
             const wavs = names.filter(currentValue => (currentValue.includes('.wav')));
             const soundsByName = {Silence: 'AS: STOP'};
             wavs.forEach(currentValue => {
@@ -322,13 +157,44 @@ class Playspot {
             });
             this._soundsByName = Object.freeze(soundsByName);
 
-            // Setup the AllSounds variable
-            const stage = this._runtime.getTargetForStage();
+            // Setup the variable
             let allSounds = stage.lookupVariableByNameAndType('All_Sounds', Variable.LIST_TYPE);
             if (!allSounds) {
                 allSounds = this._runtime.createNewGlobalVariable('All_Sounds', false, Variable.LIST_TYPE);
             }
             stage.variables[allSounds.id].value = wavs.map(currentValue => currentValue.replace('.wav', ''));
+        };
+
+        this._setupLightVar = names => {
+            const stage = this._runtime.getTargetForStage();
+            const txts = names.filter(currentValue => (currentValue.includes('.txt')));
+            const sequencesByName = {
+                'Clear': 'LS: CLEAR',
+                'Pause': 'LS: PAUSE',
+                'Stop': 'LS: STOP',
+                'Stop and Clear': 'LS: STOPCLEAR'
+            };
+            txts.forEach(currentValue => {
+                const val = currentValue.replace('.txt', '');
+                sequencesByName[val] = `LS: -1,${currentValue}`;
+            });
+            this._sequencesByName = Object.freeze(sequencesByName);
+
+            // Setup the variable
+            let allLights = stage.lookupVariableByNameAndType('All_Lights', Variable.LIST_TYPE);
+            if (!allLights) {
+                allLights = this._runtime.createNewGlobalVariable('All_Lights', false, Variable.LIST_TYPE);
+            }
+            stage.variables[allLights.id].value = txts.map(currentValue => currentValue.replace('.txt', ''));
+        };
+
+        this._firmwareHandler = payload => {
+            log.info(`firmware handler fired`);
+            const json = JSON.parse(payload);
+            const files = json.files;
+            const names = files.map(currentValue => (currentValue.filename));
+            this._setupSoundVar(names);
+            this._setupLightVar(names);
             this._runtime.emit(this._runtime.constructor.PERIPHERAL_LIST_UPDATE, this._satellites);
         };
 
@@ -573,6 +439,19 @@ class Playspot {
     displayLightSequence (args) {
         const outboundTopic = `sat/${args.SATELLITE}/cmd/fx`;
         const string = [_sequences[args.SEQUENCE]];
+        const utf8Encode = new TextEncoder();
+        const arr = utf8Encode.encode(string);
+        this._client.publish(outboundTopic, arr);
+        return Promise.resolve();
+    }
+
+    /**
+     * @param {object} args - the satellite to display on and the sequence to display
+     * @return {Promise} - a Promise that resolves when writing to peripheral.
+     */
+    displayLightSequenceByName (args) {
+        const outboundTopic = `sat/${args.SATELLITE}/cmd/fx`;
+        const string = [_sequencesByName[args.SEQUENCENAME]];
         const utf8Encode = new TextEncoder();
         const arr = utf8Encode.encode(string);
         this._client.publish(outboundTopic, arr);
@@ -904,7 +783,7 @@ class Scratch3PlayspotBlocks {
                 '---',
                 {
                     opcode: 'displayLightSequence',
-                    text: 'Display Light [SEQUENCE] on [SATELLITE]',
+                    text: '[SEQUENCE] lights on [SATELLITE]',
                     blockType: BlockType.COMMAND,
                     arguments: {
                         SATELLITE: {
@@ -921,16 +800,14 @@ class Scratch3PlayspotBlocks {
                 },
                 {
                     opcode: 'displayLightSequenceOnAll',
-                    text: 'Display Light [SEQUENCE] on all of: [SATELLITES]',
+                    text: 'Display [SEQUENCENAME] on all of: [SATELLITES]',
                     blockType: BlockType.COMMAND,
                     arguments: {
                         SATELLITES: {
                             type: ArgumentType.REPORTER
                         },
-                        SEQUENCE: {
-                            type: ArgumentType.STRING,
-                            menu: 'lights',
-                            defaultValue: 'Blank'
+                        SEQUENCENAME: {
+                            type: ArgumentType.REPORTER
                         }
                     }
                 },
@@ -1203,10 +1080,10 @@ class Scratch3PlayspotBlocks {
      * @param {object} args - a satellite id and a light sequence id.
      */
     displayLightSequenceOnAll (args) {
-        if (this._peripheral.isConnected && args.SATELLITES) {
+        if (this._peripheral.isConnected && args.SATELLITES && args.SEQUENCENAME) {
             const sats = args.SATELLITES.split(' ');
             for (let i = 0; i < sats.length; i++) {
-                const cmd = {SATELLITE: sats[i], SEQUENCE: args.SEQUENCE};
+                const cmd = {SATELLITE: sats[i], SEQUENCE: args.SEQUENCENAME};
                 this._peripheral.displayLightSequence(cmd);
             }
         }
