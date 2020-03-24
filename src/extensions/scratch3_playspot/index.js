@@ -125,7 +125,7 @@ class Playspot {
 
         // Satellite event handlers
         this._satelliteStatusHandler = sender => {
-            log.info(`satelliteStatusHandler fired for sender: ${sender}`);
+            // log.info(`satelliteStatusHandler fired for sender: ${sender}`);
             this._satellites[sender] = {
                 isTouched: false,
                 hasPresence: false
@@ -189,7 +189,7 @@ class Playspot {
         };
 
         this._firmwareHandler = payload => {
-            log.info(`firmware handler fired`);
+            // log.info(`firmware handler fired`);
             const json = JSON.parse(payload);
             const files = json.files;
             const names = files.map(currentValue => (currentValue.filename));
@@ -204,12 +204,12 @@ class Playspot {
         };
 
         this._touchHandler = (sender, payload) => {
-            log.info(`touchHandler fired for payload: ${payload}`);
+            // log.info(`touchHandler fired for payload: ${payload}`);
             this._satellites[sender].isTouched = payload[0] === 0x31;
         };
 
         this._onMessage = (topic, payload) => {
-            log.info(`onMessage fired for topic: ${topic}, payload: ${payload}`);
+            // log.info(`onMessage fired for topic: ${topic}, payload: ${payload}`);
             const t = topic.split('/');
             if (topic === null || t.count < 2) return;
             if (t[0] === 'fwserver' && t[1] === 'files') {
@@ -227,17 +227,16 @@ class Playspot {
 
         this._onStatusTimer = () => {
             log.info('status timeout timer fired');
+            if (!this._client) return;
+
             clearTimeout(this._fetchSatellitesTimeout);
             this._fetchSatellitesTimeout = null;
 
             // Not interested in status messages now
-            if (this._client) {
-                this._client.unsubscribe('sat/+/online');
-                // subscribe to radar and touch
-                this._client.subscribe('sat/+/ev/radar');
-                this._client.subscribe('sat/+/ev/touch');
-            }
-
+            this._client.unsubscribe('sat/+/online');
+            // subscribe to radar and touch
+            this._client.subscribe('sat/+/ev/radar');
+            this._client.subscribe('sat/+/ev/touch');
             // The VM to refreshBlocks
             this._runtime.emit(this._runtime.constructor.PERIPHERAL_CONNECTED);
             this._connected = true;
