@@ -448,6 +448,19 @@ class Playspot {
      * @param {object} args - the satellite to display on and the sequence to display
      * @return {Promise} - a Promise that resolves when writing to peripheral.
      */
+    cycleSatellitePower () {
+        const outboundTopic = `relay`;
+        const string = '';
+        const utf8Encode = new TextEncoder();
+        const arr = utf8Encode.encode(string);
+        this._client.publish(outboundTopic, arr);
+        return Promise.resolve();
+    }
+
+    /**
+     * @param {object} args - the satellite to display on and the sequence to display
+     * @return {Promise} - a Promise that resolves when writing to peripheral.
+     */
     displayLightSequenceByName (args) {
         const outboundTopic = `sat/${args.SATELLITE}/cmd/fx`;
         const string = [this._sequencesByName[args.SEQUENCENAME]];
@@ -918,6 +931,12 @@ class Scratch3PlayspotBlocks {
                     }
                 },
                 {
+                    opcode: 'cycleSatellitePower',
+                    text: 'Cycle Satellite Power',
+                    blockType: BlockType.COMMAND,
+                    arguments: {}
+                },
+                {
                     opcode: 'rebootSatellites',
                     text: 'Reboot Satellite [SATELLITES]',
                     blockType: BlockType.COMMAND,
@@ -1161,6 +1180,15 @@ class Scratch3PlayspotBlocks {
     rebootSatellite (args) {
         if (this._peripheral.isConnected) {
             this._peripheral.rebootSatellite(args);
+        }
+    }
+
+    /**
+     * @param {object} args - empty
+     */
+    cycleSatellitePower () {
+        if (this._peripheral.isConnected) {
+            this._peripheral.cycleSatellitePower();
         }
     }
 
