@@ -506,7 +506,7 @@ class Playspot {
      */
     displayImage (args) {
         const outboundTopic = `display`;
-        const string = `{ "image": "${_images[args.IMAGE]}", "region": "${_regions[args.REGION]}"  }`;
+        const string = `{ { "singleImage": { "pause": 0, "region": "${_regions[args.REGION]}", "name": "${_images[args.IMAGE]}", "duration": 2, "next": null } } }`
         const utf8Encode = new TextEncoder();
         const arr = utf8Encode.encode(string);
         this._client.publish(outboundTopic, arr);
