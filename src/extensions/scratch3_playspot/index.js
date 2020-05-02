@@ -994,7 +994,8 @@ class Scratch3PlayspotBlocks {
                 sounds: this.SOUNDS,
                 images: this.IMAGES,
                 volumes: this.VOLUMES,
-                sensitivities: this.SENSITIVITIES
+                sensitivities: this.SENSITIVITIES,
+                regions: this.REGIONS
             }
         };
     }
