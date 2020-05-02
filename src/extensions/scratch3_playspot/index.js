@@ -513,7 +513,7 @@ class Playspot {
         return Promise.resolve();
     }
 
-    histogram (red, green, blue) {
+    histogram (red, green, blue, region) {
         return {
             histogram: {
                 end: {
@@ -523,7 +523,7 @@ class Playspot {
                     bar2: Math.random(),
                     bar5: Math.random()
                 },
-                region: 'lower',
+                region: region,
                 begin: {
                     bar3: Math.random(),
                     bar1: Math.random(),
@@ -1010,9 +1010,14 @@ class Scratch3PlayspotBlocks {
                 },
                 {
                     opcode: 'displayHistogram',
-                    text: 'Display Equalizer, R: [RED], G: [GREEN], B: [BLUE]',
+                    text: 'Display Equalizer in [REGION], R: [RED], G: [GREEN], B: [BLUE]',
                     blockType: BlockType.COMMAND,
                     arguments: {
+                        REGION: {
+                            type: ArgumentType.STRING,
+                            menu: 'regions',
+                            defaultValue: 'Upper'
+                        },
                         RED: {
                             type: ArgumentType.REPORTER
                         },
