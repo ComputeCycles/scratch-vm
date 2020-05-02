@@ -506,11 +506,41 @@ class Playspot {
      */
     displayImage (args) {
         const outboundTopic = `display`;
-        const string = `{ { "singleImage": { "pause": 0, "region": "${_regions[args.REGION]}", "name": "${_images[args.IMAGE]}", "duration": 2, "next": null } } }`
+        const string = `{"singleImage": { "pause": 0, "region": "${_regions[args.REGION]}", "name": "${_images[args.IMAGE]}", "duration": 2, "next": null } }`
         const utf8Encode = new TextEncoder();
         const arr = utf8Encode.encode(string);
         this._client.publish(outboundTopic, arr);
         return Promise.resolve();
+    }
+
+    histogram (red, green, blue) {
+        return {
+            histogram: {
+                end: {
+                    bar3: Math.random(),
+                    bar1: Math.random(),
+                    bar4: Math.random(),
+                    bar2: Math.random(),
+                    bar5: Math.random()
+                },
+                region: 'lower',
+                begin: {
+                    bar3: Math.random(),
+                    bar1: Math.random(),
+                    bar4: Math.random(),
+                    bar2: Math.random(),
+                    bar5: Math.random()
+                },
+                steps: 20,
+                color: {
+                    red: red,
+                    green: green,
+                    blue: blue
+                },
+                duration: 1.5,
+                pause: 0
+            }
+        };
     }
 
     /**
@@ -518,12 +548,9 @@ class Playspot {
      * @return {Promise} - a Promise that resolves when writing to peripheral.
      */
     displayHistogram (args) {
-        let colorString = '';
-        if (args.COLOR) {
-            colorString = '"color" : { "red": args.COLOR[red], "green": args.COLOR[green], "blue": args.COLOR[blue] }';
-        }
         const outboundTopic = `display`;
-        const string = `{ "histogram": { ${colorString} } }`;
+        const histo = this.histogram(args.RED || 0, args.GREEN || 255, args.BLUE || 128);
+        const string = JSON.stringify(histo);
         const utf8Encode = new TextEncoder();
         const arr = utf8Encode.encode(string);
         this._client.publish(outboundTopic, arr);
@@ -983,9 +1010,19 @@ class Scratch3PlayspotBlocks {
                 },
                 {
                     opcode: 'displayHistogram',
-                    text: 'Display Equalizer',
+                    text: 'Display Equalizer, R: [RED], G: [GREEN], B: [BLUE]',
                     blockType: BlockType.COMMAND,
-                    arguments: { }
+                    arguments: {
+                        RED: {
+                            type: ArgumentType.REPORTER
+                        },
+                        GREEN: {
+                            type: ArgumentType.REPORTER
+                        },
+                        BLUE: {
+                            type: ArgumentType.REPORTER
+                        }
+                    }
                 }
             ],
             menus: {
