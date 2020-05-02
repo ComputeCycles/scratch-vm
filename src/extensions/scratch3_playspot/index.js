@@ -87,6 +87,11 @@ const _soundsByName = {};
 
 const _sounds = Object.freeze({Silence: 'AS: STOP'});
 
+const _regions = Object.freeze({
+    Upper: 'upper',
+    Lower: 'lower'
+});
+
 const NOT_FOUND = ' ';
 
 /**
@@ -501,7 +506,7 @@ class Playspot {
      */
     displayImage (args) {
         const outboundTopic = `display`;
-        const string = `{ "image": "${_images[args.IMAGE]}" }`;
+        const string = `{ "image": "${_images[args.IMAGE]}", "region": "${_regions[args.REGION]}"  }`;
         const utf8Encode = new TextEncoder();
         const arr = utf8Encode.encode(string);
         this._client.publish(outboundTopic, arr);
@@ -642,6 +647,18 @@ class Scratch3PlayspotBlocks {
     get IMAGES () {
         return (
             Object.keys(_images).map(currentValue => ({
+                text: currentValue,
+                value: currentValue
+            })) || []
+        );
+    }
+
+    /**
+     * @return {array} - text and values for each images menu element
+     */
+    get REGIONS () {
+        return (
+            Object.keys(_regions).map(currentValue => ({
                 text: currentValue,
                 value: currentValue
             })) || []
@@ -949,13 +966,18 @@ class Scratch3PlayspotBlocks {
                 '---',
                 {
                     opcode: 'displayImage',
-                    text: 'Display Image [IMAGE]',
+                    text: 'Display Image [IMAGE] in [REGION]',
                     blockType: BlockType.COMMAND,
                     arguments: {
                         IMAGE: {
                             type: ArgumentType.STRING,
                             menu: 'images',
                             defaultValue: 'FarmFrame'
+                        },
+                        REGION: {
+                            type: ArgumentType.STRING,
+                            menu: 'regions',
+                            defaultValue: 'Upper'
                         }
                     }
                 },
