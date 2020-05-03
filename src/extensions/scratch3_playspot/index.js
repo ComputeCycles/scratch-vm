@@ -592,8 +592,9 @@ class Playspot {
          */
     fillImage (args) {
         const outboundTopic = `display`;
-        const animation = this.fill(args);
-        const string = JSON.stringify(animation);
+        const fill = this.fill(args);
+        const string = JSON.stringify(fill);
+        console.log(`${string}`);
         const utf8Encode = new TextEncoder();
         const arr = utf8Encode.encode(string);
         this._client.publish(outboundTopic, arr);
