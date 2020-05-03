@@ -571,14 +571,14 @@ class Playspot {
     fill (args) {
         return {
             imageFillSequence: {
-                startPercent: `${args.BEGIN}` || 0,
+                startPercent: args.BEGIN || 0,
                 region: `${_regions[args.REGION]}` || 'upper',
                 color: {
-                    red: `${args.RED}` || 0,
-                    green: `${args.GREEN}` || 0,
-                    blue: `${args.BLUE}` || 128
+                    red: args.RED || 0,
+                    green: args.GREEN || 0,
+                    blue: args.BLUE || 128
                 },
-                endPercent: `${args.END}` || 100,
+                endPercent: args.END || 100,
                 duration: 1,
                 pause: 0,
                 name: `${_images[args.IMAGE]}` || 'Empty'
