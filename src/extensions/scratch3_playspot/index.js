@@ -555,9 +555,9 @@ class Playspot {
     animateImage (args) {
         const outboundTopic = `display`;
         const animation = this.imageAnimation(
-            `${_regions[args.FROM]}` || 'Empty',
-            `${_regions[args.TO]}` || 'Empty',
-            `${_regions[args.DIRECTION]}` || 'down',
+            `${_images[args.FROM]}` || 'Empty',
+            `${_images[args.TO]}` || 'Empty',
+            `${_directions[args.DIRECTION]}` || 'down',
             `${_regions[args.REGION]}` || 'upper'
         );
         const string = JSON.stringify(animation);
