@@ -92,6 +92,13 @@ const _regions = Object.freeze({
     Lower: 'lower'
 });
 
+const _directions = Object.freeze({
+    Down: 'down',
+    Up: 'up',
+    Left: 'left',
+    Right: 'right'
+});
+
 const NOT_FOUND = ' ';
 
 /**
@@ -500,13 +507,60 @@ class Playspot {
         this._client.publish(outboundTopic, arr);
         return Promise.resolve();
     }
+
+    singleImage (upperLower, image) {
+        return {
+            singleImage: {
+                pause: 0,
+                region: upperLower,
+                name: image,
+                duration: 1
+            }
+        };
+    }
+
     /**
      * @param {object} args - the image to display
      * @return {Promise} - a Promise that resolves when writing to peripheral.
      */
     displayImage (args) {
         const outboundTopic = `display`;
-        const string = `{"singleImage": { "pause": 0, "region": "${_regions[args.REGION]}", "name": "${_images[args.IMAGE]}", "duration": 2, "next": null } }`
+        const img = this.singleImage(
+            `${_regions[args.REGION]}`,
+            `${_images[args.IMAGE]}`
+        );
+        const string = JSON.stringify(img);
+        const utf8Encode = new TextEncoder();
+        const arr = utf8Encode.encode(string);
+        this._client.publish(outboundTopic, arr);
+        return Promise.resolve();
+    }
+
+    imageAnimation (from, to, direction, upperLower) {
+        return {
+            inOut: 'inOut',
+            region: upperLower,
+            endName: to,
+            startName: from,
+            duration: 1,
+            direction: direction,
+            pause: 0
+        };
+    }
+
+    /**
+     * @param {object} args - the image to display
+     * @return {Promise} - a Promise that resolves when writing to peripheral.
+     */
+    animateImage (args) {
+        const outboundTopic = `display`;
+        const animation = this.imageAnimation(
+            `${_regions[args.FROM]}` || 'Empty',
+            `${_regions[args.TO]}` || 'Empty',
+            `${_regions[args.DIRECTION]}` || 'down',
+            `${_regions[args.REGION]}` || 'upper'
+        );
+        const string = JSON.stringify(animation);
         const utf8Encode = new TextEncoder();
         const arr = utf8Encode.encode(string);
         this._client.publish(outboundTopic, arr);
@@ -549,7 +603,11 @@ class Playspot {
      */
     displayHistogram (args) {
         const outboundTopic = `display`;
-        const histo = this.histogram(args.RED || 0, args.GREEN || 255, args.BLUE || 128);
+        const histo = this.histogram(
+            args.RED || 0,
+            args.GREEN || 255,
+            args.BLUE || 128
+        );
         const string = JSON.stringify(histo);
         const utf8Encode = new TextEncoder();
         const arr = utf8Encode.encode(string);
@@ -686,6 +744,18 @@ class Scratch3PlayspotBlocks {
     get REGIONS () {
         return (
             Object.keys(_regions).map(currentValue => ({
+                text: currentValue,
+                value: currentValue
+            })) || []
+        );
+    }
+
+    /**
+     * @return {array} - text and values for each images menu element
+     */
+    get DIRECTIONS () {
+        return (
+            Object.keys(_directions).map(currentValue => ({
                 text: currentValue,
                 value: currentValue
             })) || []
@@ -1009,15 +1079,37 @@ class Scratch3PlayspotBlocks {
                     }
                 },
                 {
-                    opcode: 'displayHistogram',
-                    text: 'Display Equalizer in [REGION], R: [RED], G: [GREEN], B: [BLUE]',
+                    opcode: 'animateImage',
+                    text: 'Animage Image [FROM] to [TO], from [DIRECTION] in [REGION]',
                     blockType: BlockType.COMMAND,
                     arguments: {
+                        FROM: {
+                            type: ArgumentType.STRING,
+                            menu: 'images',
+                            defaultValue: 'Empty'
+                        },
+                        TO: {
+                            type: ArgumentType.STRING,
+                            menu: 'images',
+                            defaultValue: 'Empty'
+                        },
+                        DIRECTION: {
+                            type: ArgumentType.STRING,
+                            menu: 'directions',
+                            defaultValue: 'Down'
+                        },
                         REGION: {
                             type: ArgumentType.STRING,
                             menu: 'regions',
                             defaultValue: 'Upper'
-                        },
+                        }
+                    }
+                },
+                {
+                    opcode: 'displayHistogram',
+                    text: 'Display Equalizer, R: [RED], G: [GREEN], B: [BLUE]',
+                    blockType: BlockType.COMMAND,
+                    arguments: {
                         RED: {
                             type: ArgumentType.REPORTER
                         },
@@ -1037,7 +1129,8 @@ class Scratch3PlayspotBlocks {
                 images: this.IMAGES,
                 volumes: this.VOLUMES,
                 sensitivities: this.SENSITIVITIES,
-                regions: this.REGIONS
+                regions: this.REGIONS,
+                directions: this.DIRECTIONS
             }
         };
     }
@@ -1276,6 +1369,15 @@ class Scratch3PlayspotBlocks {
     displayImage (args) {
         if (this._peripheral.isConnected) {
             this._peripheral.displayImage(args);
+        }
+    }
+
+    /**
+     * @param {object} args - an image id.
+     */
+    animateImage (args) {
+        if (this._peripheral.isConnected) {
+            this._peripheral.animateImage(args);
         }
     }
 
