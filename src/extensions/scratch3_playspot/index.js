@@ -571,14 +571,14 @@ class Playspot {
     fill (args) {
         return {
             imageFillSequence: {
-                startPercent: parseInt(args.BEGIN, 10) || 0,
+                startPercent: Number(args.BEGIN) || 0,
                 region: `${_regions[args.REGION]}` || 'upper',
                 color: {
-                    red: parseInt(args.RED, 10) || 0,
-                    green: parseInt(args.GREEN, 1) || 0,
-                    blue: parseInt(args.BLUE, 10) || 128
+                    red: Number(args.RED) || 0,
+                    green: Number(args.GREEN) || 0,
+                    blue: Number(args.BLUE) || 128
                 },
-                endPercent: parseInt(args.END, 10) || 100,
+                endPercent: Number(args.END) || 100,
                 duration: 1,
                 pause: 0,
                 name: `${_images[args.IMAGE]}` || 'Empty'
@@ -593,9 +593,8 @@ class Playspot {
     fillImage (args) {
         const outboundTopic = `display`;
         const fill = this.fill(args);
-        const string = JSON.stringify(fill);
         const utf8Encode = new TextEncoder();
-        const arr = utf8Encode.encode(string);
+        const arr = utf8Encode.encode(fill);
         this._client.publish(outboundTopic, arr);
         return Promise.resolve();
     }
