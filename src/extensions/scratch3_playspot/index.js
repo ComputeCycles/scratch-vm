@@ -538,13 +538,14 @@ class Playspot {
 
     imageAnimation (from, to, direction, upperLower) {
         return {
-            inOut: 'inOut',
-            region: upperLower,
-            endName: to,
-            startName: from,
-            duration: 1,
-            direction: direction,
-            pause: 0
+            inOut: {
+                region: upperLower,
+                endName: to,
+                startName: from,
+                duration: 1,
+                direction: direction,
+                pause: 0
+            }
         };
     }
 
