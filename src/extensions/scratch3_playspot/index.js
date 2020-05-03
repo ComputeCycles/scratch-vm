@@ -568,6 +568,38 @@ class Playspot {
         return Promise.resolve();
     }
 
+    fill (args) {
+        return {
+            imageFillSequence: {
+                startPercent: `${args.BEGIN}`,
+                region: `${_regions[args.REGION]}` || 'upper',
+                color: {
+                    red: `${args.RED}` || 0,
+                    green: `${args.GREEN}` || 0,
+                    blue: `${args.BLUE}` || 128
+                },
+                endPercent: `${args.END}`,
+                duration: 1,
+                pause: 0,
+                name: `${_images[args.IMAGE]}`
+            }
+        };
+    }
+
+    /**
+         * @param {object} args - the image to display
+         * @return {Promise} - a Promise that resolves when writing to peripheral.
+         */
+    fillImage (args) {
+        const outboundTopic = `display`;
+        const animation = this.fill(args);
+        const string = JSON.stringify(animation);
+        const utf8Encode = new TextEncoder();
+        const arr = utf8Encode.encode(string);
+        this._client.publish(outboundTopic, arr);
+        return Promise.resolve();
+    }
+
     histogram (red, green, blue, region) {
         return {
             histogram: {
@@ -1098,6 +1130,38 @@ class Scratch3PlayspotBlocks {
                             type: ArgumentType.STRING,
                             menu: 'directions',
                             defaultValue: 'Down'
+                        },
+                        REGION: {
+                            type: ArgumentType.STRING,
+                            menu: 'regions',
+                            defaultValue: 'Upper'
+                        }
+                    }
+                },
+                {
+                    opcode: 'fillImage',
+                    text: 'Fill Image [IMAGE] b/e: [BEGIN]/[END], rgb: [RED]/[GREEN]/[BLUE] in [REGION]',
+                    blockType: BlockType.COMMAND,
+                    arguments: {
+                        IMAGE: {
+                            type: ArgumentType.STRING,
+                            menu: 'images',
+                            defaultValue: 'Empty'
+                        },
+                        BEGIN: {
+                            type: ArgumentType.REPORTER
+                        },
+                        END: {
+                            type: ArgumentType.REPORTER
+                        },
+                        RED: {
+                            type: ArgumentType.REPORTER
+                        },
+                        GREEN: {
+                            type: ArgumentType.REPORTER
+                        },
+                        BLUE: {
+                            type: ArgumentType.REPORTER
                         },
                         REGION: {
                             type: ArgumentType.STRING,
