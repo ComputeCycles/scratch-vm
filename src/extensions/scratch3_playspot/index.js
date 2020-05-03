@@ -571,17 +571,17 @@ class Playspot {
     fill (args) {
         return {
             imageFillSequence: {
-                startPercent: `${args.BEGIN}`,
+                startPercent: `${args.BEGIN}` || 0,
                 region: `${_regions[args.REGION]}` || 'upper',
                 color: {
                     red: `${args.RED}` || 0,
                     green: `${args.GREEN}` || 0,
                     blue: `${args.BLUE}` || 128
                 },
-                endPercent: `${args.END}`,
+                endPercent: `${args.END}` || 100,
                 duration: 1,
                 pause: 0,
-                name: `${_images[args.IMAGE]}`
+                name: `${_images[args.IMAGE]}` || 'Empty'
             }
         };
     }
@@ -1446,6 +1446,14 @@ class Scratch3PlayspotBlocks {
         }
     }
 
+    /**
+     * @param {object} args - an image id.
+     */
+    fillImage (args) {
+        if (this._peripheral.isConnected) {
+            this._peripheral.fillImage(args);
+        }
+    }
     /**
      * @param {object} args - an image id.
      */
