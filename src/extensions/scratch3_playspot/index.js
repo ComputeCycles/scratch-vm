@@ -99,6 +99,12 @@ const _directions = Object.freeze({
     Right: 'right'
 });
 
+const _modes = Object.freeze({
+    'Cause and Effect': '0',
+    'Complex': '1',
+    'Kid': '2'
+});
+
 const NOT_FOUND = ' ';
 
 /**
@@ -134,6 +140,8 @@ class Playspot {
          * @private
          */
         this._satellites = {};
+
+        this._mode = 0;
 
         // Satellite event handlers
         this._satelliteStatusHandler = sender => {
@@ -224,7 +232,9 @@ class Playspot {
             // log.info(`onMessage fired for topic: ${topic}, payload: ${payload}`);
             const t = topic.split('/');
             if (topic === null || t.count < 2) return;
-            if (t[0] === 'fwserver' && t[1] === 'files') {
+            if (t[0] === 'app' && t[1] === 'menu' && t[2] === 'mode') {
+                this._mode = payload[0];
+            } else if (t[0] === 'fwserver' && t[1] === 'files') {
                 this._firmwareHandler(payload);
             } else if (t.count < 4) {
                 return;
@@ -677,6 +687,9 @@ class Playspot {
         this._client.publish(outboundTopic, [0x1]);
     }
 
+    whenGameModeChanges (args) {
+    }
+
     /**
      * Return true if touched.
      * @param {string} satellite - the satellite in question
@@ -723,6 +736,12 @@ class Scratch3PlayspotBlocks {
         return 'playspot';
     }
 
+    get MODES () {
+        return Object.keys(this._peripheral._modes).map(currentValue => ({
+            text: currentValue,
+            value: currentValue
+        }));
+    }
     /**
      * @return {array} - text and values for each satellites menu element
      */
@@ -844,12 +863,25 @@ class Scratch3PlayspotBlocks {
         const defaultSatellite =
           Object.keys(this._peripheral._satellites).length === 0 ?
               NOT_FOUND : this._peripheral._satellites[0];
+        const defaultMode = this._peripheral._modes[0];
         return {
             id: Scratch3PlayspotBlocks.EXTENSION_ID,
             name: Scratch3PlayspotBlocks.EXTENSION_NAME,
             blockIconURI: blockIconURI,
             showStatusButton: true,
             blocks: [
+                {
+                    opcode: 'whenGameModeChanged',
+                    text: 'When Game Mode Changes To: [MODES]',
+                    blockType: BlockType.HAT,
+                    arguments: {
+                        MODE: {
+                            type: ArgumentType.STRING,
+                            menu: 'modes',
+                            defaultValue: defaultMode
+                        }
+                    }
+                },
                 {
                     opcode: 'whenSatelliteTouched',
                     text: 'When touch detected at [SATELLITE]',
@@ -1189,6 +1221,7 @@ class Scratch3PlayspotBlocks {
             ],
             menus: {
                 satellites: this.SATELLITES,
+                modes: this.MODES,
                 lights: this.LIGHTS,
                 sounds: this.SOUNDS,
                 images: this.IMAGES,
@@ -1198,6 +1231,14 @@ class Scratch3PlayspotBlocks {
                 directions: this.DIRECTIONS
             }
         };
+    }
+
+    whenGameModeChanged (args) {
+        if (this._mode === this._modes[args.MODE]) {
+            return false;
+        }
+        this._mode = this._modes[args.MODE];
+        return true;
     }
 
     /**
