@@ -740,7 +740,7 @@ class Scratch3PlayspotBlocks {
         return Object.keys(this._peripheral._modes).map(currentValue => ({
             text: currentValue,
             value: currentValue
-        }));
+        })) || [];
     }
     /**
      * @return {array} - text and values for each satellites menu element
@@ -863,7 +863,6 @@ class Scratch3PlayspotBlocks {
         const defaultSatellite =
           Object.keys(this._peripheral._satellites).length === 0 ?
               NOT_FOUND : this._peripheral._satellites[0];
-        const defaultMode = this._modes['Cause and Effect'];
         return {
             id: Scratch3PlayspotBlocks.EXTENSION_ID,
             name: Scratch3PlayspotBlocks.EXTENSION_NAME,
@@ -878,7 +877,7 @@ class Scratch3PlayspotBlocks {
                         MODE: {
                             type: ArgumentType.STRING,
                             menu: 'modes',
-                            defaultValue: defaultMode
+                            defaultValue: 'Cause and Effect'
                         }
                     }
                 },
