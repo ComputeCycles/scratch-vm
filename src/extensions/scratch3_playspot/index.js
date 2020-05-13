@@ -737,7 +737,7 @@ class Scratch3PlayspotBlocks {
     }
 
     get MODES () {
-        return Object.keys(this._peripheral._modes).map(currentValue => ({
+        return Object.keys(_modes).map(currentValue => ({
             text: currentValue,
             value: currentValue
         })) || [];
