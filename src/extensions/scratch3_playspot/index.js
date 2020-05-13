@@ -863,7 +863,7 @@ class Scratch3PlayspotBlocks {
         const defaultSatellite =
           Object.keys(this._peripheral._satellites).length === 0 ?
               NOT_FOUND : this._peripheral._satellites[0];
-        const defaultMode = this._peripheral._modes['Cause and Effect'];
+        const defaultMode = this._modes['Cause and Effect'];
         return {
             id: Scratch3PlayspotBlocks.EXTENSION_ID,
             name: Scratch3PlayspotBlocks.EXTENSION_NAME,
