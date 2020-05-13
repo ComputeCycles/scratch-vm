@@ -871,7 +871,7 @@ class Scratch3PlayspotBlocks {
             blocks: [
                 {
                     opcode: 'whenGameModeChanged',
-                    text: 'When Game Mode Changes To: [MODES]',
+                    text: 'When Game Mode Changes To: [MODE]',
                     blockType: BlockType.HAT,
                     arguments: {
                         MODE: {
