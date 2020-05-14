@@ -534,7 +534,7 @@ class Playspot {
      * @return {Promise} - a Promise that resolves when writing to peripheral.
      */
     displayImage (args) {
-        const outboundTopic = `display`;
+        const outboundTopic = `display/animation`;
         const img = this.singleImage(
             `${_regions[args.REGION]}`,
             `${_images[args.IMAGE]}`
@@ -564,7 +564,7 @@ class Playspot {
      * @return {Promise} - a Promise that resolves when writing to peripheral.
      */
     animateImage (args) {
-        const outboundTopic = `display`;
+        const outboundTopic = `display/animation`;
         const animation = this.imageAnimation(
             `${_images[args.FROM]}` || 'Empty',
             `${_images[args.TO]}` || 'Empty',
@@ -601,7 +601,7 @@ class Playspot {
          * @return {Promise} - a Promise that resolves when writing to peripheral.
          */
     fillImage (args) {
-        const outboundTopic = `display`;
+        const outboundTopic = `display/animation`;
         const fill = this.fill(args);
         const string = JSON.stringify(fill);
         const utf8Encode = new TextEncoder();
@@ -645,7 +645,7 @@ class Playspot {
      * @return {Promise} - a Promise that resolves when writing to peripheral.
      */
     displayHistogram (args) {
-        const outboundTopic = `display`;
+        const outboundTopic = `display/animation`;
         const histo = this.histogram(
             args.RED || 0,
             args.GREEN || 255,
@@ -685,9 +685,6 @@ class Playspot {
     rebootSatellite (args) {
         const outboundTopic = `sat/${args.SATELLITE}/cmd/reboot`;
         this._client.publish(outboundTopic, [0x1]);
-    }
-
-    whenGameModeChanges (args) {
     }
 
     /**
