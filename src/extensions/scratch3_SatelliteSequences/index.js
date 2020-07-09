@@ -34,11 +34,6 @@ class Scratch3Satellite extends EventEmitter {
          */
         const storage = this.runtime.storage;
 
-        /**
-         * MQTT Client for light sequence
-         * @type {MQTT Client}
-         * @private
-         */
         // eslint-disable-next-line no-unused-expressions
         this._client;
         this._client = mqtt.connect('ws://broker.mqttdashboard.com:8000/mqtt');
@@ -139,7 +134,7 @@ class Scratch3Satellite extends EventEmitter {
                                     <!-- Exported by Scratch - http://scratch.mit.edu/ -->
                                          </svg>`;
 
-        
+
         /**
          * Encoding the backdrop SVG and Sprite SVG for the project
         @type {SVG}
@@ -446,7 +441,7 @@ class Scratch3Satellite extends EventEmitter {
 
     sequence1 () {
         const lightsArray = [
-            
+
             'L: 646400 FFFF 100',
             'D: 2000',
 
@@ -471,8 +466,8 @@ class Scratch3Satellite extends EventEmitter {
 
     sequence2 () {
         const lightsArray = [
-            
-            
+
+
             'L: 646400 FFFF 1',
             'D: 200',
 
@@ -507,7 +502,7 @@ class Scratch3Satellite extends EventEmitter {
 
     sequence3 () {
         const lightsArray = [
-           
+
             'L: 006464 FE00 50',
 
 
@@ -663,6 +658,6 @@ class Scratch3Satellite extends EventEmitter {
 
 
 }
-  
+
 
 module.exports = Scratch3Satellite;
