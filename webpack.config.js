@@ -2,6 +2,7 @@ const CopyWebpackPlugin = require('copy-webpack-plugin');
 const defaultsDeep = require('lodash.defaultsdeep');
 const path = require('path');
 const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
+const webpack = require('webpack');
 
 const base = {
     mode: process.env.NODE_ENV === 'production' ? 'production' : 'development',
@@ -29,6 +30,9 @@ const base = {
             loader: 'file-loader'
         }]
     },
+    node: {
+        fs: 'empty'
+    },
     optimization: {
         minimizer: [
             new UglifyJsPlugin({
@@ -36,7 +40,7 @@ const base = {
             })
         ]
     },
-    plugins: []
+    plugins: [new webpack.NormalModuleReplacementPlugin(/^mqtt$/, 'mqtt/dist/mqtt.js')]
 };
 
 module.exports = [
