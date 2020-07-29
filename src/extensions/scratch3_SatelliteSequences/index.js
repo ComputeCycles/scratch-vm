@@ -6,11 +6,15 @@ const BlockType = require('../../extension-support/block-type');
 const Cast = require('../../util/cast');
 const Variable = require('../../engine/variable.js');
 const MathUtil = require('../../util/math-util');
+const BlockUtility = require('../../engine/block-utility');
+const Thread = require('../../engine/thread');
 const encoder = new TextEncoder();
+const decoder = new TextDecoder();
 const log = require('minilog')('playspot');
 const http = require('http');
 const vm = window.vm;
 const original = require('./Assets/originalCostume');
+const soundData = require('./Assets/SoundsSat');
 const mqtt = require('mqtt');
 
 /**
@@ -26,13 +30,14 @@ const NOT_FOUND = ' ';
 /**
  * Manage communication with a Playspot peripheral over a MQTT client socket.
  */
-class SatellitePeripheral {
+class SatellitePeripheral extends EventEmitter {
     /**
      * Construct a Playspot communication object.
      * @param {Runtime} runtime - the Scratch 3.0 runtime
      * @param {string} extensionId - the id of the extension
      */
     constructor (runtime, extensionId) {
+        super();
         this.broker = `ws://${window.location.hostname}:3000`;
         this._connected = false;
         this._config = null;
@@ -58,6 +63,8 @@ class SatellitePeripheral {
         this._satellites = {};
 
         this._mode = 0;
+
+        this._messageToDisplay = '';
 
         // Satellite event handlers
         this._satelliteStatusHandler = sender => {
@@ -159,6 +166,12 @@ class SatellitePeripheral {
                 this._touchHandler(t[1], payload); // this is a touch message
             } else if (t[0] === 'sat' && t[2] === 'ev' && t[3] === 'radar') {
                 this._presenceHandler(t[1], payload); // this is a presence message
+            } else if (t[0] === 'sat' && t[2] === 'sound') {
+                this._soundToPlay = decoder.decode(payload);
+                this._runtime.emit('playSound', this._soundToPlay);
+            } else if (t[0] === 'sat' && t[1] === 'jphillips') {
+                this._messageToDisplay = decoder.decode(payload);
+                this._runtime.emit('displaySequence', this._messageToDisplay);
             }
         };
 
@@ -174,6 +187,8 @@ class SatellitePeripheral {
             // subscribe to radar and touch
             this._client.subscribe('sat/+/ev/radar');
             this._client.subscribe('sat/+/ev/touch');
+            this._client.subscribe('sat/jphillips/cmd/fx');
+            this._client.subscribe('sat/jphillips/sound/fx');
             // The VM to refreshBlocks
             this._runtime.emit(this._runtime.constructor.PERIPHERAL_CONNECTED);
             this._connected = true;
@@ -194,7 +209,8 @@ class SatellitePeripheral {
                 this._client.subscribe('sat/+/online');
                 this._client.subscribe('fwserver/online');
                 this._client.subscribe('fwserver/files');
-                console.log('onConnect');
+                this._client.subscribe('sat/jphillips/cmd/fx');
+                this._client.subscribe('sat/jphillips/sound/fx');
             }
 
             // Give everyone 5 seconds to report again
@@ -385,10 +401,11 @@ class SatellitePeripheral {
      */
     displayLightSequence (args) {
         const outboundTopic = `sat/${args.SATELLITE}/cmd/fx`;
-        const string = [this._sequencesByName[args.SEQUENCE]];
-        const utf8Encode = new TextEncoder();
-        const arr = utf8Encode.encode(string);
-        this._client.publish(outboundTopic, arr);
+        // const string = [this._sequencesByName[args.SEQUENCE]];
+        const string = args.MESSAGE;
+        // const utf8Encode = new TextEncoder();
+        // const arr = utf8Encode.encode(string);
+        this._client.publish(outboundTopic, string);
         return Promise.resolve();
     }
 
@@ -642,6 +659,15 @@ class SatellitePeripheral {
         this._satellites[satellite] !== NOT_FOUND &&
         this._satellites[satellite].hasPresence;
     }
+
+    sendTouch (args) {
+        const outboundTopic = `sat/jphillips/cmd/fx`;
+        // const string = [this._sequencesByName[args.SEQUENCE]];
+        const string = args.MESSAGE;
+        // const utf8Encode = new TextEncoder();
+        // const arr = utf8Encode.encode(string);
+        this._client.publish(outboundTopic, string);
+    }
 }
 
 class Scratch3Satellite extends EventEmitter {
@@ -667,6 +693,8 @@ class Scratch3Satellite extends EventEmitter {
         /**
         * @param {string} extensionId - the id of the extension
         */
+        const threadObj = new Thread('XDNgp`dSYEAscN+i0{hp');
+        const util = new BlockUtility(this.runtime.sequencer, threadObj);
 
         /**
          * The storage module for the VM/runtime
@@ -674,9 +702,13 @@ class Scratch3Satellite extends EventEmitter {
          */
         const storage = this.runtime.storage;
 
+        // this._client;
+        // this._client = mqtt.connect('ws://broker.mqttdashboard.com:8000/mqtt');
+        
         // eslint-disable-next-line no-unused-expressions
-        this._client;
-        this._client = mqtt.connect('ws://broker.mqttdashboard.com:8000/mqtt');
+        // this._client;
+        // this._client = SatellitePeripheral._client;
+        // console.log(this._client, 'client');
 
         /**
          * Previous positions of light sequence
@@ -690,6 +722,9 @@ class Scratch3Satellite extends EventEmitter {
         */
         this._active = false;
 
+        console.log(soundData, 'sounds');
+        console.log(typeof soundData);
+
         /**
          * The message being passed from MQTT
         @type {String}
@@ -701,6 +736,8 @@ class Scratch3Satellite extends EventEmitter {
         @type {String}
         */
         this._time = 0;
+
+        this._message = '';
 
         this.STORE_WAITING = true;
 
@@ -719,17 +756,25 @@ class Scratch3Satellite extends EventEmitter {
             this._active = true;
         });
 
+        this.runtime.on('displaySequence', data => {
+            this._message = data;
+            this.startSequence(this._message);
+        });
+
+        this.runtime.on('playSound', data => {
+            this._soundName = data;
+            this.playMQTTsound(this._soundName);
+        });
+
         /**
          * Satellite info for other users to subscribe to
          */
-        this._currentUsersSatellite = window.location.host;
+        this._currentUsersSatellite = 'jphillips';
 
         /**
          * Event listen to set this._active to true
          */
         this._satelliteToPublishTo = '';
-
-        this._message = '';
 
 
         this.on('over', () => {
@@ -745,31 +790,6 @@ class Scratch3Satellite extends EventEmitter {
          */
         this.on('over', () => {
             this._active = false;
-        });
-
-        /**
-         * Event listen to subscribe to sequencing topic once connected.
-         */
-        this._client.on('connect', () => {
-            // eslint-disable-next-line no-console
-            console.log('connected', +this._client.connected);
-            this._client.subscribe(`${this._currentUsersSatellite}/cmd/fx`, () => {
-                // eslint-disable-next-line no-console
-                console.log(`subscribed to ${this._currentUsersSatellite}/cmd/fx`);
-            });
-        });
-
-        /**
-         * Event listen on any messages
-         */
-        this._client.on('message', (topic, message, packet) => {
-            this._message = message.toString();
-            this.startSequence(this._message);
-        });
-
-        this._client.on('event_whenthisspriteclicked', () => {
-            // eslint-disable-next-line no-console
-            console.log('clicked');
         });
 
         /**
@@ -858,44 +878,7 @@ class Scratch3Satellite extends EventEmitter {
                     comments: {},
                     currentCostume: 0,
                     costumes: [costume1Data],
-                    sounds: [
-                        {
-                            assetId: '83a9787d4cb6f3b7632b4ddfebf74367',
-                            name: 'pop',
-                            dataFormat: 'wav',
-                            format: '',
-                            rate: 44100,
-                            sampleCount: 1032,
-                            md5ext: '83a9787d4cb6f3b7632b4ddfebf74367.wav'
-                        },
-                        {
-                            assetId: '1727f65b5f22d151685b8e5917456a60',
-                            name: 'Basketball Bounce',
-                            dataFormat: 'wav',
-                            format: '',
-                            rate: 22050,
-                            sampleCount: 8129,
-                            md5ext: '1727f65b5f22d151685b8e5917456a60.wav'
-                        },
-                        {
-                            assetId: '0edb8fb88af19e6e17d0f8cf64c1d136',
-                            name: 'dance celebrate',
-                            dataFormat: 'wav',
-                            format: '',
-                            rate: 22050,
-                            sampleCount: 176785,
-                            md5ext: '0edb8fb88af19e6e17d0f8cf64c1d136.wav'
-                        },
-                        {
-                            assetId: '042309f190183383c0b1c1fc3edc2e84',
-                            name: 'dance magic',
-                            dataFormat: 'wav',
-                            format: '',
-                            rate: 22050,
-                            sampleCount: 187961,
-                            md5ext: '042309f190183383c0b1c1fc3edc2e84.wav'
-                        }
-                    ],
+                    sounds: soundData.sounds,
                     volume: 100,
                     layerOrder: 1,
                     visible: true,
@@ -1010,11 +993,15 @@ class Scratch3Satellite extends EventEmitter {
                 {
                     opcode: 'sendMessage',
                     blockType: BlockType.COMMAND,
-                    text: 'Send MQTT [MESSAGE]',
+                    text: 'Send Display [MESSAGE] to [SATELLITE]',
                     arguments: {
                         MESSAGE: {
                             type: ArgumentType.STRING,
                             defaultValue: 'Message'
+                        },
+                        SATELLITE: {
+                            type: ArgumentType.STRING,
+                            defaultValue: 'Satellite'
                         }
                     }
                 },
@@ -1041,57 +1028,27 @@ class Scratch3Satellite extends EventEmitter {
                     arguments: {
                         SOUND_MENU: {
                             type: ArgumentType.STRING,
-                            defaultValue: 'none',
-                            menu: 'sounds'
+                            defaultValue: 'soundName'
                         }
                     }
-                },
-            ],
-            menus: {
-                sounds: {
-                    acceptReporters: true,
-                    items: [
-                        {
-                            text: 'Pop',
-                            value: 'pop'
-                        },
-                        {
-                            text: 'Dance Magic',
-                            value: 'dance magic'
-                        },
-                        {
-                            text: 'Dance Celebrate',
-                            value: 'dance celebrate'
-                        },
-                        {
-                            text: 'Basketball Bounce',
-                            value: 'Basketball Bounce'
-                        }
-                    ]
                 }
-            }
+            ]
         };
     }
 
-    playSound (args, util) {
-        // Don't return the promise, it's the only difference for AndWait
-        // this._playSound(args, util);
-        const index = this._getSoundIndex(args.SOUND_MENU, util);
-        if (index >= 0) {
-            const {target} = util;
-            const {sprite} = target;
-            const {soundId} = sprite.sounds[index];
-            return sprite.soundBank.playSound(target, soundId);
-        }
+    playSound (args) {
+        const soundIndex = this.getSoundIndexByName(args.SOUND_MENU, this.runtime.targets[1].sprite.sounds);
+        const soundId = this.runtime.targets[1].sprite.sounds[soundIndex].soundId;
+        const sprite = this.runtime.targets[1].sprite;
+        return sprite.soundBank.playSound(this.runtime.targets[1], soundId);  
     }
 
-    // playMQTTsound () {
-    //     const soundBank = this.runtime.targets[1].sprite.soundBank.playSound(this.runtime.targets[1], 1);
-    //     console.log(soundBank);
-    //     // playSound(this.runtime.targets[1], this.runtime.targets[1].sprite.sounds[1]);
-    //     // console.log(soundBank, 'soundBank');
-    //     // this.runtime.targets[1].audioPlayer.playSound(soundBank[1]);
-    // }
+    playMQTTsound (args) {
+        const soundIndex = this.getSoundIndexByName(args, this.runtime.targets[1].sprite.sounds);
+        const soundId = this.runtime.targets[1].sprite.sounds[soundIndex].soundId;
+        const sprite = this.runtime.targets[1].sprite;
+        return sprite.soundBank.playSound(this.runtime.targets[1], soundId);
+    }
 
     _playSound (args, util, storeWaiting) {
         const index = this._getSoundIndex(args.SOUND_MENU, util);
@@ -1148,7 +1105,7 @@ class Scratch3Satellite extends EventEmitter {
     }
 
     getSoundIndexByName (soundName, util) {
-        const sounds = util.target.sprite.sounds;
+        const sounds = util;
         for (let i = 0; i < sounds.length; i++) {
             if (sounds[i].name === soundName) {
                 return i;
@@ -1159,13 +1116,9 @@ class Scratch3Satellite extends EventEmitter {
     }
 
     whenSpriteIsClicked (args, util) {
-        let messages = '';
         if (util.target.isTouchingObject('_mouse_') && this.getMouseDown(args, util)) {
-            messages = args.MESSAGE;
-            // eslint-disable-next-line no-console
-            console.log(messages, 'message');
+            this._peripheral.sendTouch(args);
         }
-        messages.length = 0;
     }
 
 
@@ -1542,9 +1495,10 @@ class Scratch3Satellite extends EventEmitter {
      * @param {object} args - the message to be sent to MQTT.
      */
     sendMessage (args) {
-        const seq = Cast.toString(args.MESSAGE);
-        const topic = this._satelliteToPublishTo;
-        this._client.publish(topic, seq);
+        this._peripheral.displayLightSequence(args);
+        // const seq = Cast.toString(args.MESSAGE);
+        // const topic = this._satelliteToPublishTo;
+        // this._peripheral.publish(topic, seq);
     }
 
     /**

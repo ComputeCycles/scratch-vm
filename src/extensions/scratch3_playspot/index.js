@@ -337,6 +337,8 @@ class Playspot {
         this._runtime.emit(this._runtime.constructor.PERIPHERAL_SCAN_TIMEOUT);
     }
 
+    // LS: -1,file.txt
+
     performConnection () {
         let options = null;
         if (this._client) {
@@ -380,8 +382,8 @@ class Playspot {
     /**
      * Called by the runtime when user wants to connect to a certain peripheral.
      * @param {string} host - the host FQDN or IP Addr to connect to.
-     * @param {string} userName - the username to use if required.
-     * @param {string} password - the password to use if required.
+     * @param {string} userName - the userName of the client
+     * @param {string} password - the password of the client
      */
     connect (host, userName, password) {
         log.info(`connected fired with url = ${host}`);
