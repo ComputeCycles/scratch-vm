@@ -140,6 +140,7 @@ class Sequencer {
                     activeThread.status === Thread.STATUS_DONE) {
                     // Finished with this thread.
                     stoppedThread = true;
+                    // this.runtime.emit('threadDone');
                 }
             }
             // We successfully ticked once. Prevents running STATUS_YIELD_TICK
@@ -286,10 +287,12 @@ class Sequencer {
             branchNum = 1;
         }
         const currentBlockId = thread.peekStack();
+        // console.log(currentBlockId, 'currentBlockId');
         const branchId = thread.target.blocks.getBranch(
             currentBlockId,
             branchNum
         );
+        // console.log(branchId, 'branchIdinSequence');
         thread.peekStackFrame().isLoop = isLoop;
         if (branchId) {
             // Push branch ID to the thread's stack.

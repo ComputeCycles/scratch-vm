@@ -147,5 +147,15 @@ module.exports = [
                 from: 'src/playground'
             }])
         ])
+    }),
+    defaultsDeep({}, base, {
+        module: {
+            rules: [
+                {
+                    test: /\.txt$/i,
+                    use: 'raw-loader'
+                }
+            ]
+        }
     })
 ];

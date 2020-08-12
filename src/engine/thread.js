@@ -293,6 +293,7 @@ class Thread {
      * @return {?string} Block ID on top of stack.
      */
     peekStack () {
+        // console.log(this.stack.length, 'stack length');
         return this.stack.length > 0 ? this.stack[this.stack.length - 1] : null;
     }
 
@@ -302,6 +303,7 @@ class Thread {
      * @return {?object} Last stack frame stored on this thread.
      */
     peekStackFrame () {
+        // console.log(this.stackFrames.length, 'stackFrames length');
         return this.stackFrames.length > 0 ? this.stackFrames[this.stackFrames.length - 1] : null;
     }
 
