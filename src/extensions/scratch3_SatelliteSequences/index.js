@@ -13,6 +13,9 @@ const BlockUtility = require('../../engine/block-utility');
 const Thread = require('../../engine/thread');
 const Sequencer = require('../../engine/sequencer');
 const encoder = new TextEncoder();
+const decoder = new TextDecoder();
+const log = require('minilog')('playspot');
+const http = require('http');
 const vm = window.vm;
 const original = require('./Assets/originalCostume');
 const mqtt = require('mqtt');
@@ -672,7 +675,14 @@ class SatellitePeripheral extends EventEmitter {
 }
 
 class Scratch3Satellite extends EventEmitter {
-    constructor (runtime) {
+    static get EXTENSION_NAME () {
+        return 'sequence';
+    }
+
+    static get EXTENSION_ID () {
+        return 'sequence';
+    }
+    constructor (runtime, extensionId) {
         super();
         /**
          * The Scratch 3.0 runtime
@@ -687,9 +697,20 @@ class Scratch3Satellite extends EventEmitter {
          */
         const storage = this.runtime.storage;
 
+        /**
+         * The id of the extension this peripheral belongs to.
+         */
+        this._extensionId = extensionId;
+
         // eslint-disable-next-line no-unused-expressions
-        this._client;
-        this._client = mqtt.connect('ws://broker.mqttdashboard.com:8000/mqtt');
+        // this._client;
+        // this._client = mqtt.connect('ws://broker.mqttdashboard.com:8000/mqtt');
+        this._runtime = runtime;
+        this._peripheral = new SatellitePeripheral(this.runtime, Scratch3Satellite.EXTENSION_ID);
+
+        this._runtime = runtime;
+        this._runtime.registerPeripheralExtension(extensionId, this);
+ 
 
         /**
          * Previous positions of light sequence
@@ -749,13 +770,6 @@ class Scratch3Satellite extends EventEmitter {
             this.LOOPING = false;
         });
 
-        this._runtime = runtime;
-        this._runtime.registerPeripheralExtension(extensionId, this);
-
-        /**
-         * The id of the extension this peripheral belongs to.
-         */
-        this._extensionId = extensionId;
 
         /**
          * Event listen to set this._active to true
@@ -785,7 +799,7 @@ class Scratch3Satellite extends EventEmitter {
         /**
          * Satellite info for other users to subscribe to
          */
-        this._currentUsersSatellite = window.location.host;
+        // this._currentUsersSatellite = window.location.host;
 
         /**
          * Event listen to set this._active to true
@@ -793,7 +807,7 @@ class Scratch3Satellite extends EventEmitter {
         this._satelliteToPublishTo = '';
 
         // eslint-disable-next-line no-console
-        console.log(this._currentUsersSatellite, 'test');
+        // console.log(this._currentUsersSatellite, 'test');
 
         this._time = 0;
         this._message = '';
@@ -822,22 +836,22 @@ class Scratch3Satellite extends EventEmitter {
         /**
          * Event listen to subscribe to sequencing topic once connected.
          */
-        this._client.on('connect', () => {
-            // eslint-disable-next-line no-console
-            console.log('connected', +this._client.connected);
-            this._client.subscribe(`${this._currentUsersSatellite}/cmd/fx`, () => {
-                // eslint-disable-next-line no-console
-                console.log(`subscribed to ${this._currentUsersSatellite}/cmd/fx`);
-            });
-        });
+        // this._client.on('connect', () => {
+        //     // eslint-disable-next-line no-console
+        //     console.log('connected', +this._client.connected);
+        //     this._client.subscribe(`${this._currentUsersSatellite}/cmd/fx`, () => {
+        //         // eslint-disable-next-line no-console
+        //         console.log(`subscribed to ${this._currentUsersSatellite}/cmd/fx`);
+        //     });
+        // });
 
         /**
          * Event listen on any messages
          */
-        this._client.on('message', (topic, message, packet) => {
-            this._message = message.toString();
-            this.startSequence(this._message);
-        });
+        // this._client.on('message', (topic, message, packet) => {
+        //     this._message = message.toString();
+        //     this.startSequence(this._message);
+        // });
 
         /**
          * The backdrop for the project
@@ -1074,11 +1088,15 @@ class Scratch3Satellite extends EventEmitter {
                 {
                     opcode: 'sendMessage',
                     blockType: BlockType.COMMAND,
-                    text: 'Send MQTT [MESSAGE]',
+                    text: 'Send Display [MESSAGE] to [SATELLITE]',
                     arguments: {
                         MESSAGE: {
                             type: ArgumentType.STRING,
                             defaultValue: 'Message'
+                        },
+                        SATELLITE: {
+                            type: ArgumentType.STRING,
+                            defaultValue: 'Satellite'
                         }
                     }
                 },
