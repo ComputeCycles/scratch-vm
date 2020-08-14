@@ -208,6 +208,7 @@ class VirtualMachine extends EventEmitter {
     stopAll () {
         this.runtime.stopAll();
         this.runtime.emit('threadDone');
+        this.runtime._updateGlows();
     }
 
     /**

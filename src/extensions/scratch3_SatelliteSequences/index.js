@@ -1,3 +1,4 @@
+/* eslint-disable array-callback-return */
 /* eslint-disable no-else-return */
 /* eslint-disable no-negated-condition */
 /* eslint-disable no-console */
@@ -8,10 +9,6 @@ const ArgumentType = require('../../extension-support/argument-type');
 const BlockType = require('../../extension-support/block-type');
 const Cast = require('../../util/cast');
 const Variable = require('../../engine/variable.js');
-const MathUtil = require('../../util/math-util');
-const BlockUtility = require('../../engine/block-utility');
-const Thread = require('../../engine/thread');
-const Sequencer = require('../../engine/sequencer');
 const encoder = new TextEncoder();
 const decoder = new TextDecoder();
 const log = require('minilog')('playspot');
@@ -702,12 +699,19 @@ class Scratch3Satellite extends EventEmitter {
          */
         this._extensionId = extensionId;
 
-        // eslint-disable-next-line no-unused-expressions
-        // this._client;
-        // this._client = mqtt.connect('ws://broker.mqttdashboard.com:8000/mqtt');
+        /**
+         * Instantiating the SatellitePeripheral class.
+         * @param {Runtime} runtime The runtime of the extension
+         * @param {string} ExtensionId The extension Id of the current Scratch3Satellite Extension.
+         */
         this._runtime = runtime;
         this._peripheral = new SatellitePeripheral(this.runtime, Scratch3Satellite.EXTENSION_ID);
 
+        /**
+         * Registering the peripheral.
+         * @param {Runtime} runtime The runtime of the extension
+         * @param {string} ExtensionId The extension Id of the current Scratch3Satellite Extension.
+         */
         this._runtime = runtime;
         this._runtime.registerPeripheralExtension(extensionId, this);
  
@@ -725,7 +729,7 @@ class Scratch3Satellite extends EventEmitter {
         this._active = false;
 
         /**
-         * The message being passed from MQTT
+         * The message being passed from MQTT for sequences
         @type {String}
         */
         this._message = '';
@@ -736,8 +740,10 @@ class Scratch3Satellite extends EventEmitter {
         */
         this._time = 0;
 
-        this._message = '';
-
+        /**
+         * The message being passed from MQTT for sequences
+        @type {String}
+        */
         this._soundMessage = '';
 
         this.STORE_WAITING = true;
@@ -752,19 +758,29 @@ class Scratch3Satellite extends EventEmitter {
 
         this._timeoutIds = [];
 
+        this._connectNumber = 0;
+
+        this._connectSoundNumber = 0;
+
         this._singleSequence = [];
+
+        this._clearGlow = false;
+
+        this._clearSoundGlow = false;
 
         this._wait = false;
 
+        this._startOver = false;
+
         this._soundWait = false;
+
+        this._totalAmount = 0;
+
+        this._totalComp = 0;
 
         this.runtime.on('loopingSet', () => {
             this.LOOPING = true;
         });
-
-        const blockUtil = new BlockUtility(this.runtime.sequencer, this.runtime.threads);
-        console.log(blockUtil, 'blockUtil');
-        console.log(this.runtime, 'runtime');
 
         this.runtime.on('loopingStop', () => {
             this.LOOPING = false;
@@ -778,45 +794,16 @@ class Scratch3Satellite extends EventEmitter {
             this._active = true;
         });
 
-        // this.runtime.on('displaySequence', data => {
-        //     this._message = data;
-        //     this.startSequence(this._message);
-        // });
-
-        // this.runtime.on('playSound', data => {
-        //     this._soundName = data;
-        //     this.playMQTTsound(this._soundName);
-        // });
-
-        this.runtime.on(Runtime.VISUAL_REPORT, () => {
-            console.log('visual report fired');
-        });
-
         this.runtime.on('threadDone', () => {
             this.stopBlock();
         });
 
-        /**
-         * Satellite info for other users to subscribe to
-         */
-        // this._currentUsersSatellite = window.location.host;
-
-        /**
-         * Event listen to set this._active to true
-         */
         this._satelliteToPublishTo = '';
 
-        // eslint-disable-next-line no-console
-        // console.log(this._currentUsersSatellite, 'test');
 
         this._time = 0;
         this._message = '';
 
-        // eslint-disable-next-line no-console
-        console.log(runtime, 'runtime');
-
-        // // eslint-disable-next-line no-console
-        // console.log(Thread.STATUS_DONE, 'status done?');
 
         this.on('over', () => {
             this._time = 0;
@@ -833,25 +820,6 @@ class Scratch3Satellite extends EventEmitter {
             this._active = false;
         });
 
-        /**
-         * Event listen to subscribe to sequencing topic once connected.
-         */
-        // this._client.on('connect', () => {
-        //     // eslint-disable-next-line no-console
-        //     console.log('connected', +this._client.connected);
-        //     this._client.subscribe(`${this._currentUsersSatellite}/cmd/fx`, () => {
-        //         // eslint-disable-next-line no-console
-        //         console.log(`subscribed to ${this._currentUsersSatellite}/cmd/fx`);
-        //     });
-        // });
-
-        /**
-         * Event listen on any messages
-         */
-        // this._client.on('message', (topic, message, packet) => {
-        //     this._message = message.toString();
-        //     this.startSequence(this._message);
-        // });
 
         /**
          * The backdrop for the project
@@ -914,7 +882,7 @@ class Scratch3Satellite extends EventEmitter {
                 {
                     isStage: true,
                     name: 'Stage',
-                    variables: {'`jEk@4|i[#Fk?(8x)AV.-my variable': [ 'my variable', 0]},
+                    variables: {'`jEk@4|i[#Fk?(8x)AV.-my variable': ['my variable', 0]},
                     lists: {},
                     broadcasts: {},
                     blocks: {},
@@ -1019,36 +987,16 @@ class Scratch3Satellite extends EventEmitter {
                 {
                     opcode: 'whenLightSequenceDetected',
                     text: 'Listen for MQTT Light Sequence',
-                    blockType: BlockType.COMMAND
+                    blockType: BlockType.HAT
                 },
                 {
                     opcode: 'whenMQTTSoundDetected',
                     text: 'Listen for MQTT Sound',
-                    blockType: BlockType.COMMAND
-                },
-                {
-                    opcode: 'waitUntilMessageReceieved',
-                    text: 'Wait for message receieved',
-                    blockType: BlockType.BOOLEAN
-                },
-                {
-                    opcode: 'waitUntilSoundMessageReceived',
-                    text: 'Wait for Sound Message Received',
-                    blockType: BlockType.BOOLEAN
-                },
-                {
-                    opcode: 'loopAmountMQTT',
-                    text: 'Looping',
-                    blockType: BlockType.BOOLEAN
+                    blockType: BlockType.HAT
                 },
                 {
                     opcode: 'mqttStartBranchLoop',
-                    text: 'Play MQTT Sequence with Loop',
-                    blockType: BlockType.COMMAND
-                },
-                {
-                    opcode: 'mqttStartBranchNumber',
-                    text: 'Play MQTT Sequence X Amount',
+                    text: 'Play MQTT Display Sequence',
                     blockType: BlockType.COMMAND
                 },
                 {
@@ -1101,11 +1049,6 @@ class Scratch3Satellite extends EventEmitter {
                     }
                 },
                 {
-                    opcode: 'stopBlock',
-                    blockType: BlockType.COMMAND,
-                    text: 'Stop Sequencing'
-                },
-                {
                     opcode: 'playSound',
                     blockType: BlockType.COMMAND,
                     text: 'Play Sound [SOUND_MENU]',
@@ -1124,71 +1067,23 @@ class Scratch3Satellite extends EventEmitter {
         const soundIndex = this.getSoundIndexByName(args.SOUND_MENU, this.runtime.targets[1].sprite.sounds);
         const soundId = this.runtime.targets[1].sprite.sounds[soundIndex].soundId;
         const sprite = this.runtime.targets[1].sprite;
-        return sprite.soundBank.playSound(this.runtime.targets[1], soundId);  
+        return sprite.soundBank.playSound(this.runtime.targets[1], soundId);
     }
 
-    playMQTTsound () {
-        const soundIndex = this.getSoundIndexByName(this._soundMessage, this.runtime.targets[1].sprite.sounds);
-        const soundId = this.runtime.targets[1].sprite.sounds[soundIndex].soundId;
-        const sprite = this.runtime.targets[1].sprite;
-        return sprite.soundBank.playSound(this.runtime.targets[1], soundId)
-            .then(() => {
-                this.stopBlock();
-            });
-    }
-
-    _playSound (args, util, storeWaiting) {
-        const index = this._getSoundIndex(args.SOUND_MENU, util);
-        if (index >= 0) {
-            const {target} = util;
-            const {sprite} = target;
-            const {soundId} = sprite.sounds[index];
-            if (sprite.soundBank) {
-                if (storeWaiting === this.STORE_WAITING) {
-                    this._addWaitingSound(target.id, soundId);
-                } else {
-                    this._removeWaitingSound(target.id, soundId);
-                }
-                return sprite.soundBank.playSound(target, soundId);
-            }
+    playMQTTsound (args, util) {
+        if (!this._soundWait) {
+            this._clearSoundGlow = false;
+            util.yield();
         }
-    }
-
-    _addWaitingSound (targetId, soundId) {
-        if (!this.waitingSounds[targetId]) {
-            this.waitingSounds[targetId] = new Set();
+        if (this._soundMessage !== '') {
+            const soundIndex = this.getSoundIndexByName(this._soundMessage, this.runtime.targets[1].sprite.sounds);
+            const soundId = this.runtime.targets[1].sprite.sounds[soundIndex].soundId;
+            const sprite = this.runtime.targets[1].sprite;
+            return sprite.soundBank.playSound(this.runtime.targets[1], soundId)
+                .then(() => {
+                    this.stopSoundBlock();
+                });
         }
-        this.waitingSounds[targetId].add(soundId);
-    }
-
-    _removeWaitingSound (targetId, soundId) {
-        if (!this.waitingSounds[targetId]) {
-            return;
-        }
-        this.waitingSounds[targetId].delete(soundId);
-    }
-
-    _getSoundIndex (soundName, util) {
-        // if the sprite has no sounds, return -1
-        const len = util.target.sprite.sounds.length;
-        if (len === 0) {
-            return -1;
-        }
-
-        // look up by name first
-        const index = this.getSoundIndexByName(soundName, util);
-        if (index !== -1) {
-            return index;
-        }
-
-        // then try using the sound name as a 1-indexed index
-        const oneIndexedIndex = parseInt(soundName, 10);
-        if (!isNaN(oneIndexedIndex)) {
-            return MathUtil.wrapClamp(oneIndexedIndex - 1, 0, len - 1);
-        }
-
-        // could not be found as a name or converted to index, return -1
-        return -1;
     }
 
     getSoundIndexByName (soundName, util) {
@@ -1256,191 +1151,173 @@ class Scratch3Satellite extends EventEmitter {
     }
 
     stopBlock () {
-        this.runtime.emit('loopingStop');
         this._timeoutIdAmount = 0;
         this.emit(Runtime.STOP_FOR_TARGET);
         this.runtime.requestRedraw();
         this._timeoutIds.forEach(id => clearTimeout(id));
         this._time = 0;
         this._message = '';
-        this._soundMessage = '';
         const newCostumeSVG2 = original.originalCostume;
         const copyOfCostumeToBeChanged = {};
         Object.assign(copyOfCostumeToBeChanged, newCostumeSVG2);
         const svg = Object.values(copyOfCostumeToBeChanged).join('');
         this.updateSvg(0, svg, 28, 23);
         this._wait = false;
-        this._soundWait = false;
         this._looping = false;
+        this._clearGlow = true;
+        this._connectNumber = 0;
+        console.log('done');
+    }
+
+    stopSoundBlock () {
+        this._soundMessage = '';
+        this._soundWait = false;
+        this._connectSoundNumber = 0;
+        this._clearSoundGlow = true;
     }
 
     mqttStartBranchLoop (args, util) {
-        console.log('made it to loop');
-        console.log('message', this._message);
-        util.startBranch(1, true);
-        const splitArgs = this._message.split(',');
-        const splitForLoopNum = splitArgs[0].split(':');
-        const loopAmount = splitForLoopNum[1].trim();
-        const sat = require(`!!raw-loader!./lightSequences/${splitArgs[1]}`);
-        const split = sat.split('\n');
-        const filtered = split.filter(e => e === 0 || e);
-        const seq = filtered.join(',');
-        const Parse = require('./parse-sequence');
-        const parser = new Parse();
-        const color = '';
-        const stringSplit = seq.split(',');
-        const filteredList = stringSplit.filter(e => e === 0 || e);
-        let arrayLength = filteredList.length;
-        let k = 0;
-        let id = 0;
-        while (arrayLength > 0) {
-            if (filteredList[k].includes('L')) {
-                const newTime = filteredList[k].slice(14);
-                const copyOfCostume = parser.parseSingleInput(filteredList[k], this._prevPositions, color);
-
-                const timeoutId = setTimeout(() => {
-                    const svg = Object.values(copyOfCostume).join('');
-                    // this.updateSvg(util.target.currentCostume, svg, 28, 23);
-                    this.updateSvg(0, svg, 28, 23);
-                }, this._time += Cast.toNumber(newTime));
-                this._timeoutIds.push(timeoutId);
-
-            } else {
-                const newCostumeSVG2 = original.originalCostume;
-                const copyOfCostumeToBeChanged = {};
-                Object.assign(copyOfCostumeToBeChanged, newCostumeSVG2);
-                this._prevPositions.length = 0;
-                const delayTime = filteredList[k].slice(2);
-                const timeoutId = setTimeout(() => {
-                    const svg = Object.values(copyOfCostumeToBeChanged).join('');
-                    this.updateSvg(0, svg, 28, 23);
-                }, this._time += Cast.toNumber(delayTime));
-                this._timeoutIds.push(timeoutId);
-            }
-            arrayLength--;
-            k++;
-            id++;
+        if (!this._wait) {
+            this._clearGlow = false;
+            util.yield();
         }
-    }
+        let seq = '';
+        let splitArgs = [];
+        let loopAmount = '';
+        if (this._message !== '') {
+            splitArgs = this._message.split(',');
+            const splitForLoopNum = splitArgs[0].split(':');
+            loopAmount = splitForLoopNum[1].trim();
+            const sat = require(`!!raw-loader!./lightSequences/${splitArgs[1]}`);
+            const split = sat.split('\n');
+            const filtered = split.filter(e => e === 0 || e);
+            seq = filtered.join(',');
+            if (loopAmount < 0) {
+                util.startBranch(1, true);
+                const Parse = require('./parse-sequence');
+                const parser = new Parse();
+                const color = '';
+                const stringSplit = seq.split(',');
+                const filteredList = stringSplit.filter(e => e === 0 || e);
+                let arrayLength = filteredList.length;
+                let k = 0;
+                while (arrayLength > 0) {
+                    if (filteredList[k].includes('L')) {
+                        const newTime = filteredList[k].slice(14);
+                        const copyOfCostume = parser.parseSingleInput(filteredList[k], this._prevPositions, color);
 
-    mqttStartBranchNumber (args, util) {
-        console.log('made it to number');
-        console.log('message', this._message);
-        let totalAmount = 0;
-        let totalComp = 0;
-        const splitArgs = this._message.split(',');
-        const splitForLoopNum = splitArgs[0].split(':');
-        let loopAmount = splitForLoopNum[1].trim();
-        const sat = require(`!!raw-loader!./lightSequences/${splitArgs[1]}`);
-        const split = sat.split('\n');
-        const filtered = split.filter(e => e === 0 || e);
-        const seq = filtered.join(',');
-        const stringSplitForCalc = seq.split(',');
-        const filteredListForCalc = stringSplitForCalc.filter(e => e === 0 || e);
-        const arrayLengthForCalc = filteredListForCalc.length;
-        totalAmount = arrayLengthForCalc * loopAmount;
-        console.log(totalAmount, 'totalAmount');
-        while (loopAmount > 0) {
-            this.runtime.emit('loopingSet');
-            const Parse = require('./parse-sequence');
-            const parser = new Parse();
-            const color = '';
-            const stringSplit = seq.split(',');
-            const filteredList = stringSplit.filter(e => e === 0 || e);
-            let arrayLength = filteredList.length;
-            let k = 0;
-            let id = 0;
-            console.log(arrayLength, 'arrayLength');
-            while (arrayLength > 0) {
-                if (filteredList[k].includes('L')) {
-                    const newTime = filteredList[k].slice(14);
-                    const copyOfCostume = parser.parseSingleInput(filteredList[k], this._prevPositions, color);
-
-                    const timeoutId = setTimeout(() => {
-                        const svg = Object.values(copyOfCostume).join('');
-                        // this.updateSvg(util.target.currentCostume, svg, 28, 23);
-                        this.updateSvg(0, svg, 28, 23);
-                        totalComp++;
-                        if (totalComp === totalAmount) {
-                            this.runtime.emit('threadDone');
-                        }
-                    }, this._time += Cast.toNumber(newTime));
-                    this._timeoutIds.push(timeoutId);
-
-                } else {
-                    const newCostumeSVG2 = original.originalCostume;
-                    const copyOfCostumeToBeChanged = {};
-                    Object.assign(copyOfCostumeToBeChanged, newCostumeSVG2);
-                    this._prevPositions.length = 0;
-                    const delayTime = filteredList[k].slice(2);
-                    const timeoutId = setTimeout(() => {
+                        const timeoutId = setTimeout(() => {
+                            const svg = Object.values(copyOfCostume).join('');
+                            // this.updateSvg(util.target.currentCostume, svg, 28, 23);
+                            this.updateSvg(0, svg, 28, 23);
+                        }, this._time += Cast.toNumber(newTime));
                         this._timeoutIds.push(timeoutId);
-                        const svg = Object.values(copyOfCostumeToBeChanged).join('');
-                        this.updateSvg(0, svg, 28, 23);
-                        totalComp++;
-                        if (totalComp === totalAmount) {
-                            this.runtime.emit('threadDone');
-                        }
-                    }, this._time += Cast.toNumber(delayTime));
+
+                    } else {
+                        const newCostumeSVG2 = original.originalCostume;
+                        const copyOfCostumeToBeChanged = {};
+                        Object.assign(copyOfCostumeToBeChanged, newCostumeSVG2);
+                        this._prevPositions.length = 0;
+                        const delayTime = filteredList[k].slice(2);
+                        const timeoutId = setTimeout(() => {
+                            const svg = Object.values(copyOfCostumeToBeChanged).join('');
+                            this.updateSvg(0, svg, 28, 23);
+                        }, this._time += Cast.toNumber(delayTime));
+                        this._timeoutIds.push(timeoutId);
+                    }
+                    arrayLength--;
+                    k++;
                 }
-                arrayLength--;
-                k++;
-                id++;
+            } else {
+                const stringSplitForCalc = seq.split(',');
+                const filteredListForCalc = stringSplitForCalc.filter(e => e === 0 || e);
+                const arrayLengthForCalc = filteredListForCalc.length;
+                this._totalAmount = arrayLengthForCalc * loopAmount;
+                console.log(this._totalAmount, 'totalAmount');
+                while (loopAmount > 0) {
+                    const Parse = require('./parse-sequence');
+                    const parser = new Parse();
+                    const color = '';
+                    const stringSplit = seq.split(',');
+                    const filteredList = stringSplit.filter(e => e === 0 || e);
+                    let arrayLength = filteredList.length;
+                    let k = 0;
+                    while (arrayLength > 0) {
+                        if (filteredList[k].includes('L')) {
+                            const newTime = filteredList[k].slice(14);
+                            const copyOfCostume = parser.parseSingleInput(filteredList[k], this._prevPositions, color);
+
+                            const timeoutId = setTimeout(() => {
+                                const svg = Object.values(copyOfCostume).join('');
+                                // this.updateSvg(util.target.currentCostume, svg, 28, 23);
+                                this.updateSvg(0, svg, 28, 23);
+                                this._totalComp++;
+                                console.log(this._totalComp, 'totalComp');
+                                if (this._totalComp === this._totalAmount) {
+                                    this.runtime.emit('threadDone');
+                                }
+                            }, this._time += Cast.toNumber(newTime));
+                            this._timeoutIds.push(timeoutId);
+                        } else {
+                            const newCostumeSVG2 = original.originalCostume;
+                            const copyOfCostumeToBeChanged = {};
+                            Object.assign(copyOfCostumeToBeChanged, newCostumeSVG2);
+                            this._prevPositions.length = 0;
+                            const delayTime = filteredList[k].slice(2);
+                            const timeoutId = setTimeout(() => {
+                                const svg = Object.values(copyOfCostumeToBeChanged).join('');
+                                this.updateSvg(0, svg, 28, 23);
+                                totalComp++;
+                                console.log(totalComp, 'totalComp');
+                                if (totalComp === totalAmount) {
+                                    this.runtime.emit('threadDone');
+                                }
+                            }, this._time += Cast.toNumber(delayTime));
+                            this._timeoutIds.push(timeoutId);
+                        }
+                        arrayLength--;
+                        k++;
+                    }
+                    loopAmount--;
+                }
             }
-            loopAmount--;
-        }
-    }
-
-    waitUntilMessageReceieved () {
-        if (this._wait) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    waitUntilSoundMessageReceived () {
-        if (this._soundWait) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    loopAmountMQTT () {
-        if (this._looping) {
-            return true;
-        } else {
-            return false;
         }
     }
 
     whenMQTTSoundDetected () {
-        this.runtime.once('playSound', data => {
-            this._soundMessage = data;
-            // this.playMQTTsound(this._message);
-            this._soundWait = true;
-        });
+        if (this._connectSoundNumber === 0) {
+            this._connectSoundNumber++;
+            this._soundMessage = '';
+            this.runtime.on('playSound', data => {
+                if (!this._clearSoundGlow) {
+                    this._soundMessage = data;
+                    this._soundWait = true;
+                }
+            });
+        }
     }
 
+
     whenLightSequenceDetected () {
-        let connectNumber = 0;
-        if (connectNumber === 0) {
-            connectNumber++;
-            this.runtime.once('displaySequence', data => {
-                this._message = data;
-                const splitArgs = this._message.split(',');
-                const splitForLoopNum = splitArgs[0].split(':');
-                const loopAmount = splitForLoopNum[1].trim();
-                if (loopAmount < 0) {
-                    this._looping = true;
-                    this._loopAmount = loopAmount;
-                } else {
-                    this._looping = false;
-                    this._loopAmount = loopAmount;
+        console.log('are we looping in hat block above on?');
+        if (this._connectNumber === 0) {
+            this._connectNumber++;
+            this._message = '';
+            this.runtime.on('displaySequence', data => {
+                if (!this._clearGlow) {
+                    this._message = data;
+                    const splitArgs = this._message.split(',');
+                    const splitForLoopNum = splitArgs[0].split(':');
+                    const loopAmount = splitForLoopNum[1].trim();
+                    if (loopAmount < 0) {
+                        this._looping = true;
+                        this._loopAmount = loopAmount;
+                    } else {
+                        this._looping = false;
+                        this._loopAmount = loopAmount;
+                    }
+                    this._wait = true;
                 }
-                this._singleSequence.push(this._message);
-                this._wait = true;
             });
         }
     }
@@ -1488,7 +1365,6 @@ class Scratch3Satellite extends EventEmitter {
                 const filteredList = stringSplit.filter(e => e === 0 || e);
                 let arrayLength = filteredList.length;
                 let k = 0;
-                let id = 0;
                 while (arrayLength > 0) {
                     if (filteredList[k].includes('L')) {
                         const newTime = filteredList[k].slice(14);
@@ -1515,7 +1391,6 @@ class Scratch3Satellite extends EventEmitter {
                     }
                     arrayLength--;
                     k++;
-                    id++;
                 }
             } else {
                 // this.runtime.emit('loopingSet');
@@ -1527,7 +1402,6 @@ class Scratch3Satellite extends EventEmitter {
                 const filteredList = stringSplit.filter(e => e === 0 || e);
                 let arrayLength = filteredList.length;
                 let k = 0;
-                let id = 0;
                 while (arrayLength > 0) {
                     if (filteredList[k].includes('L')) {
                         const newTime = filteredList[k].slice(14);
@@ -1554,11 +1428,17 @@ class Scratch3Satellite extends EventEmitter {
                     }
                     arrayLength--;
                     k++;
-                    id++;
                     this._timeoutIdAmount--;
                 }
             }
         } else {
+            let totalAmount = 0;
+            let totalComp = 0;
+            const stringSplitForCalc = seq.split(',');
+            const filteredListForCalc = stringSplitForCalc.filter(e => e === 0 || e);
+            const arrayLengthForCalc = filteredListForCalc.length;
+            totalAmount = arrayLengthForCalc * loopAmount;
+            console.log(totalAmount, 'totalAmount');
             while (loopAmount > 0) {
                 const Parse = require('./parse-sequence');
                 const parser = new Parse();
@@ -1576,6 +1456,11 @@ class Scratch3Satellite extends EventEmitter {
                             const svg = Object.values(copyOfCostume).join('');
                             // this.updateSvg(util.target.currentCostume, svg, 28, 23);
                             this.updateSvg(0, svg, 28, 23);
+                            totalComp++;
+                            console.log(totalComp, 'totalComp');
+                            if (totalComp === totalAmount) {
+                                this.runtime.emit('threadDone');
+                            }
                         }, this._time += Cast.toNumber(newTime));
                         this._timeoutIds.push(timeoutId);
 
@@ -1588,6 +1473,11 @@ class Scratch3Satellite extends EventEmitter {
                         const timeoutId = setTimeout(() => {
                             const svg = Object.values(copyOfCostumeToBeChanged).join('');
                             this.updateSvg(0, svg, 28, 23);
+                            totalComp++;
+                            console.log(totalComp, 'totalComp');
+                            if (totalComp === totalAmount) {
+                                this.runtime.emit('threadDone');
+                            }
                         }, this._time += Cast.toNumber(delayTime));
                         this._timeoutIds.push(timeoutId);
                     }
@@ -1604,7 +1494,7 @@ class Scratch3Satellite extends EventEmitter {
      * @param {object} args - a light sequence id.
      * @param {object} util - target.
      */
-    startSequenceWithSound (args, util) {
+    startSequenceWithSound (args) {
         let seq = '';
         this.emit('started');
         if (this._message === ''){
@@ -1698,7 +1588,7 @@ class Scratch3Satellite extends EventEmitter {
      * Rotating every current light sequence one spot clockwise.
      * @param {object} util - the block utility
      */
-    rotateOneClockwise (util) {
+    rotateOneClockwise () {
         const newCostumeSVG = original.originalCostume;
         const copyOfCostume = {};
         Object.assign(copyOfCostume, newCostumeSVG);
