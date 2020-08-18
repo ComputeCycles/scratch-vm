@@ -1184,109 +1184,257 @@ class Scratch3Satellite extends EventEmitter {
         this._clearSoundGlow = true;
     }
 
+    // mqttStartBranchLoop (args, util) {
+    //     if (!this._wait) {
+    //         this._clearGlow = false;
+    //         util.yield();
+    //     }
+    //     let seq = '';
+    //     let splitArgs = [];
+    //     let loopAmount = '';
+    //     splitArgs = this._message.split(',');
+    //     const splitForLoopNum = splitArgs[0].split(':');
+    //     loopAmount = splitForLoopNum[1].trim();
+    //     const sat = require(`!!raw-loader!./lightSequences/${splitArgs[1]}`);
+    //     const split = sat.split('\n');
+    //     const filtered = split.filter(e => e === 0 || e);
+    //     seq = filtered.join(',');
+    //     if (loopAmount < 0) {
+    //         util.startBranch(1, true);
+    //         const Parse = require('./parse-sequence');
+    //         const parser = new Parse();
+    //         const color = '';
+    //         const stringSplit = seq.split(',');
+    //         const filteredList = stringSplit.filter(e => e === 0 || e);
+    //         let arrayLength = filteredList.length;
+    //         let k = 0;
+    //         while (arrayLength > 0) {
+    //             if (filteredList[k].includes('L')) {
+    //                 const newTime = filteredList[k].slice(14);
+    //                 const copyOfCostume = parser.parseSingleInput(filteredList[k], this._prevPositions, color);
+
+    //                 const timeoutId = setTimeout(() => {
+    //                     const svg = Object.values(copyOfCostume).join('');
+    //                     // this.updateSvg(util.target.currentCostume, svg, 28, 23);
+    //                     this.updateSvg(0, svg, 28, 23);
+    //                 }, this._time += Cast.toNumber(newTime));
+    //                 this._timeoutIds.push(timeoutId);
+
+    //             } else {
+    //                 const newCostumeSVG2 = original.originalCostume;
+    //                 const copyOfCostumeToBeChanged = {};
+    //                 Object.assign(copyOfCostumeToBeChanged, newCostumeSVG2);
+    //                 this._prevPositions.length = 0;
+    //                 const delayTime = filteredList[k].slice(2);
+    //                 const timeoutId = setTimeout(() => {
+    //                     const svg = Object.values(copyOfCostumeToBeChanged).join('');
+    //                     this.updateSvg(0, svg, 28, 23);
+    //                 }, this._time += Cast.toNumber(delayTime));
+    //                 this._timeoutIds.push(timeoutId);
+    //             }
+    //             arrayLength--;
+    //             k++;
+    //         }
+    //     } else {
+    //         const stringSplitForCalc = seq.split(',');
+    //         const filteredListForCalc = stringSplitForCalc.filter(e => e === 0 || e);
+    //         const arrayLengthForCalc = filteredListForCalc.length;
+    //         this._totalAmount = arrayLengthForCalc * loopAmount;
+    //         console.log(this._totalAmount, 'totalAmount');
+    //         while (loopAmount > 0) {
+    //             const Parse = require('./parse-sequence');
+    //             const parser = new Parse();
+    //             const color = '';
+    //             const stringSplit = seq.split(',');
+    //             const filteredList = stringSplit.filter(e => e === 0 || e);
+    //             let arrayLength = filteredList.length;
+    //             let k = 0;
+    //             while (arrayLength > 0) {
+    //                 if (filteredList[k].includes('L')) {
+    //                     const newTime = filteredList[k].slice(14);
+    //                     const copyOfCostume = parser.parseSingleInput(filteredList[k], this._prevPositions, color);
+
+    //                     const timeoutId = setTimeout(() => {
+    //                         const svg = Object.values(copyOfCostume).join('');
+    //                         // this.updateSvg(util.target.currentCostume, svg, 28, 23);
+    //                         this.updateSvg(0, svg, 28, 23);
+    //                         this._totalComp++;
+    //                         console.log(this._totalComp, 'totalComp');
+    //                         if (this._totalComp === this._totalAmount) {
+    //                             this.runtime.emit('threadDone');
+    //                         }
+    //                     }, this._time += Cast.toNumber(newTime));
+    //                     this._timeoutIds.push(timeoutId);
+    //                 } else {
+    //                     const newCostumeSVG2 = original.originalCostume;
+    //                     const copyOfCostumeToBeChanged = {};
+    //                     Object.assign(copyOfCostumeToBeChanged, newCostumeSVG2);
+    //                     this._prevPositions.length = 0;
+    //                     const delayTime = filteredList[k].slice(2);
+    //                     const timeoutId = setTimeout(() => {
+    //                         const svg = Object.values(copyOfCostumeToBeChanged).join('');
+    //                         this.updateSvg(0, svg, 28, 23);
+    //                         totalComp++;
+    //                         console.log(totalComp, 'totalComp');
+    //                         if (totalComp === totalAmount) {
+    //                             this.runtime.emit('threadDone');
+    //                         }
+    //                     }, this._time += Cast.toNumber(delayTime));
+    //                     this._timeoutIds.push(timeoutId);
+    //                 }
+    //                 arrayLength--;
+    //                 k++;
+    //             }
+    //             loopAmount--;
+    //         }
+    //     }
+    // }
+
     mqttStartBranchLoop (args, util) {
         if (!this._wait) {
             this._clearGlow = false;
             util.yield();
         }
-        let seq = '';
-        let splitArgs = [];
-        let loopAmount = '';
         if (this._message !== '') {
+            let seq = '';
+            let splitArgs = [];
+            let loopAmount = '';
+            this.emit('started');
             splitArgs = this._message.split(',');
             const splitForLoopNum = splitArgs[0].split(':');
             loopAmount = splitForLoopNum[1].trim();
+            console.log(loopAmount, 'loopAmount');
             const sat = require(`!!raw-loader!./lightSequences/${splitArgs[1]}`);
             const split = sat.split('\n');
             const filtered = split.filter(e => e === 0 || e);
             seq = filtered.join(',');
-            if (loopAmount < 0) {
-                util.startBranch(1, true);
-                const Parse = require('./parse-sequence');
-                const parser = new Parse();
-                const color = '';
-                const stringSplit = seq.split(',');
-                const filteredList = stringSplit.filter(e => e === 0 || e);
-                let arrayLength = filteredList.length;
-                let k = 0;
-                while (arrayLength > 0) {
-                    if (filteredList[k].includes('L')) {
-                        const newTime = filteredList[k].slice(14);
-                        const copyOfCostume = parser.parseSingleInput(filteredList[k], this._prevPositions, color);
-
-                        const timeoutId = setTimeout(() => {
-                            const svg = Object.values(copyOfCostume).join('');
-                            // this.updateSvg(util.target.currentCostume, svg, 28, 23);
-                            this.updateSvg(0, svg, 28, 23);
-                        }, this._time += Cast.toNumber(newTime));
-                        this._timeoutIds.push(timeoutId);
-
-                    } else {
-                        const newCostumeSVG2 = original.originalCostume;
-                        const copyOfCostumeToBeChanged = {};
-                        Object.assign(copyOfCostumeToBeChanged, newCostumeSVG2);
-                        this._prevPositions.length = 0;
-                        const delayTime = filteredList[k].slice(2);
-                        const timeoutId = setTimeout(() => {
-                            const svg = Object.values(copyOfCostumeToBeChanged).join('');
-                            this.updateSvg(0, svg, 28, 23);
-                        }, this._time += Cast.toNumber(delayTime));
-                        this._timeoutIds.push(timeoutId);
-                    }
+            const stringSplit = seq.split(',');
+            const filteredList = stringSplit.filter(e => e === 0 || e);
+            let arrayLength = filteredList.length;
+            console.log(arrayLength, 'arrayLength');
+            const positions = [];
+            const totalPos = [];
+            while (arrayLength > 0) {
+                while (filteredList[this._j].includes('L')) {
+                    positions.push(filteredList[this._j]);
+                    console.log(positions, 'positions');
+                    this._j++;
                     arrayLength--;
-                    k++;
                 }
+                totalPos.push(positions.join(','));
+                if (filteredList[this._j].includes('D')) {
+                    totalPos.push(filteredList[this._j]);
+                    this._j++;
+                    positions.length = 0;
+                    arrayLength--;
+                }
+                // arrayLength--;
+            }
+            console.log(totalPos, 'totalPos');
+            let loops = 5000; // take this out!
+            if (loopAmount < 0) {
+                while (loops > 0) { // take this out!
+                    this.runtime.emit('loopingSet');
+                    console.log(util, 'util');
+                    // util.startBranch(1, true);
+                    const Parse = require('./parse-sequence');
+                    const parser = new Parse();
+                    const color = '';
+                    let k = 0;
+                    this._j = 0;
+                    let m = 0;
+                    let q = 0;
+                    const timing = [];
+                    let totalLength = totalPos.length;
+                    console.log(totalLength, 'totalLength');
+                    while (totalLength > 0) {
+                        if (totalPos[k].includes('L')) {
+                            if (totalPos[k].includes(',')) {
+                                const splitL = totalPos[k].split(',');
+                                let splitTheLength = splitL.length;
+                                while (splitTheLength > 0) {
+                                    const time = splitL[0].slice(14).trim();
+                                    timing.push(time);
+                                    splitTheLength--;
+                                    m++;
+                                }
+                            }
+                            const newTime = totalPos[k].slice(14);
+                            const copyOfCostume = parser.parseSingleInput(totalPos[k], this._prevPositions, color);
+                            this._copyOfCostume = copyOfCostume;
+                            console.log(this._copyOfCostume, 'copy');
+                            
+                            const timeoutId = setTimeout(() => {
+                                const svg = Object.values(copyOfCostume).join('');
+                                this.updateSvg(0, svg, 28, 23);
+                            }, this._time += Cast.toNumber(newTime));
+
+                            this._timeoutIds.push(timeoutId);
+
+                        } else {
+                            this._prevPositions.length = 0;
+                            const delayTime = totalPos[k].slice(2);
+                            const timeoutId = setTimeout(() => {
+                                // const svg = Object.values(this._copyOfCostume).join('');
+                                // this.updateSvg(0, svg, 28, 23);
+                            }, this._time += Cast.toNumber(delayTime));
+                            console.log(this._time, 'timeDelay');
+                            this._timeoutIds.push(timeoutId);
+                        }
+
+                        k++;
+                        q++;
+                        totalLength--;
+                        loops--;
+                    }
+                }
+
             } else {
-                const stringSplitForCalc = seq.split(',');
-                const filteredListForCalc = stringSplitForCalc.filter(e => e === 0 || e);
-                const arrayLengthForCalc = filteredListForCalc.length;
+                const arrayLengthForCalc = totalPos.length;
                 this._totalAmount = arrayLengthForCalc * loopAmount;
-                console.log(this._totalAmount, 'totalAmount');
                 while (loopAmount > 0) {
                     const Parse = require('./parse-sequence');
                     const parser = new Parse();
                     const color = '';
-                    const stringSplit = seq.split(',');
-                    const filteredList = stringSplit.filter(e => e === 0 || e);
-                    let arrayLength = filteredList.length;
+                    let newArrayLength = totalPos.length;
+                    console.log(newArrayLength, 'newArrayLength');
                     let k = 0;
-                    while (arrayLength > 0) {
-                        if (filteredList[k].includes('L')) {
-                            const newTime = filteredList[k].slice(14);
-                            const copyOfCostume = parser.parseSingleInput(filteredList[k], this._prevPositions, color);
-
+                    while (newArrayLength > 0) {
+                        if (totalPos[k].includes('L')) {
+                            const newTime = totalPos[k].slice(14);
+                            const copyOfCostume = parser.parseSingleInput(totalPos[k], this._prevPositions, color);
+                            console.log(copyOfCostume, 'copyOfCostumeFromSeq');
+                            this._copyOfCostume = copyOfCostume;
+                            
                             const timeoutId = setTimeout(() => {
                                 const svg = Object.values(copyOfCostume).join('');
-                                // this.updateSvg(util.target.currentCostume, svg, 28, 23);
                                 this.updateSvg(0, svg, 28, 23);
                                 this._totalComp++;
-                                console.log(this._totalComp, 'totalComp');
                                 if (this._totalComp === this._totalAmount) {
                                     this.runtime.emit('threadDone');
                                 }
                             }, this._time += Cast.toNumber(newTime));
                             this._timeoutIds.push(timeoutId);
                         } else {
-                            const newCostumeSVG2 = original.originalCostume;
-                            const copyOfCostumeToBeChanged = {};
-                            Object.assign(copyOfCostumeToBeChanged, newCostumeSVG2);
                             this._prevPositions.length = 0;
-                            const delayTime = filteredList[k].slice(2);
+                            const delayTime = totalPos[k].slice(2);
                             const timeoutId = setTimeout(() => {
-                                const svg = Object.values(copyOfCostumeToBeChanged).join('');
-                                this.updateSvg(0, svg, 28, 23);
-                                totalComp++;
-                                console.log(totalComp, 'totalComp');
-                                if (totalComp === totalAmount) {
+                                // const svg = Object.values(this._copyOfCostume).join('');
+                                // this.updateSvg(0, svg, 28, 23);
+                                this._totalComp++;
+                                console.log(this._totalComp, 'totalComp');
+                                if (this._totalComp === this._totalAmount) {
                                     this.runtime.emit('threadDone');
                                 }
                             }, this._time += Cast.toNumber(delayTime));
+                            this._copyOfCostume = {};
                             this._timeoutIds.push(timeoutId);
                         }
-                        arrayLength--;
+                        newArrayLength--;
                         k++;
                     }
                     loopAmount--;
+                    // this._copyOfCostume.length = 0;
                 }
             }
         }
