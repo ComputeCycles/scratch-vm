@@ -9,12 +9,16 @@ const ArgumentType = require('../../extension-support/argument-type');
 const BlockType = require('../../extension-support/block-type');
 const Cast = require('../../util/cast');
 const Variable = require('../../engine/variable.js');
+const MathUtil = require('../../util/math-util');
+const BlockUtility = require('../../engine/block-utility');
+const Thread = require('../../engine/thread');
 const encoder = new TextEncoder();
 const decoder = new TextDecoder();
 const log = require('minilog')('playspot');
 const http = require('http');
 const vm = window.vm;
 const original = require('./Assets/originalCostume');
+const soundData = require('./Assets/SoundsSat');
 const mqtt = require('mqtt');
 const Runtime = require('../../engine/runtime');
 
@@ -210,8 +214,8 @@ class SatellitePeripheral extends EventEmitter {
                 this._client.subscribe('sat/+/online');
                 this._client.subscribe('fwserver/online');
                 this._client.subscribe('fwserver/files');
-                // this._client.subscribe('sat/jphillips/cmd/fx');
-                // this._client.subscribe('sat/jphillips/sound/fx');
+                this._client.subscribe('sat/jphillips/cmd/fx');
+                this._client.subscribe('sat/jphillips/sound/fx');
             }
 
             // Give everyone 5 seconds to report again
@@ -688,6 +692,14 @@ class Scratch3Satellite extends EventEmitter {
          */
         this.runtime = runtime;
 
+        this._peripheral = new SatellitePeripheral(this.runtime, Scratch3Satellite.EXTENSION_ID);
+
+        /**
+        * @param {string} extensionId - the id of the extension
+        */
+        const threadObj = new Thread('XDNgp`dSYEAscN+i0{hp');
+        const util = new BlockUtility(this.runtime.sequencer, threadObj);
+
         /**
          * The storage module for the VM/runtime
          * @param {ScratchStorage} storage The storage module to attach
@@ -739,6 +751,18 @@ class Scratch3Satellite extends EventEmitter {
         @type {String}
         */
         this._time = 0;
+
+        this._message = '';
+
+        this.STORE_WAITING = true;
+
+        this._runtime = runtime;
+        this._runtime.registerPeripheralExtension(extensionId, this);
+
+        /**
+         * The id of the extension this peripheral belongs to.
+         */
+        this._extensionId = extensionId;
 
         /**
          * The message being passed from MQTT for sequences
@@ -823,7 +847,6 @@ class Scratch3Satellite extends EventEmitter {
         this.on('over', () => {
             this._active = false;
         });
-
 
         /**
          * The backdrop for the project
@@ -911,17 +934,7 @@ class Scratch3Satellite extends EventEmitter {
                     comments: {},
                     currentCostume: 0,
                     costumes: [costume1Data],
-                    sounds: [
-                        {
-                            assetId: '83a9787d4cb6f3b7632b4ddfebf74367',
-                            name: 'pop',
-                            dataFormat: 'wav',
-                            format: '',
-                            rate: 44100,
-                            sampleCount: 1032,
-                            md5ext: '83a9787d4cb6f3b7632b4ddfebf74367.wav'
-                        }
-                    ],
+                    sounds: soundData.sounds,
                     volume: 100,
                     layerOrder: 1,
                     visible: true,
@@ -929,7 +942,7 @@ class Scratch3Satellite extends EventEmitter {
                     y: 124,
                     size: 175,
                     direction: 90,
-                    draggable: false,
+                    draggable: true,
                     rotationStyle: 'all around'
                 }
             ],
@@ -946,9 +959,10 @@ class Scratch3Satellite extends EventEmitter {
 
     getInfo () {
         return {
-            id: 'sequence',
+            id: Scratch3Satellite.EXTENSION_ID,
             name: 'Satellite Sequence',
             blockIconURI: blockIconURI,
+            showStatusButton: true,
             blocks: [
                 {
                     opcode: 'startSequence',
@@ -1570,17 +1584,6 @@ class Scratch3Satellite extends EventEmitter {
             arrayLength--;
             k++;
         }
-        // this.emit('over');
-        // eslint-disable-next-line no-console
-        console.log('runtime', this.runtime);
-        // const doneThreads = this.runtime.sequencer.stepThreads();
-        // // eslint-disable-next-line no-console
-        // this.runtime._emitProjectRunStatus(this.runtime._nonMonitorThreadCount);
-    //     if (this.runtime.isActiveThread(this.runtime.threads)) {
-    //         this.emit(Thread.STATUS_RUNNING);
-    //     } else {
-    //         this.emit(Thread.STATUS_DONE);
-    //     }
     }
 
     getMouseDown (args, util) {
@@ -1664,6 +1667,7 @@ class Scratch3Satellite extends EventEmitter {
             color = theColor;
             tempArray.push(color);
             // eslint-disable-next-line no-loop-func
+            // eslint-disable-next-line array-callback-return
             singleString.map(item => {
                 let newPosition = (+item + Cast.toNumber(1));
                 if (newPosition === 17) {

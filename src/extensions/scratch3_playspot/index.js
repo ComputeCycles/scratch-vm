@@ -100,9 +100,10 @@ const _directions = Object.freeze({
 });
 
 const _modes = Object.freeze({
-    'Cause and Effect': '0',
-    'Complex': '1',
-    'Kid': '2'
+    'Unknown': 0x30,
+    'Cause and Effect': 0x31,
+    'Complex': 0x32,
+    'Kid': 0x33
 });
 
 const NOT_FOUND = ' ';
@@ -140,8 +141,9 @@ class Playspot {
          * @private
          */
         this._satellites = {};
-
-        this._mode = 0;
+        this._app = {
+            mode: 0
+        };
 
         // Satellite event handlers
         this._satelliteStatusHandler = sender => {
@@ -222,6 +224,11 @@ class Playspot {
             this._satellites[sender].hasPresence = payload[0] === 0x31;
         };
 
+        this._modeHandler = (payload) => {
+            // log.info(`presenceHandler fired for payload: ${payload}`);
+            this._app.mode = payload[0];
+        };
+
         this._touchHandler = (sender, payload) => {
             // log.info(`touchHandler fired for payload: ${payload}`);
             this._satellites[sender].isTouched = payload[0] === 0x31;
@@ -231,9 +238,7 @@ class Playspot {
             // log.info(`onMessage fired for topic: ${topic}, payload: ${payload}`);
             const t = topic.split('/');
             if (topic === null || t.count < 2) return;
-            if (t[0] === 'app' && t[1] === 'menu' && t[2] === 'mode') {
-                this._mode = payload[0];
-            } else if (t[0] === 'fwserver' && t[1] === 'files') {
+            if (t[0] === 'fwserver' && t[1] === 'files') {
                 this._firmwareHandler(payload);
             } else if (t.count < 4) {
                 return;
@@ -243,6 +248,8 @@ class Playspot {
                 this._touchHandler(t[1], payload); // this is a touch message
             } else if (t[0] === 'sat' && t[2] === 'ev' && t[3] === 'radar') {
                 this._presenceHandler(t[1], payload); // this is a presence message
+            } else if (t[0] === 'app' && t[1] === 'menu' && t[2] === 'mode') {
+                this._modeHandler(payload); // this is a presence message
             }
         };
 
@@ -258,6 +265,7 @@ class Playspot {
             // subscribe to radar and touch
             this._client.subscribe('sat/+/ev/radar');
             this._client.subscribe('sat/+/ev/touch');
+            this._client.subscribe('app/menu/mode');
             // The VM to refreshBlocks
             this._runtime.emit(this._runtime.constructor.PERIPHERAL_CONNECTED);
             this._connected = true;
@@ -278,6 +286,7 @@ class Playspot {
                 this._client.subscribe('sat/+/online');
                 this._client.subscribe('fwserver/online');
                 this._client.subscribe('fwserver/files');
+                this._client.subscribe('app/menu/mode');
             }
 
             // Give everyone 5 seconds to report again
@@ -327,6 +336,8 @@ class Playspot {
         this._runtime.emit(this._runtime.constructor.PERIPHERAL_SCAN_TIMEOUT);
     }
 
+    // LS: -1,file.txt
+
     performConnection () {
         let options = null;
         if (this._client) {
@@ -370,6 +381,8 @@ class Playspot {
     /**
      * Called by the runtime when user wants to connect to a certain peripheral.
      * @param {string} host - the host FQDN or IP Addr to connect to.
+     * @param {string} userName - the userName of the client
+     * @param {string} password - the password of the client
      */
     connect (host, userName, password) {
         log.info(`connected fired with url = ${host}`);
@@ -729,6 +742,19 @@ class Playspot {
         this._satellites[satellite] !== NOT_FOUND &&
         this._satellites[satellite].hasPresence;
     }
+
+    /**
+     * Return true if in game mode is in a particular state.
+     * @param {string} mode - the satellite in question
+     * @return {boolean} - whether the satellite is detecting presence.
+     */
+    isGameModeEqual (mode) {
+        return this._app &&
+        this._app !== NOT_FOUND &&
+        this._app.mode &&
+        this._app.mode !== NOT_FOUND &&
+        this._app.mode === mode;
+    }
 }
 
 class Scratch3PlayspotBlocks {
@@ -880,18 +906,6 @@ class Scratch3PlayspotBlocks {
             showStatusButton: true,
             blocks: [
                 {
-                    opcode: 'whenGameModeChanged',
-                    text: 'When Game Mode Changes To: [MODE]',
-                    blockType: BlockType.HAT,
-                    arguments: {
-                        MODE: {
-                            type: ArgumentType.STRING,
-                            menu: 'modes',
-                            defaultValue: 'Cause and Effect'
-                        }
-                    }
-                },
-                {
                     opcode: 'whenSatelliteTouched',
                     text: 'When touch detected at [SATELLITE]',
                     blockType: BlockType.HAT,
@@ -977,6 +991,30 @@ class Scratch3PlayspotBlocks {
                     arguments: {
                         SATELLITES: {
                             type: ArgumentType.REPORTER
+                        }
+                    }
+                },
+                '---',
+                {
+                    opcode: 'whenGameModeEquals',
+                    text: 'When game mode changes to: [MODE]',
+                    blockType: BlockType.HAT,
+                    arguments: {
+                        MODE: {
+                            type: ArgumentType.STRING,
+                            menu: 'modes',
+                            defaultValue: 'Unknown'
+                        }
+                    }
+                }, {
+                    opcode: 'isGameModeEqual',
+                    text: 'When the game mode equals: [MODE]',
+                    blockType: BlockType.BOOLEAN,
+                    arguments: {
+                        MODE: {
+                            type: ArgumentType.STRING,
+                            menu: 'modes',
+                            defaultValue: 'Unknown'
                         }
                     }
                 },
@@ -1242,14 +1280,6 @@ class Scratch3PlayspotBlocks {
         };
     }
 
-    whenGameModeChanged (args) {
-        if (this._mode === this._modes[args.MODE]) {
-            return false;
-        }
-        this._mode = this._modes[args.MODE];
-        return true;
-    }
-
     /**
      * Notification when satellite is touched
      * @param {object} args - the block's arguments.
@@ -1342,6 +1372,30 @@ class Scratch3PlayspotBlocks {
         if (this._peripheral.isConnected) {
             return this._peripheral.hasPresence(args.SATELLITE);
         }
+    }
+
+    /**
+     * indicate the game mode changed
+     * @param {object} args - the block's arguments.
+     * @return {boolean} - true if the button is pressed.
+     */
+    whenGameModeEquals (args) {
+        if (this._peripheral.isConnected) {
+            return this._peripheral.isGameModeEqual(_modes[args.MODE]);
+        }
+        return false;
+    }
+
+    /**
+     * Test whether the game mode is the right value
+     * @param {object} args - the block's arguments.
+     * @return {boolean} - true if the button is pressed.
+     */
+    isGameModeEqual (args) {
+        if (this._peripheral.isConnected) {
+            return this._peripheral.isGameModeEqual(_modes[args.MODE]);
+        }
+        return false;
     }
 
     /**
