@@ -1031,6 +1031,22 @@ class Scratch3Satellite extends EventEmitter {
                         LIGHT: {
                             type: ArgumentType.LIGHT,
                             defaultValue: 'Light1'
+                        },
+                        SOUND_MENU: {
+                            type: ArgumentType.STRING,
+                            defaultValue: 'none',
+                            menu: 'sounds'
+                        }
+                    }
+                },
+                {
+                    opcode: 'whenSpriteIsClicked',
+                    text: 'When sprite button clicked send MQTT [MESSAGE]',
+                    blockType: BlockType.HAT,
+                    arguments: {
+                        MESSAGE: {
+                            type: ArgumentType.STRING,
+                            defaultValue: 'message'
                         }
                     }
                 },
