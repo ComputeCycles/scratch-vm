@@ -263,7 +263,7 @@ class SatellitePeripheral extends EventEmitter {
             } else if (t[0] === 'sat' && t[2] === 'sound') {
                 this._soundToPlay = decoder.decode(payload);
                 this._runtime.emit('playSound', this._soundToPlay);
-            } else if (t[0] === 'sat' && t[1] === 'jphillips') {
+            } else if (t[0] === 'sat' && t[1] === `${this.userName}`) {
                 this._messageToDisplay = decoder.decode(payload);
                 this._runtime.emit('displaySequence', this._messageToDisplay);
             }
@@ -281,8 +281,8 @@ class SatellitePeripheral extends EventEmitter {
             // subscribe to radar and touch
             this._client.subscribe('sat/+/ev/radar');
             this._client.subscribe('sat/+/ev/touch');
-            this._client.subscribe('sat/jphillips/cmd/fx');
-            this._client.subscribe('sat/jphillips/sound/fx');
+            this._client.subscribe(`sat/${this.userName}/cmd/fx`);
+            this._client.subscribe(`sat/${this.userName}/sound/fx`);
             // The VM to refreshBlocks
             this._runtime.emit(this._runtime.constructor.PERIPHERAL_CONNECTED);
             this._connected = true;
@@ -303,8 +303,8 @@ class SatellitePeripheral extends EventEmitter {
                 this._client.subscribe('sat/+/online');
                 this._client.subscribe('fwserver/online');
                 this._client.subscribe('fwserver/files');
-                this._client.subscribe('sat/jphillips/cmd/fx');
-                this._client.subscribe('sat/jphillips/sound/fx');
+                this._client.subscribe(`sat/${this.userName}/cmd/fx`);
+                this._client.subscribe(`sat/${this.userName}/sound/fx`);
             }
 
             // Give everyone 5 seconds to report again
@@ -494,7 +494,7 @@ class SatellitePeripheral extends EventEmitter {
      * @return {Promise} - a Promise that resolves when writing to peripheral.
      */
     displayLightSequence (args) {
-        const outboundTopic = `sat/${args.SATELLITE}/cmd/fx`;
+        const outboundTopic = `sat/${this.userName}/cmd/fx`;
         // const string = [this._sequencesByName[args.SEQUENCE]];
         const string = args.MESSAGE;
         // const utf8Encode = new TextEncoder();
@@ -755,7 +755,7 @@ class SatellitePeripheral extends EventEmitter {
     }
 
     sendTouch (args) {
-        const outboundTopic = `sat/jphillips/cmd/fx`;
+        const outboundTopic = `sat/${this.userName}/cmd/fx`;
         // const string = [this._sequencesByName[args.SEQUENCE]];
         const string = args.MESSAGE;
         // const utf8Encode = new TextEncoder();
