@@ -1413,7 +1413,170 @@ class Scratch3Satellite extends EventEmitter {
      * @param {object} args - a light sequence id.
      * @param {object} util - block utility for target
      */
-    startSequence (args) {
+    startSequence (args, util) {
+        let seq = '';
+        let splitArgs = [];
+        let loopAmount = '';
+        this.emit('started');
+        if (this._message === ''){
+            splitArgs = args.LIGHT.split(',');
+            const splitForLoopNum = splitArgs[0].split(':');
+            loopAmount = splitForLoopNum[1].trim();
+            const sat = require(`!!raw-loader!./lightSequences/${splitArgs[1]}`);
+            const split = sat.split('\n');
+            const filtered = split.filter(e => e === 0 || e);
+            seq = filtered.join(',');
+        } else {
+            splitArgs = this._message.split(',');
+            const splitForLoopNum = splitArgs[0].split(':');
+            loopAmount = splitForLoopNum[1].trim();
+            const sat = require(`!!raw-loader!./lightSequences/${splitArgs[1]}`);
+            const split = sat.split('\n');
+            const filtered = split.filter(e => e === 0 || e);
+            seq = filtered.join(',');
+        }
+        if (loopAmount < 0) {
+            if (this._message === '') {
+                this.runtime.emit('loopingSet');
+                console.log(util, 'util');
+                util.startBranch(1, true);
+                const Parse = require('./parse-sequence');
+                const parser = new Parse();
+                const color = '';
+                const stringSplit = seq.split(',');
+                const filteredList = stringSplit.filter(e => e === 0 || e);
+                let arrayLength = filteredList.length;
+                let k = 0;
+                while (arrayLength > 0) {
+                    if (filteredList[k].includes('L')) {
+                        const newTime = filteredList[k].slice(14);
+                        const copyOfCostume = parser.parseSingleInput(filteredList[k], this._prevPositions, color);
+
+                        const timeoutId = setTimeout(() => {
+                            const svg = Object.values(copyOfCostume).join('');
+                            // this.updateSvg(util.target.currentCostume, svg, 28, 23);
+                            this.updateSvg(0, svg, 28, 23);
+                        }, this._time += Cast.toNumber(newTime));
+                        this._timeoutIds.push(timeoutId);
+
+                    } else {
+                        const newCostumeSVG2 = original.originalCostume;
+                        const copyOfCostumeToBeChanged = {};
+                        Object.assign(copyOfCostumeToBeChanged, newCostumeSVG2);
+                        this._prevPositions.length = 0;
+                        const delayTime = filteredList[k].slice(2);
+                        const timeoutId = setTimeout(() => {
+                            const svg = Object.values(copyOfCostumeToBeChanged).join('');
+                            this.updateSvg(0, svg, 28, 23);
+                        }, this._time += Cast.toNumber(delayTime));
+                        this._timeoutIds.push(timeoutId);
+                    }
+                    arrayLength--;
+                    k++;
+                }
+            } else {
+                // this.runtime.emit('loopingSet');
+                util.startBranch(1, true);
+                const Parse = require('./parse-sequence');
+                const parser = new Parse();
+                const color = '';
+                const stringSplit = seq.split(',');
+                const filteredList = stringSplit.filter(e => e === 0 || e);
+                let arrayLength = filteredList.length;
+                let k = 0;
+                while (arrayLength > 0) {
+                    if (filteredList[k].includes('L')) {
+                        const newTime = filteredList[k].slice(14);
+                        const copyOfCostume = parser.parseSingleInput(filteredList[k], this._prevPositions, color);
+
+                        const timeoutId = setTimeout(() => {
+                            const svg = Object.values(copyOfCostume).join('');
+                            // this.updateSvg(util.target.currentCostume, svg, 28, 23);
+                            this.updateSvg(0, svg, 28, 23);
+                        }, this._time += Cast.toNumber(newTime));
+                        this._timeoutIds.push(timeoutId);
+
+                    } else {
+                        const newCostumeSVG2 = original.originalCostume;
+                        const copyOfCostumeToBeChanged = {};
+                        Object.assign(copyOfCostumeToBeChanged, newCostumeSVG2);
+                        this._prevPositions.length = 0;
+                        const delayTime = filteredList[k].slice(2);
+                        const timeoutId = setTimeout(() => {
+                            const svg = Object.values(copyOfCostumeToBeChanged).join('');
+                            this.updateSvg(0, svg, 28, 23);
+                        }, this._time += Cast.toNumber(delayTime));
+                        this._timeoutIds.push(timeoutId);
+                    }
+                    arrayLength--;
+                    k++;
+                    this._timeoutIdAmount--;
+                }
+            }
+        } else {
+            let totalAmount = 0;
+            let totalComp = 0;
+            const stringSplitForCalc = seq.split(',');
+            const filteredListForCalc = stringSplitForCalc.filter(e => e === 0 || e);
+            const arrayLengthForCalc = filteredListForCalc.length;
+            totalAmount = arrayLengthForCalc * loopAmount;
+            console.log(totalAmount, 'totalAmount');
+            while (loopAmount > 0) {
+                const Parse = require('./parse-sequence');
+                const parser = new Parse();
+                const color = '';
+                const stringSplit = seq.split(',');
+                const filteredList = stringSplit.filter(e => e === 0 || e);
+                let arrayLength = filteredList.length;
+                let k = 0;
+                while (arrayLength > 0) {
+                    if (filteredList[k].includes('L')) {
+                        const newTime = filteredList[k].slice(14);
+                        const copyOfCostume = parser.parseSingleInput(filteredList[k], this._prevPositions, color);
+
+                        const timeoutId = setTimeout(() => {
+                            const svg = Object.values(copyOfCostume).join('');
+                            // this.updateSvg(util.target.currentCostume, svg, 28, 23);
+                            this.updateSvg(0, svg, 28, 23);
+                            totalComp++;
+                            console.log(totalComp, 'totalComp');
+                            if (totalComp === totalAmount) {
+                                this.runtime.emit('threadDone');
+                            }
+                        }, this._time += Cast.toNumber(newTime));
+                        this._timeoutIds.push(timeoutId);
+
+                    } else {
+                        const newCostumeSVG2 = original.originalCostume;
+                        const copyOfCostumeToBeChanged = {};
+                        Object.assign(copyOfCostumeToBeChanged, newCostumeSVG2);
+                        this._prevPositions.length = 0;
+                        const delayTime = filteredList[k].slice(2);
+                        const timeoutId = setTimeout(() => {
+                            const svg = Object.values(copyOfCostumeToBeChanged).join('');
+                            this.updateSvg(0, svg, 28, 23);
+                            totalComp++;
+                            console.log(totalComp, 'totalComp');
+                            if (totalComp === totalAmount) {
+                                this.runtime.emit('threadDone');
+                            }
+                        }, this._time += Cast.toNumber(delayTime));
+                        this._timeoutIds.push(timeoutId);
+                    }
+                    arrayLength--;
+                    k++;
+                }
+                loopAmount--;
+            }
+        }
+    }
+
+    /**
+     * Starting the sequence
+     * @param {object} args - a light sequence id.
+     * @param {object} util - target.
+     */
+    startSequenceWithSound (args) {
         let seq = '';
         let splitArgs = [];
         let loopAmount = '';
@@ -1524,53 +1687,7 @@ class Scratch3Satellite extends EventEmitter {
             }
         }
     }
-
-    /**
-     * Starting the sequence
-     * @param {object} args - a light sequence id.
-     * @param {object} util - target.
-     */
-    startSequenceWithSound (args) {
-        let seq = '';
-        this.emit('started');
-        if (this._message === ''){
-            seq = Cast.toString(args.LIGHT);
-        } else {
-            seq = this._message;
-        }
-        const Parse = require('./parse-sequence');
-        const parser = new Parse();
-        const color = '';
-        const stringSplit = seq.split(',');
-        const filteredList = stringSplit.filter(e => e === 0 || e);
-        let arrayLength = filteredList.length;
-        let k = 0;
-        while (arrayLength > 0) {
-            if (filteredList[k].includes('L')) {
-                const newTime = filteredList[k].slice(14);
-                const copyOfCostume = parser.parseSingleInput(filteredList[k], this._prevPositions, color);
-
-                setTimeout(() => {
-                    const svg = Object.values(copyOfCostume).join('');
-                    this.updateSvg(0, svg, 28, 23);
-                }, this._time += Cast.toNumber(newTime));
-
-            } else {
-                const newCostumeSVG2 = original.originalCostume;
-                const copyOfCostumeToBeChanged = {};
-                Object.assign(copyOfCostumeToBeChanged, newCostumeSVG2);
-                this._prevPositions.length = 0;
-                const delayTime = filteredList[k].slice(2);
-                setTimeout(() => {
-                    const svg = Object.values(copyOfCostumeToBeChanged).join('');
-                    this.updateSvg(0, svg, 28, 23);
-                }, this._time += Cast.toNumber(delayTime));
-            }
-            arrayLength--;
-            k++;
-        }
-    }
-
+    
     getMouseDown (args, util) {
         return util.ioQuery('mouse', 'getIsDown');
     }
