@@ -12,7 +12,45 @@ class Parse {
         const copyOfCostume = {};
         Object.assign(copyOfCostume, newCostumeSVG);
         const toSplit = input.toString();
-        if (toSplit.includes('L')) {
+        let splitSeq = '';
+        let splitLength = 0;
+        let k = 0;
+        if (toSplit.includes(',')) {
+            splitSeq = toSplit.split(',');
+            splitLength = splitSeq.length;
+            while (splitLength > 0) {
+                const stringToEdit = splitSeq[k].split(' ');
+                const filteredString = stringToEdit.filter(e => e === 0 || e);
+                theColor = filteredString.splice(1, 1);
+                color = theColor;
+                const positions = this.convertBase(filteredString[1]);
+                const absolute = positions.map(pos => +pos + Cast.toNumber(1));
+                absolute.unshift(Cast.toString(color));
+                const joined = absolute.join(',');
+
+                if (prevPositions.length > 0) {
+                    let length = prevPositions.length;
+                    let i = 0;
+                    while (length > 0) {
+                        const splitPrev = prevPositions[i].split(',');
+                        const contColor = splitPrev.splice(0, 1);
+                        const splitAbsolute = joined.split(',');
+                        const newColor = splitAbsolute.splice(0, 1);
+                        splitAbsolute.map(item => copyOfCostume[`Light${item}`] = `"#${newColor}"`);
+                        splitPrev.map(item => copyOfCostume[`Light${item}`] = `"#${contColor}"`);
+                        length--;
+                        i++;
+                    }
+                } else {
+                    const split = joined.split(',');
+                    const currColor = split.splice(0, 1);
+                    split.map(item => copyOfCostume[`Light${item}`] = `"#${currColor}"`);
+                }
+                prevPositions.push(joined);
+                splitLength--;
+                k++;
+            }
+        } else {
             const stringToEdit = toSplit.split(' ');
             const filteredString = stringToEdit.filter(e => e === 0 || e);
             theColor = filteredString.splice(1, 1);
@@ -40,7 +78,6 @@ class Parse {
                 const currColor = split.splice(0, 1);
                 split.map(item => copyOfCostume[`Light${item}`] = `"#${currColor}"`);
             }
-            prevPositions.push(joined);
         }
         return copyOfCostume;
     }
