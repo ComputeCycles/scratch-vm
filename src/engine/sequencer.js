@@ -140,7 +140,6 @@ class Sequencer {
                     activeThread.status === Thread.STATUS_DONE) {
                     // Finished with this thread.
                     stoppedThread = true;
-                    // this.runtime.emit('threadDone');
                 }
             }
             // We successfully ticked once. Prevents running STATUS_YIELD_TICK
