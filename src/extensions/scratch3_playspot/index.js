@@ -224,7 +224,7 @@ class Playspot {
             this._satellites[sender].hasPresence = payload[0] === 0x31;
         };
 
-        this._modeHandler = (payload) => {
+        this._modeHandler = payload => {
             // log.info(`presenceHandler fired for payload: ${payload}`);
             this._app.mode = payload[0];
         };
