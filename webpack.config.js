@@ -31,7 +31,7 @@ const base = {
         },
         {
             test: /\.txt$/i,
-            loader: 'raw-loader'
+            use: 'raw-loader'
         }]
     },
     node: {
