@@ -28,6 +28,10 @@ const base = {
         {
             test: /\.mp3$/,
             loader: 'file-loader'
+        },
+        {
+            test: /\.txt$/i,
+            use: 'raw-loader'
         }]
     },
     node: {
@@ -147,15 +151,5 @@ module.exports = [
                 from: 'src/playground'
             }])
         ])
-    }),
-    defaultsDeep({}, base, {
-        module: {
-            rules: [
-                {
-                    test: /\.txt$/i,
-                    use: 'raw-loader'
-                }
-            ]
-        }
     })
 ];
