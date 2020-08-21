@@ -153,7 +153,7 @@ module.exports = [
             rules: [
                 {
                     test: /\.txt$/i,
-                    loader: 'raw-loader'
+                    use: 'raw-loader'
                 }
             ]
         }
