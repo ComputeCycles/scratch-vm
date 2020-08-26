@@ -4,6 +4,7 @@ const Variable = require('../../engine/variable.js');
 const mqtt = require('mqtt');
 const log = require('minilog')('playspot');
 const http = require('http');
+const vm = window.vm;
 require('minilog').enable();
 
 /**
@@ -240,6 +241,7 @@ class Playspot {
             if (topic === null || t.count < 2) return;
             if (t[0] === 'fwserver' && t[1] === 'files') {
                 this._firmwareHandler(payload);
+                vm.refreshWorkspace();
             } else if (t.count < 4) {
                 return;
             } else if (t[0] === 'sat' && t[2] === 'online') {
