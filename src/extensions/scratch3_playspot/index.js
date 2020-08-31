@@ -4,6 +4,7 @@ const Variable = require('../../engine/variable.js');
 const mqtt = require('mqtt');
 const log = require('minilog')('playspot');
 const http = require('http');
+const vm = window.vm;
 require('minilog').enable();
 
 /**
@@ -224,7 +225,7 @@ class Playspot {
             this._satellites[sender].hasPresence = payload[0] === 0x31;
         };
 
-        this._modeHandler = (payload) => {
+        this._modeHandler = payload => {
             // log.info(`presenceHandler fired for payload: ${payload}`);
             this._app.mode = payload[0];
         };
@@ -240,6 +241,7 @@ class Playspot {
             if (topic === null || t.count < 2) return;
             if (t[0] === 'fwserver' && t[1] === 'files') {
                 this._firmwareHandler(payload);
+                vm.refreshWorkspace();
             } else if (t.count < 4) {
                 return;
             } else if (t[0] === 'sat' && t[2] === 'online') {
