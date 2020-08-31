@@ -217,7 +217,20 @@ class Playspot {
             const files = json.files;
             this._setupSoundVar(files);
             this._setupLightVar(files);
+            this._setupVariables();
             this._runtime.emit(this._runtime.constructor.PERIPHERAL_LIST_UPDATE, this._satellites);
+        };
+
+        this._setupVariables = () => {
+            const stage = this._runtime.getTargetForStage();
+            const stopAndClear = this._runtime.createNewGlobalVariable('Stop and Clear', false, Variable.SCALAR_TYPE);
+            stage.variables[stopAndClear.id].value = 'Stop and Clear';
+            const stop = this._runtime.createNewGlobalVariable('Stop', false, Variable.SCALAR_TYPE);
+            stage.variables[stop.id].value = 'Stop';
+            const clear = this._runtime.createNewGlobalVariable('Clear', false, Variable.SCALAR_TYPE);
+            stage.variables[clear.id].value = 'Clear';
+            const pause = this._runtime.createNewGlobalVariable('Pause', false, Variable.SCALAR_TYPE);
+            stage.variables[pause.id].value = 'Pause';
         };
 
         this._presenceHandler = (sender, payload) => {
@@ -1039,6 +1052,19 @@ class Scratch3PlayspotBlocks {
                     }
                 },
                 {
+                    opcode: 'displayTheLightSequence',
+                    text: '[SEQUENCE] lights on [SATELLITE]',
+                    blockType: BlockType.COMMAND,
+                    arguments: {
+                        SATELLITE: {
+                            type: ArgumentType.REPORTER
+                        },
+                        SEQUENCE: {
+                            type: ArgumentType.REPORTER
+                        }
+                    }
+                },
+                {
                     opcode: 'displayLightSequenceOnAll',
                     text: 'Display [SEQUENCENAME] on all of: [SATELLITES]',
                     blockType: BlockType.COMMAND,
@@ -1418,6 +1444,17 @@ class Scratch3PlayspotBlocks {
      * @param {object} args - a satellite id and a light sequence id.
      */
     displayLightSequence (args) {
+        console.log(args, 'args');
+        if (this._peripheral.isConnected) {
+            this._peripheral.displayLightSequence(args);
+        }
+    }
+
+    /**
+     * @param {object} args - a satellite id and a light sequence id.
+     */
+    displayTheLightSequence (args) {
+        console.log(args, 'args');
         if (this._peripheral.isConnected) {
             this._peripheral.displayLightSequence(args);
         }
