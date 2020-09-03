@@ -5,7 +5,6 @@ const mqtt = require('mqtt');
 const log = require('minilog')('playspot');
 const http = require('http');
 const vm = window.vm;
-const ExtensionManager = require('../../extension-support/extension-manager');
 require('minilog').enable();
 
 /**
@@ -218,16 +217,7 @@ class Playspot {
             const files = json.files;
             this._setupSoundVar(files);
             this._setupLightVar(files);
-            this._setupVariables();
             this._runtime.emit(this._runtime.constructor.PERIPHERAL_LIST_UPDATE, this._satellites);
-        };
-
-        this._setupVariables = () => {
-            const stage = this._runtime.getTargetForStage();
-            const satelliteVar = this._runtime.createNewGlobalVariable('Connected Satellite', false, Variable.SCALAR_TYPE);
-            stage.variables[satelliteVar.id].value = this._satellites[0];
-            const satelliteSeq = this._runtime.createNewGlobalVariable('Sequence To Start', false, Variable.SCALAR_TYPE);
-            stage.variables[satelliteSeq.id].value = 'MusicPuzzle_01_spin1';
         };
 
         this._presenceHandler = (sender, payload) => {
@@ -251,8 +241,6 @@ class Playspot {
             if (topic === null || t.count < 2) return;
             if (t[0] === 'fwserver' && t[1] === 'files') {
                 this._firmwareHandler(payload);
-                // const manager = new ExtensionManager(this._runtime);
-                // if (manager.loadExtensionURL(this._extensionId))
             } else if (t.count < 4) {
                 return;
             } else if (t[0] === 'sat' && t[2] === 'online') {
