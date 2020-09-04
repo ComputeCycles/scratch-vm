@@ -950,7 +950,7 @@ class Scratch3PlayspotBlocks {
                     }
                 },
                 {
-                    opcode: 'displayTheLightSequence',
+                    opcode: 'displayLightSequence',
                     text: '[SEQUENCE] lights on [SATELLITE]',
                     blockType: BlockType.COMMAND,
                     arguments: {
@@ -1296,15 +1296,6 @@ class Scratch3PlayspotBlocks {
      * @param {object} args - a satellite id and a light sequence id.
      */
     displayLightSequence (args) {
-        if (this._peripheral.isConnected) {
-            this._peripheral.displayLightSequence(args);
-        }
-    }
-
-    /**
-     * @param {object} args - a satellite id and a light sequence id.
-     */
-    displayTheLightSequence (args) {
         if (this._peripheral.isConnected) {
             this._peripheral.displayLightSequence(args);
         }
