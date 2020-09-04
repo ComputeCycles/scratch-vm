@@ -241,7 +241,6 @@ class Playspot {
             if (topic === null || t.count < 2) return;
             if (t[0] === 'fwserver' && t[1] === 'files') {
                 this._firmwareHandler(payload);
-                vm.refreshWorkspace();
             } else if (t.count < 4) {
                 return;
             } else if (t[0] === 'sat' && t[2] === 'online') {
@@ -271,6 +270,7 @@ class Playspot {
             // The VM to refreshBlocks
             this._runtime.emit(this._runtime.constructor.PERIPHERAL_CONNECTED);
             this._connected = true;
+            vm.refreshWorkspace();
         };
 
         this._onConnectTimer = () => {
@@ -337,8 +337,6 @@ class Playspot {
         });
         this._runtime.emit(this._runtime.constructor.PERIPHERAL_SCAN_TIMEOUT);
     }
-
-    // LS: -1,file.txt
 
     performConnection () {
         let options = null;
@@ -900,7 +898,7 @@ class Scratch3PlayspotBlocks {
     getInfo () {
         const defaultSatellite =
           Object.keys(this._peripheral._satellites).length === 0 ?
-              NOT_FOUND : this._peripheral._satellites[0];
+              NOT_FOUND : this._peripheral._satellites[Object.keys(this._peripheral._satellites)[0]];
         return {
             id: Scratch3PlayspotBlocks.EXTENSION_ID,
             name: Scratch3PlayspotBlocks.EXTENSION_NAME,
@@ -908,35 +906,12 @@ class Scratch3PlayspotBlocks {
             showStatusButton: true,
             blocks: [
                 {
-                    opcode: 'whenSatelliteTouched',
-                    text: 'When touch detected at [SATELLITE]',
-                    blockType: BlockType.HAT,
-                    arguments: {
-                        SATELLITE: {
-                            type: ArgumentType.STRING,
-                            menu: 'satellites',
-                            defaultValue: defaultSatellite
-                        }
-                    }
-                },
-                {
                     opcode: 'whenAnySatelliteTouched',
                     text: 'When touch detected at any of: [SATELLITES]',
                     blockType: BlockType.HAT,
                     arguments: {
                         SATELLITES: {
-                            type: ArgumentType.REPORTER
-                        }
-                    }
-                },
-                {
-                    opcode: 'isSatelliteTouched',
-                    text: 'is Satellite [SATELLITE] being touched?',
-                    blockType: BlockType.BOOLEAN,
-                    arguments: {
-                        SATELLITE: {
                             type: ArgumentType.STRING,
-                            menu: 'satellites',
                             defaultValue: defaultSatellite
                         }
                     }
@@ -947,19 +922,7 @@ class Scratch3PlayspotBlocks {
                     blockType: BlockType.BOOLEAN,
                     arguments: {
                         SATELLITES: {
-                            type: ArgumentType.REPORTER
-                        }
-                    }
-                },
-                '---',
-                {
-                    opcode: 'whenPresenceSensed',
-                    text: 'When presence detected at: [SATELLITE]',
-                    blockType: BlockType.HAT,
-                    arguments: {
-                        SATELLITE: {
                             type: ArgumentType.STRING,
-                            menu: 'satellites',
                             defaultValue: defaultSatellite
                         }
                     }
@@ -970,18 +933,7 @@ class Scratch3PlayspotBlocks {
                     blockType: BlockType.HAT,
                     arguments: {
                         SATELLITES: {
-                            type: ArgumentType.REPORTER
-                        }
-                    }
-                },
-                {
-                    opcode: 'isPresenceSensed',
-                    text: 'Is [SATELLITE] sensing presence?',
-                    blockType: BlockType.BOOLEAN,
-                    arguments: {
-                        SATELLITE: {
                             type: ArgumentType.STRING,
-                            menu: 'satellites',
                             defaultValue: defaultSatellite
                         }
                     }
@@ -992,35 +944,11 @@ class Scratch3PlayspotBlocks {
                     blockType: BlockType.BOOLEAN,
                     arguments: {
                         SATELLITES: {
-                            type: ArgumentType.REPORTER
+                            type: ArgumentType.STRING,
+                            defaultValue: defaultSatellite
                         }
                     }
                 },
-                '---',
-                {
-                    opcode: 'whenGameModeEquals',
-                    text: 'When game mode changes to: [MODE]',
-                    blockType: BlockType.HAT,
-                    arguments: {
-                        MODE: {
-                            type: ArgumentType.STRING,
-                            menu: 'modes',
-                            defaultValue: 'Unknown'
-                        }
-                    }
-                }, {
-                    opcode: 'isGameModeEqual',
-                    text: 'When the game mode equals: [MODE]',
-                    blockType: BlockType.BOOLEAN,
-                    arguments: {
-                        MODE: {
-                            type: ArgumentType.STRING,
-                            menu: 'modes',
-                            defaultValue: 'Unknown'
-                        }
-                    }
-                },
-                '---',
                 {
                     opcode: 'displayLightSequence',
                     text: '[SEQUENCE] lights on [SATELLITE]',
@@ -1028,7 +956,6 @@ class Scratch3PlayspotBlocks {
                     arguments: {
                         SATELLITE: {
                             type: ArgumentType.STRING,
-                            menu: 'satellites',
                             defaultValue: defaultSatellite
                         },
                         SEQUENCE: {
@@ -1044,27 +971,12 @@ class Scratch3PlayspotBlocks {
                     blockType: BlockType.COMMAND,
                     arguments: {
                         SATELLITES: {
-                            type: ArgumentType.REPORTER
-                        },
-                        SEQUENCENAME: {
-                            type: ArgumentType.REPORTER
-                        }
-                    }
-                },
-                {
-                    opcode: 'playSound',
-                    text: '[SOUND] [SATELLITE]',
-                    blockType: BlockType.COMMAND,
-                    arguments: {
-                        SATELLITE: {
                             type: ArgumentType.STRING,
-                            menu: 'satellites',
                             defaultValue: defaultSatellite
                         },
-                        SOUND: {
-                            type: ArgumentType.NUMBER,
-                            menu: 'sounds',
-                            defaultValue: 'Silence'
+                        SEQUENCENAME: {
+                            type: ArgumentType.STRING,
+                            defaultValue: defaultSatellite
                         }
                     }
                 },
@@ -1074,28 +986,12 @@ class Scratch3PlayspotBlocks {
                     blockType: BlockType.COMMAND,
                     arguments: {
                         SATELLITES: {
-                            type: ArgumentType.REPORTER
-                        },
-                        SOUNDNAME: {
-                            type: ArgumentType.REPORTER
-                        }
-                    }
-                },
-                '---',
-                {
-                    opcode: 'setVolume',
-                    text: 'Set Volume to [VOLUME] on [SATELLITE]',
-                    blockType: BlockType.COMMAND,
-                    arguments: {
-                        SATELLITE: {
                             type: ArgumentType.STRING,
-                            menu: 'satellites',
                             defaultValue: defaultSatellite
                         },
-                        VOLUME: {
+                        SOUNDNAME: {
                             type: ArgumentType.STRING,
-                            menu: 'volumes',
-                            defaultValue: 'Mute'
+                            defaultValue: defaultSatellite
                         }
                     }
                 },
@@ -1105,7 +1001,8 @@ class Scratch3PlayspotBlocks {
                     blockType: BlockType.COMMAND,
                     arguments: {
                         SATELLITES: {
-                            type: ArgumentType.REPORTER
+                            type: ArgumentType.STRING,
+                            defaultValue: defaultSatellite
                         },
                         VOLUME: {
                             type: ArgumentType.STRING,
@@ -1115,46 +1012,18 @@ class Scratch3PlayspotBlocks {
                     }
                 },
                 {
-                    opcode: 'setRadarSensitivity',
-                    text: 'Set Radar Sensitivity to [SENSITIVITY] on [SATELLITE]',
-                    blockType: BlockType.COMMAND,
-                    arguments: {
-                        SATELLITE: {
-                            type: ArgumentType.STRING,
-                            menu: 'satellites',
-                            defaultValue: defaultSatellite
-                        },
-                        SENSITIVITY: {
-                            type: ArgumentType.STRING,
-                            menu: 'sensitivities',
-                            defaultValue: 'Near'
-                        }
-                    }
-                },
-                {
                     opcode: 'setRadarSensitivities',
                     text: 'Set Radar Sensitivity to [SENSITIVITY] on [SATELLITES]',
                     blockType: BlockType.COMMAND,
                     arguments: {
                         SATELLITES: {
-                            type: ArgumentType.REPORTER
+                            type: ArgumentType.STRING,
+                            defaultValue: defaultSatellite
                         },
                         SENSITIVITY: {
                             type: ArgumentType.STRING,
                             menu: 'sensitivities',
                             defaultValue: 'Near'
-                        }
-                    }
-                },
-                {
-                    opcode: 'rebootSatellite',
-                    text: 'Reboot Satellite [SATELLITE]',
-                    blockType: BlockType.COMMAND,
-                    arguments: {
-                        SATELLITE: {
-                            type: ArgumentType.STRING,
-                            menu: 'satellites',
-                            defaultValue: defaultSatellite
                         }
                     }
                 },
@@ -1170,11 +1039,11 @@ class Scratch3PlayspotBlocks {
                     blockType: BlockType.COMMAND,
                     arguments: {
                         SATELLITES: {
-                            type: ArgumentType.REPORTER
+                            type: ArgumentType.STRING,
+                            defaultValue: defaultSatellite
                         }
                     }
                 },
-                '---',
                 {
                     opcode: 'displayImage',
                     text: 'Display Image [IMAGE] in [REGION]',
@@ -1230,19 +1099,24 @@ class Scratch3PlayspotBlocks {
                             defaultValue: 'Empty'
                         },
                         BEGIN: {
-                            type: ArgumentType.REPORTER
+                            type: ArgumentType.STRING,
+                            defaultValue: defaultSatellite
                         },
                         END: {
-                            type: ArgumentType.REPORTER
+                            type: ArgumentType.STRING,
+                            defaultValue: defaultSatellite
                         },
                         RED: {
-                            type: ArgumentType.REPORTER
+                            type: ArgumentType.STRING,
+                            defaultValue: defaultSatellite
                         },
                         GREEN: {
-                            type: ArgumentType.REPORTER
+                            type: ArgumentType.STRING,
+                            defaultValue: defaultSatellite
                         },
                         BLUE: {
-                            type: ArgumentType.REPORTER
+                            type: ArgumentType.STRING,
+                            defaultValue: defaultSatellite
                         },
                         REGION: {
                             type: ArgumentType.STRING,
@@ -1257,13 +1131,16 @@ class Scratch3PlayspotBlocks {
                     blockType: BlockType.COMMAND,
                     arguments: {
                         RED: {
-                            type: ArgumentType.REPORTER
+                            type: ArgumentType.STRING,
+                            defaultValue: defaultSatellite
                         },
                         GREEN: {
-                            type: ArgumentType.REPORTER
+                            type: ArgumentType.STRING,
+                            defaultValue: defaultSatellite
                         },
                         BLUE: {
-                            type: ArgumentType.REPORTER
+                            type: ArgumentType.STRING,
+                            defaultValue: defaultSatellite
                         }
                     }
                 }
@@ -1281,6 +1158,7 @@ class Scratch3PlayspotBlocks {
             }
         };
     }
+
 
     /**
      * Notification when satellite is touched
