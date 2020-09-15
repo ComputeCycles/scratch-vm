@@ -18,6 +18,7 @@ const builtinExtensions = {
     music: () => require('../extensions/scratch3_music'),
     microbit: () => require('../extensions/scratch3_microbit'),
     playspot: () => require('../extensions/scratch3_playspot'),
+    playspotSetup: () => require('../extensions/scratch3_playspotSetup'),
     playspot_microbit: () => require('../extensions/scratch3_playspot_microbit'),
     text2speech: () => require('../extensions/scratch3_text2speech'),
     translate: () => require('../extensions/scratch3_translate'),

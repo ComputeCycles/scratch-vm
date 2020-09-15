@@ -1,3 +1,4 @@
+/* eslint-disable no-else-return */
 const ArgumentType = require('../../extension-support/argument-type');
 const BlockType = require('../../extension-support/block-type');
 const Variable = require('../../engine/variable.js');
@@ -145,6 +146,8 @@ class Playspot {
         this._app = {
             mode: 0
         };
+        this._satId = '';
+        this._satellitesList = [];
 
         // Satellite event handlers
         this._satelliteStatusHandler = sender => {
@@ -158,6 +161,7 @@ class Playspot {
             if (!allSats) {
                 allSats = this._runtime.createNewGlobalVariable('All_Satellites', false, Variable.LIST_TYPE);
             }
+            this._satId = allSats.id;
             stage.variables[allSats.id].value = Object.keys(this._satellites);
             this.setRadarConfiguration({
                 SATELLITE: sender,
@@ -211,6 +215,87 @@ class Playspot {
             stage.variables[allLights.id].value = txts.map(currentValue => currentValue.replace('.txt', ''));
         };
 
+        this._setupAliases = payload => {
+            const values = [];
+            const keys = [];
+            const finalVariableValues = [];
+            const stage = this._runtime.getTargetForStage();
+            const decoder = new TextDecoder();
+            const message = decoder.decode(payload);
+            this._setupDictionary(message);
+            if (message.includes(',')) {
+                const splitMessage = message.split(',');
+                let messageLength = splitMessage.length;
+                let i = 0;
+                while (messageLength > 0) {
+                    const newVariable = splitMessage[i].split(':');
+                    const key = newVariable[0].trim();
+                    const value = newVariable[1].trim();
+                    keys.push(key);
+                    values.push(value);
+                    finalVariableValues.push(key);
+                    messageLength--;
+                    i++;
+                }
+                const satsSorted = Object.keys(this._satellites).sort();
+                for (let j = 0; i < satsSorted.length; j++) {
+                    const match = this._matching(satsSorted[j]);
+                    if (!match) {
+                        finalVariableValues.push(satsSorted[j]);
+                    }
+                }
+
+                
+                stage.variables[this._satId].value = finalVariableValues;
+                vm.refreshWorkspace();
+            } else {
+                const splitMessage = message.split(':');
+                const key = splitMessage[0].trim();
+                const value = splitMessage[1].trim();
+                keys.push(key);
+                values.push(value);
+                finalVariableValues.push(key);
+                // const allSatsVariable = this._runtime.createNewGlobalVariable(`${key}`, false, Variable.SCALAR_TYPE);
+                // stage.variables[allSatsVariable.id].value = value;
+                
+                const satsSorted = Object.keys(this._satellites).sort();
+                for (let i = 0; i < satsSorted.length; i++) {
+                    const match = this._matching(satsSorted[i]);
+                    if (!match) {
+                        finalVariableValues.push(satsSorted[i]);
+                    }
+                }
+
+                stage.variables[this._satId].value = finalVariableValues;
+                vm.refreshWorkspace();
+            }
+        };
+
+        this._setupDictionary = payload => {
+            if (payload) {
+                if (this._satellitesList.length > 0) {
+                    this._satellitesList = [];
+                }
+                // const decoder = new TextDecoder();
+                // const message = decoder.decode(payload);
+                if (payload.includes(',')) {
+                    const splitMessage = payload.split(',');
+                    let splitLength = splitMessage.length;
+                    let i = 0;
+                    while (splitLength > 0) {
+                        const l = splitMessage[i];
+                        this._satellitesList.push(l);
+                        splitLength--;
+                        i++;
+                    }
+                } else {
+                    this._satellitesList.push(payload);
+
+                }
+            }
+            console.log(this._satellitesList, 'satelliteList');
+        };
+
         this._firmwareHandler = payload => {
             // log.info(`firmware handler fired`);
             const json = JSON.parse(payload);
@@ -251,6 +336,8 @@ class Playspot {
                 this._presenceHandler(t[1], payload); // this is a presence message
             } else if (t[0] === 'app' && t[1] === 'menu' && t[2] === 'mode') {
                 this._modeHandler(payload); // this is a presence message
+            } else if (t[0] === 'playspots' && t[1] === 'config') {
+                this._setupAliases(payload);
             }
         };
 
@@ -289,6 +376,7 @@ class Playspot {
                 this._client.subscribe('fwserver/online');
                 this._client.subscribe('fwserver/files');
                 this._client.subscribe('app/menu/mode');
+                this._client.subscribe('playspots/config/aliases');
             }
 
             // Give everyone 5 seconds to report again
@@ -479,12 +567,52 @@ class Playspot {
         this._client.publish(detEnTopic, utf8Encode.encode(args.DET), options);
     }
 
+    findSatelliteSerial (satelliteName) {
+        console.log(satelliteName, 'satName');
+        let returnSat = '';
+        let satellites = [];
+        if (this._satellitesList.length > 0) {
+
+            satellites = this._satellitesList;
+            for (let i = 0; i < satellites.length; i++) {
+                const splitSat = satellites[i].split(':');
+                const key = splitSat[0].trim();
+                const value = splitSat[1].trim();
+                if (key === satelliteName) {
+                    returnSat = value;
+                }
+            }
+
+            satellites = Object.keys(this._satellites);
+            for (let i = 0; i < satellites.length; i++) {
+                if (satellites[i] === satelliteName) {
+                    returnSat = satellites[i];
+                }
+            }
+            console.log(satellites, 'satellites');
+            console.log(returnSat, 'returnSat');
+            return returnSat;
+
+        } else {
+
+            satellites = Object.keys(this._satellites);
+            for (let i = 0; i < satellites.length; i++) {
+                if (satellites[i] === satelliteName) {
+                    returnSat = satellites[i];
+                }
+            }
+            console.log(returnSat, 'returnSat');
+            return returnSat;
+        }
+    }
+
     /**
      * @param {object} args - the satellite to display on and the sequence to display
      * @return {Promise} - a Promise that resolves when writing to peripheral.
      */
     displayLightSequence (args) {
-        const outboundTopic = `sat/${args.SATELLITE}/cmd/fx`;
+        const satellite = this.findSatelliteSerial(args.SATELLITE);
+        const outboundTopic = `sat/${satellite}/cmd/fx`;
         const string = [this._sequencesByName[args.SEQUENCE]];
         const utf8Encode = new TextEncoder();
         const arr = utf8Encode.encode(string);
