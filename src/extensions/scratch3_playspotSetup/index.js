@@ -127,29 +127,21 @@ class PlayspotSetup {
         };
 
         this._setupAliases = payload => {
-            const values = [];
-            const keys = [];
             const finalVariableValues = [];
             const stage = this._runtime.getTargetForStage();
             const decoder = new TextDecoder();
             const message = decoder.decode(payload);
             this._setupDictionary(message);
-            if (message.includes(',')) {
-                const splitMessage = message.split(',');
-                let messageLength = splitMessage.length;
-                let i = 0;
-                while (messageLength > 0) {
-                    const newVariable = splitMessage[i].split(':');
-                    const key = newVariable[0].trim();
-                    const value = newVariable[1].trim();
-                    keys.push(key);
-                    values.push(value);
-                    finalVariableValues.push(key);
-                    messageLength--;
-                    i++;
+            if (this._satellitesList.length > 1) {
+                for (let i = 0; i < this._satellitesList.length; i++) {
+                    const [key] = Object.entries(this._satellitesList[i]);
+                    const keyValue = `${key}`;
+                    const splitKeyValue = keyValue.split(',');
+                    const keyToPush = splitKeyValue[0];
+                    finalVariableValues.push(keyToPush);
                 }
                 const satsSorted = Object.keys(this._satellites).sort();
-                for (let j = 0; i < satsSorted.length; j++) {
+                for (let j = 0; j < satsSorted.length; j++) {
                     const match = this._matching(satsSorted[j]);
                     if (!match) {
                         finalVariableValues.push(satsSorted[j]);
@@ -160,15 +152,13 @@ class PlayspotSetup {
                 stage.variables[this._satId].value = finalVariableValues;
                 vm.refreshWorkspace();
             } else {
-                const splitMessage = message.split(':');
-                const key = splitMessage[0].trim();
-                const value = splitMessage[1].trim();
-                keys.push(key);
-                values.push(value);
-                finalVariableValues.push(key);
-                // const allSatsVariable = this._runtime.createNewGlobalVariable(`${key}`, false, Variable.SCALAR_TYPE);
-                // stage.variables[allSatsVariable.id].value = value;
-                
+                for (let i = 0; i < this._satellitesList.length; i++) {
+                    const [key] = Object.entries(this._satellitesList[i]);
+                    const keyValue = `${key}`;
+                    const splitKeyValue = keyValue.split(',');
+                    const keyToPush = splitKeyValue[0];
+                    finalVariableValues.push(keyToPush);
+                }
                 const satsSorted = Object.keys(this._satellites).sort();
                 for (let i = 0; i < satsSorted.length; i++) {
                     const match = this._matching(satsSorted[i]);
@@ -176,7 +166,6 @@ class PlayspotSetup {
                         finalVariableValues.push(satsSorted[i]);
                     }
                 }
-
                 stage.variables[this._satId].value = finalVariableValues;
                 vm.refreshWorkspace();
             }
@@ -186,8 +175,10 @@ class PlayspotSetup {
             let matching = false;
             const satellites = this._satellitesList;
             for (let i = 0; i < satellites.length; i++) {
-                const splitMessage = satellites[i].split(':');
-                const value = splitMessage[1].trim();
+                const [key] = Object.entries(this._satellitesList[i]);
+                const keyValue = `${key}`;
+                const splitKeyValue = keyValue.split(',');
+                const value = splitKeyValue[1];
                 if (satellite === value) {
                     matching = true;
                     return matching;
@@ -197,28 +188,20 @@ class PlayspotSetup {
         };
 
         this._setupDictionary = payload => {
-            if (payload) {
-                if (this._satellitesList.length > 0) {
-                    this._satellitesList = [];
-                }
-                // const decoder = new TextDecoder();
-                // const message = decoder.decode(payload);
-                if (payload.includes(',')) {
-                    const splitMessage = payload.split(',');
-                    let splitLength = splitMessage.length;
-                    let i = 0;
-                    while (splitLength > 0) {
-                        const l = splitMessage[i];
-                        this._satellitesList.push(l);
-                        splitLength--;
-                        i++;
-                    }
-                } else {
-                    this._satellitesList.push(payload);
-
-                }
+            if (this._satellitesList.length > 0) {
+                this._satellitesList = [];
             }
-            console.log(this._satellitesList, 'satelliteList');
+            if (payload.includes(',')) {
+                const splitMessage = payload.split(',');
+                for (let i = 0; i < splitMessage.length; i++) {
+                    const parsed = JSON.parse(splitMessage[i]);
+                    this._satellitesList.push(parsed);
+                }
+            } else {
+                const parsed = JSON.parse(payload);
+                this._satellitesList.push(parsed);
+            }
+            console.log(this._satellitesList, 'satelliteListFromDictionary');
         };
 
         this._firmwareHandler = payload => {
@@ -577,13 +560,13 @@ class Scratch3PlayspotSetup {
         let satellites = [];
         if (this._peripheral._satellitesList.length > 0) {
 
-            satellites = this._peripheral._satellitesList;
-            for (let i = 0; i < satellites.length; i++) {
-                const splitSat = satellites[i].split(':');
-                const key = splitSat[0].trim();
-                const value = splitSat[1].trim();
-                if (key === satelliteName) {
-                    returnSat = value;
+            for (let i = 0; i < this._peripheral._satellitesList.length; i++) {
+                const [key] = Object.entries(this._peripheral._satellitesList[i]);
+                const keyValue = `${key}`;
+                const splitKeyValue = keyValue.split(',');
+                const keyToCheck = splitKeyValue[0];
+                if (keyToCheck === satelliteName) {
+                    returnSat = splitKeyValue[1];
                 }
             }
 
@@ -609,40 +592,58 @@ class Scratch3PlayspotSetup {
         }
     }
 
-    // updateVariables (satellites) {
-    //     for (let i = 0; i < this._peripheral._satellitesList.length; i++) {
-    //         if (this._peripheral.includes(',')) {
-    //             const splitMessage = message.split(',');
-    //             let messageLength = splitMessage.length;
-    //             let i = 0;
-    //             while (messageLength > 0) {
-    //                 const newVariable = splitMessage[i].split(':');
-    //                 const key = newVariable[0].trim();
-    //                 const value = newVariable[1].trim();
-    //                 values.push(key);
-    //                 const allSatsVariable = this._runtime.createNewGlobalVariable(`${key}`, false, Variable.SCALAR_TYPE);
-    //                 stage.variables[allSatsVariable.id].value = value;
-    //                 messageLength--;
-    //                 i++;
+    // updateSatName (args, util) {
+    //     let satellites = [];
+    //     let newName = '';
+    //     let serialNumber = '';
+    //     if (args.SATELLITE !== ' ') {
+    //         serialNumber = this.findSatelliteSerial(args.SATELLITE);
+    //     }
+    //     if (args.NEWSAT !== 0 || args.NEWSAT !== ' ') {
+    //         newName = args.NEWSAT;
+    //     }
+    //     // const newSatVariable = {};
+    //     // newSatVariable[theKey] = theValue;
+    //     // this._satellitesList.push(newSatVariable);
+    //     // this._peripheral._setupAliases(this._peripheral._satellitesList);
+    //     // this._peripheral._client.publish(aliasesTopic, utf8Encode.encode(newSatVariable), options);
+    //     const newSatVariable = `${newName}: ${serialNumber}`;
+    //     if (serialNumber === '' || newName === ' ') {
+    //         return;
+    //     } else {
+    //         if (this._peripheral._satellitesList.length > 0) {
+    //             let matching = false;
+    //             satellites = this._peripheral._satellitesList;
+    //             for (let i = 0; i < satellites.length; i++) {
+    //                 const splitSat = satellites[i].split(':');
+    //                 const key = splitSat[0].trim();
+    //                 if (key === args.SATELLITE) {
+    //                     // index = i;
+    //                     matching = true;
+    //                     satellites.splice(i, 1, newSatVariable);
+    //                 }
+
     //             }
-    //             stage.variables[this._satId].value = values;
-    //             vm.refreshWorkspace();
+    //             if (!matching) {
+    //                 satellites.push(newSatVariable);
+    //             }
+
+    //             const utf8Encode = new TextEncoder();
+    //             const options = {retain: true, qos: 2};
+    //             const aliasesTopic = 'playspots/config/aliases';
+    //             this._peripheral._client.publish(aliasesTopic, utf8Encode.encode(satellites), options);
     //         } else {
-    //             const splitMessage = message.split(':');
-    //             const key = splitMessage[0].trim();
-    //             const value = splitMessage[1].trim();
-    //             console.log(key, 'key');
-    //             console.log(value, 'value');
-    //             console.log(splitMessage, 'splitMessage');
-    //             const allSatsVariable = this._runtime.createNewGlobalVariable(`${key}`, false, Variable.SCALAR_TYPE);
-    //             stage.variables[allSatsVariable.id].value = value;
-    //             vm.refreshWorkspace();
+    //             const utf8Encode = new TextEncoder();
+    //             const options = {retain: true, qos: 2};
+    //             const aliasesTopic = 'playspots/config/aliases';
+    //             this._peripheral._client.publish(aliasesTopic, utf8Encode.encode(newSatVariable), options);
     //         }
     //     }
     // }
 
     updateSatName (args, util) {
-        let satellites = [];
+        const sats = [];
+        const newSatVariable = {};
         let newName = '';
         let serialNumber = '';
         if (args.SATELLITE !== ' ') {
@@ -651,43 +652,55 @@ class Scratch3PlayspotSetup {
         if (args.NEWSAT !== 0 || args.NEWSAT !== ' ') {
             newName = args.NEWSAT;
         }
-        // const newSatVariable = {};
-        // newSatVariable[theKey] = theValue;
-        // this._satellitesList.push(newSatVariable);
-        // this._peripheral._setupAliases(this._peripheral._satellitesList);
-        // this._peripheral._client.publish(aliasesTopic, utf8Encode.encode(newSatVariable), options);
-        const newSatVariable = `${newName}: ${serialNumber}`;
         if (serialNumber === '' || newName === ' ') {
             return;
         } else {
             if (this._peripheral._satellitesList.length > 0) {
                 let matching = false;
-                satellites = this._peripheral._satellitesList;
-                for (let i = 0; i < satellites.length; i++) {
-                    const splitSat = satellites[i].split(':');
-                    const key = splitSat[0].trim();
-                    if (key === args.SATELLITE) {
-                        // index = i;
+                // const satellites = this._peripheral._satellitesList;
+                for (let i = 0; i < this._peripheral._satellitesList.length; i++) {
+                    // const splitSat = satellites[i].split(':');
+                    // const key = splitSat[0].trim();
+                    
+                    const [key] = Object.entries(this._peripheral._satellitesList[i]);
+                    const keyValue = `${key}`;
+                    const splitKeyValue = keyValue.split(',');
+                    const valueToCheck = splitKeyValue[1];
+                    const serial = this.findSatelliteSerial(args.SATELLITE);
+                    if (valueToCheck === serial) {
                         matching = true;
-                        satellites.splice(i, 1, newSatVariable);
+                        newSatVariable[newName] = serialNumber;
+                        this._peripheral._satellitesList.splice(i, 1, newSatVariable);
+                        sats.push(JSON.stringify(this._peripheral._satellitesList[i]));
+                    } else {
+                        sats.push(JSON.stringify(this._peripheral._satellitesList[i]));
                     }
-
                 }
                 if (!matching) {
-                    satellites.push(newSatVariable);
+                    newSatVariable[newName] = serialNumber;
+                    const data = JSON.stringify(newSatVariable);
+                    sats.push(data);
                 }
-
+                
                 const utf8Encode = new TextEncoder();
                 const options = {retain: true, qos: 2};
                 const aliasesTopic = 'playspots/config/aliases';
-                this._peripheral._client.publish(aliasesTopic, utf8Encode.encode(satellites), options);
+                this._peripheral._client.publish(aliasesTopic, utf8Encode.encode(sats), options);
+
             } else {
                 const utf8Encode = new TextEncoder();
                 const options = {retain: true, qos: 2};
                 const aliasesTopic = 'playspots/config/aliases';
-                this._peripheral._client.publish(aliasesTopic, utf8Encode.encode(newSatVariable), options);
+                newSatVariable[newName] = serialNumber;
+                const data = JSON.stringify(newSatVariable);
+                sats.push(data);
+                // const uint32array = new Uint32Array(buf);
+                this._peripheral._client.publish(aliasesTopic, utf8Encode.encode(sats), options);
             }
         }
+
+        console.log(this._peripheral._satellitesList, 'satList');
+        console.log(sats, 'sats');
     }
 
 }
