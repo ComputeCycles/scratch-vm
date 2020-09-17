@@ -201,7 +201,6 @@ class PlayspotSetup {
                 const parsed = JSON.parse(payload);
                 this._satellitesList.push(parsed);
             }
-            console.log(this._satellitesList, 'satelliteListFromDictionary');
         };
 
         this._firmwareHandler = payload => {
@@ -592,56 +591,7 @@ class Scratch3PlayspotSetup {
         }
     }
 
-    // updateSatName (args, util) {
-    //     let satellites = [];
-    //     let newName = '';
-    //     let serialNumber = '';
-    //     if (args.SATELLITE !== ' ') {
-    //         serialNumber = this.findSatelliteSerial(args.SATELLITE);
-    //     }
-    //     if (args.NEWSAT !== 0 || args.NEWSAT !== ' ') {
-    //         newName = args.NEWSAT;
-    //     }
-    //     // const newSatVariable = {};
-    //     // newSatVariable[theKey] = theValue;
-    //     // this._satellitesList.push(newSatVariable);
-    //     // this._peripheral._setupAliases(this._peripheral._satellitesList);
-    //     // this._peripheral._client.publish(aliasesTopic, utf8Encode.encode(newSatVariable), options);
-    //     const newSatVariable = `${newName}: ${serialNumber}`;
-    //     if (serialNumber === '' || newName === ' ') {
-    //         return;
-    //     } else {
-    //         if (this._peripheral._satellitesList.length > 0) {
-    //             let matching = false;
-    //             satellites = this._peripheral._satellitesList;
-    //             for (let i = 0; i < satellites.length; i++) {
-    //                 const splitSat = satellites[i].split(':');
-    //                 const key = splitSat[0].trim();
-    //                 if (key === args.SATELLITE) {
-    //                     // index = i;
-    //                     matching = true;
-    //                     satellites.splice(i, 1, newSatVariable);
-    //                 }
-
-    //             }
-    //             if (!matching) {
-    //                 satellites.push(newSatVariable);
-    //             }
-
-    //             const utf8Encode = new TextEncoder();
-    //             const options = {retain: true, qos: 2};
-    //             const aliasesTopic = 'playspots/config/aliases';
-    //             this._peripheral._client.publish(aliasesTopic, utf8Encode.encode(satellites), options);
-    //         } else {
-    //             const utf8Encode = new TextEncoder();
-    //             const options = {retain: true, qos: 2};
-    //             const aliasesTopic = 'playspots/config/aliases';
-    //             this._peripheral._client.publish(aliasesTopic, utf8Encode.encode(newSatVariable), options);
-    //         }
-    //     }
-    // }
-
-    updateSatName (args, util) {
+    updateSatName (args) {
         const sats = [];
         const newSatVariable = {};
         let newName = '';
@@ -657,10 +607,7 @@ class Scratch3PlayspotSetup {
         } else {
             if (this._peripheral._satellitesList.length > 0) {
                 let matching = false;
-                // const satellites = this._peripheral._satellitesList;
                 for (let i = 0; i < this._peripheral._satellitesList.length; i++) {
-                    // const splitSat = satellites[i].split(':');
-                    // const key = splitSat[0].trim();
                     
                     const [key] = Object.entries(this._peripheral._satellitesList[i]);
                     const keyValue = `${key}`;
@@ -694,13 +641,9 @@ class Scratch3PlayspotSetup {
                 newSatVariable[newName] = serialNumber;
                 const data = JSON.stringify(newSatVariable);
                 sats.push(data);
-                // const uint32array = new Uint32Array(buf);
                 this._peripheral._client.publish(aliasesTopic, utf8Encode.encode(sats), options);
             }
         }
-
-        console.log(this._peripheral._satellitesList, 'satList');
-        console.log(sats, 'sats');
     }
 
 }

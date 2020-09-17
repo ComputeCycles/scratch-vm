@@ -1422,7 +1422,6 @@ class Scratch3Satellite extends EventEmitter {
         const splitForLoopNum = splitArgs[0].split(':');
         loopAmount = splitForLoopNum[1].trim();
         const sat = require(`!raw-loader!./lightSequences/${splitArgs[1]}`);
-        console.log(splitArgs[1], 'sat');
         const split = sat.split('\n');
         const filtered = split.filter(e => e === 0 || e);
         seq = filtered.join(',');
