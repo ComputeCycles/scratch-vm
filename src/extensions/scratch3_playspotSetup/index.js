@@ -203,6 +203,61 @@ class PlayspotSetup {
             }
         };
 
+        this._setupGroups = (topic, payload) => {
+            const stage = this._runtime.getTargetForStage();
+            const decoder = new TextDecoder();
+            const message = decoder.decode(payload);
+            const splitTopic = topic.split('/');
+            const groupName = splitTopic[3];
+            if (message === 'placeholder') {
+                let group = stage.lookupVariableByNameAndType(`${groupName}`, Variable.LIST_TYPE);
+                if (!group) {
+                    group = this._runtime.createNewGlobalVariable(`${groupName}`, false, Variable.LIST_TYPE);
+                }
+                return;
+            }
+
+            const parsed = JSON.parse(message);
+            const newValue = Object.values(parsed);
+            console.log(newValue, 'newValue');
+            console.log(message, 'payload');
+            console.log(groupName, 'groupName');
+
+            if (newValue[0].includes(',')) {
+                const splitValues = newValue[0].split(',');
+                let group = stage.lookupVariableByNameAndType(`${groupName}`, Variable.LIST_TYPE);
+                if (!group) {
+                    group = this._runtime.createNewGlobalVariable(`${groupName}`, false, Variable.LIST_TYPE);
+                }
+                stage.variables[group.id].value = splitValues;
+            } else {
+                let group = stage.lookupVariableByNameAndType(`${groupName}`, Variable.LIST_TYPE);
+                if (!group) {
+                    group = this._runtime.createNewGlobalVariable(`${groupName}`, false, Variable.LIST_TYPE);
+                }
+                stage.variables[group.id].value = newValue;
+            }
+
+
+            // if (newValue.length === 1) {
+            //     let group = stage.lookupVariableByNameAndType(`${groupName}`, Variable.LIST_TYPE);
+            //     if (!group) {
+            //         group = this._runtime.createNewGlobalVariable(`${groupName}`, false, Variable.LIST_TYPE);
+            //     }
+            //     stage.variables[group.id].value = newValue[0];
+            // }
+
+            // if (newValue[0].length > 1) {
+            //     let group = stage.lookupVariableByNameAndType(`${groupName}`, Variable.LIST_TYPE);
+            //     if (!group) {
+            //         group = this._runtime.createNewGlobalVariable(`${groupName}`, false, Variable.LIST_TYPE);
+            //     }
+            //     stage.variables[group.id].value = newValue;
+            // }
+
+            vm.refreshWorkspace();
+        };
+
         this._firmwareHandler = payload => {
             // log.info(`firmware handler fired`);
             const json = JSON.parse(payload);
@@ -243,8 +298,10 @@ class PlayspotSetup {
                 this._presenceHandler(t[1], payload); // this is a presence message
             } else if (t[0] === 'app' && t[1] === 'menu' && t[2] === 'mode') {
                 this._modeHandler(payload); // this is a presence message
-            } else if (t[0] === 'playspots' && t[1] === 'config') {
+            } else if (t[0] === 'playspots' && t[1] === 'config' && t[2] === 'aliases') {
                 this._setupAliases(payload);
+            } else if (t[0] === 'playspots' && t[1] === 'config' && t[2] === 'groups') {
+                this._setupGroups(topic, payload);
             }
         };
 
@@ -284,6 +341,7 @@ class PlayspotSetup {
                 this._client.subscribe('fwserver/files');
                 this._client.subscribe('app/menu/mode');
                 this._client.subscribe('playspots/config/aliases');
+                this._client.subscribe('playspots/config/groups/+');
             }
 
             // Give everyone 5 seconds to report again
@@ -549,6 +607,32 @@ class Scratch3PlayspotSetup {
                             defaultValue: ' '
                         }
                     }
+                },
+                {
+                    opcode: 'createGrouping',
+                    text: 'Create a grouping with name [GROUP]',
+                    blockType: BlockType.COMMAND,
+                    arguments: {
+                        GROUP: {
+                            type: ArgumentType.STRING,
+                            defaultValue: ' '
+                        }
+                    }
+                },
+                {
+                    opcode: 'addToGrouping',
+                    text: 'Add [SATELLITE] to grouping [GROUP]',
+                    blockType: BlockType.COMMAND,
+                    agruments: {
+                        SATELLITE: {
+                            type: ArgumentType.STRING,
+                            defaultValue: ' '
+                        },
+                        GROUP: {
+                            type: ArgumentType.STRING,
+                            defaultValue: ' '
+                        }
+                    }
                 }
             ]
         };
@@ -644,6 +728,54 @@ class Scratch3PlayspotSetup {
                 this._peripheral._client.publish(aliasesTopic, utf8Encode.encode(sats), options);
             }
         }
+    }
+
+    createGrouping (args, util) {
+        const utf8Encode = new TextEncoder();
+        const options = {retain: true, qos: 2};
+        const aliasesTopic = `playspots/config/groups/${args.GROUP}`;
+        console.log(aliasesTopic, 'groupingTopic');
+        const placeholder = 'placeholder';
+        this._peripheral._client.publish(aliasesTopic, utf8Encode.encode(placeholder), options);
+    }
+
+    addToGrouping (args, util) {
+        const groupObject = {};
+        const values = [];
+        const stage = this._runtime.getTargetForStage();
+        const utf8Encode = new TextEncoder();
+        const options = {retain: true, qos: 2};
+        const aliasesTopic = `playspots/config/groups/${args.GROUP}`;
+        const group = stage.lookupVariableByNameAndType(`${args.GROUP}`, Variable.LIST_TYPE);
+        console.log(group, 'groupVar');
+        if (group) {
+            if (group.value.length === 0) {
+                values.push(args.SATELLITE);
+                console.log(values, 'values');
+                for (let i = 0; i < values.length; i++) {
+                    groupObject[args.GROUP] = values[i];
+                }
+            } else {
+                const oldValue = group.value;
+                console.log(oldValue, 'oldValue');
+                // oldValue.push(args.SATELLITE);
+                // console.log(oldValue, '2ndTime');
+                for (let i = 0; i < oldValue.length; i++) {
+                    values.push(oldValue[i]);
+                }
+                values.push(args.SATELLITE);
+                // for (let i = 0; i < values.length; i++) {
+                // }
+                const joinedArray = values.join(',');
+                // const stringToAdd = JSON.stringify(joinedArray);
+                groupObject[args.GROUP] = joinedArray;
+            }
+            console.log(groupObject, 'updatedGroupVar');
+        } else {
+            return;
+        }
+        const groupObjectString = JSON.stringify(groupObject);
+        this._peripheral._client.publish(aliasesTopic, utf8Encode.encode(groupObjectString), options);
     }
 
 }
