@@ -131,6 +131,16 @@ class PlayspotSetup {
             const stage = this._runtime.getTargetForStage();
             const decoder = new TextDecoder();
             const message = decoder.decode(payload);
+            if (message === 'placeholder') {
+                let allSats = stage.lookupVariableByNameAndType('All_Satellites', Variable.LIST_TYPE);
+                if (!allSats) {
+                    allSats = this._runtime.createNewGlobalVariable('All_Satellites', false, Variable.LIST_TYPE);
+                }
+                stage.variables[allSats.id].value = Object.keys(this._satellites);
+                vm.refreshWorkspace();
+                return;
+            }
+            
             this._setupDictionary(message);
             if (this._satellitesList.length > 1) {
                 for (let i = 0; i < this._satellitesList.length; i++) {
@@ -138,6 +148,11 @@ class PlayspotSetup {
                     const keyValue = `${key}`;
                     const splitKeyValue = keyValue.split(',');
                     const keyToPush = splitKeyValue[0];
+                    let variable = stage.lookupVariableByNameAndType(`${keyToPush}`, Variable.LIST_TYPE);
+                    if (!variable) {
+                        variable = this._runtime.createNewGlobalVariable(`${keyToPush}`, Variable.SCALAR_TYPE);
+                        stage.variables[variable.id].value = keyToPush;
+                    }
                     finalVariableValues.push(keyToPush);
                 }
                 const satsSorted = Object.keys(this._satellites).sort();
@@ -148,7 +163,6 @@ class PlayspotSetup {
                     }
                 }
 
-                
                 stage.variables[this._satId].value = finalVariableValues;
                 vm.refreshWorkspace();
             } else {
@@ -169,6 +183,7 @@ class PlayspotSetup {
                 stage.variables[this._satId].value = finalVariableValues;
                 vm.refreshWorkspace();
             }
+            vm.refreshWorkspace();
         };
 
         this._matching = satellite => {
@@ -209,6 +224,16 @@ class PlayspotSetup {
             const message = decoder.decode(payload);
             const splitTopic = topic.split('/');
             const groupName = splitTopic[3];
+            if (message === ' ') {
+                const group = stage.lookupVariableByNameAndType(`${groupName}`, Variable.LIST_TYPE);
+                if (group) {
+                    stage.deleteVariable(group.id);
+                    vm.refreshWorkspace();
+                } else {
+                    return;
+                }
+                return;
+            }
             if (message === 'placeholder') {
                 let group = stage.lookupVariableByNameAndType(`${groupName}`, Variable.LIST_TYPE);
                 if (!group) {
@@ -219,9 +244,6 @@ class PlayspotSetup {
 
             const parsed = JSON.parse(message);
             const newValue = Object.values(parsed);
-            console.log(newValue, 'newValue');
-            console.log(message, 'payload');
-            console.log(groupName, 'groupName');
 
             if (newValue[0].includes(',')) {
                 const splitValues = newValue[0].split(',');
@@ -237,24 +259,6 @@ class PlayspotSetup {
                 }
                 stage.variables[group.id].value = newValue;
             }
-
-
-            // if (newValue.length === 1) {
-            //     let group = stage.lookupVariableByNameAndType(`${groupName}`, Variable.LIST_TYPE);
-            //     if (!group) {
-            //         group = this._runtime.createNewGlobalVariable(`${groupName}`, false, Variable.LIST_TYPE);
-            //     }
-            //     stage.variables[group.id].value = newValue[0];
-            // }
-
-            // if (newValue[0].length > 1) {
-            //     let group = stage.lookupVariableByNameAndType(`${groupName}`, Variable.LIST_TYPE);
-            //     if (!group) {
-            //         group = this._runtime.createNewGlobalVariable(`${groupName}`, false, Variable.LIST_TYPE);
-            //     }
-            //     stage.variables[group.id].value = newValue;
-            // }
-
             vm.refreshWorkspace();
         };
 
@@ -538,14 +542,14 @@ class Scratch3PlayspotSetup {
      * @return {string} - the name of this extension.
      */
     static get EXTENSION_NAME () {
-        return 'PlayspotSetup';
+        return 'PlaySpots Setup';
     }
 
     /**
      * @return {string} - the ID of this extension.
      */
     static get EXTENSION_ID () {
-        return 'playspotSetup';
+        return 'PlaySpotsSetup';
     }
     
     /**
@@ -587,6 +591,9 @@ class Scratch3PlayspotSetup {
         const defaultSatellite =
           Object.keys(this._peripheral._satellites).length === 0 ?
               NOT_FOUND : this._peripheral._satellites[Object.keys(this._peripheral._satellites)[0]];
+        const defaultName =
+          Object.keys(this._peripheral._satellitesList).length === 0 ?
+              NOT_FOUND : this._peripheral._satellitesList[Object.keys(this._peripheral._satellitesList)[0]];
         return {
             id: Scratch3PlayspotSetup.EXTENSION_ID,
             name: Scratch3PlayspotSetup.EXTENSION_NAME,
@@ -605,6 +612,17 @@ class Scratch3PlayspotSetup {
                         NEWSAT: {
                             type: ArgumentType.STRING,
                             defaultValue: ' '
+                        }
+                    }
+                },
+                {
+                    opcode: 'deleteAlias',
+                    text: 'Delete Satellite Name [SATELLITE]',
+                    blockType: BlockType.COMMAND,
+                    arguments: {
+                        SATELLITE: {
+                            type: ArgumentType.STRING,
+                            defaultValue: defaultName
                         }
                     }
                 },
@@ -628,6 +646,17 @@ class Scratch3PlayspotSetup {
                             type: ArgumentType.STRING,
                             defaultValue: ' '
                         },
+                        GROUP: {
+                            type: ArgumentType.STRING,
+                            defaultValue: ' '
+                        }
+                    }
+                },
+                {
+                    opcode: 'deleteAGrouping',
+                    text: 'Delete Grouping [GROUP]',
+                    blockType: BlockType.COMMAND,
+                    arguments: {
                         GROUP: {
                             type: ArgumentType.STRING,
                             defaultValue: ' '
@@ -730,16 +759,66 @@ class Scratch3PlayspotSetup {
         }
     }
 
-    createGrouping (args, util) {
+    deleteAlias (args) {
         const utf8Encode = new TextEncoder();
         const options = {retain: true, qos: 2};
-        const aliasesTopic = `playspots/config/groups/${args.GROUP}`;
-        console.log(aliasesTopic, 'groupingTopic');
-        const placeholder = 'placeholder';
-        this._peripheral._client.publish(aliasesTopic, utf8Encode.encode(placeholder), options);
+        const aliasesTopic = 'playspots/config/aliases';
+        const satToChange = args.SATELLITE;
+        console.log(satToChange, 'satToChange');
+        const sats = this._peripheral._satellitesList;
+        let satsMessage = [];
+        let changedKey = '';
+        let index = 0;
+        const message = 'placeholder';
+        console.log(this._peripheral._satellitesList, 'satList');
+        for (let i = 0; i < sats.length; i++) {
+            if (satToChange === Object.keys(sats[i])[0]) {
+                changedKey = Object.values(sats[i])[0];
+                index = i;
+                console.log(changedKey, 'matched');
+            }
+        }
+        sats.splice(index, 1);
+        if (sats.length === 0) {
+            if (args.SATELLITE !== ' ') {
+                this._peripheral._client.publish(aliasesTopic, utf8Encode.encode(message), options);
+            }
+        } else {
+            if (args.SATELLITE !== ' ') {
+                for (let i = 0; i < sats.length; i++) {
+                    const satsObject = JSON.stringify(sats[i]);
+                    satsMessage.push(satsObject);
+                }
+                this._peripheral._client.publish(aliasesTopic, utf8Encode.encode(satsMessage), options);
+            }
+        }
+        console.log(satsMessage, 'message');
+        console.log(sats, 'sats');
     }
 
-    addToGrouping (args, util) {
+    createGrouping (args) {
+        let groupName = '';
+        const utf8Encode = new TextEncoder();
+        const options = {retain: true, qos: 2};
+
+        if (args.GROUP === ' ') {
+            return;
+        } else {
+            groupName = args.GROUP;
+        }
+
+        console.log(groupName, 'groupName');
+        const aliasesTopic = `playspots/config/groups/${groupName}`;
+        console.log(aliasesTopic, 'topic');
+        const placeholder = 'placeholder';
+
+        if (groupName !== '') {
+            this._peripheral._client.publish(aliasesTopic, utf8Encode.encode(placeholder), options);
+            console.log('hit here');
+        }
+    }
+
+    addToGrouping (args) {
         const groupObject = {};
         const values = [];
         const stage = this._runtime.getTargetForStage();
@@ -751,31 +830,40 @@ class Scratch3PlayspotSetup {
         if (group) {
             if (group.value.length === 0) {
                 values.push(args.SATELLITE);
-                console.log(values, 'values');
                 for (let i = 0; i < values.length; i++) {
                     groupObject[args.GROUP] = values[i];
                 }
             } else {
                 const oldValue = group.value;
-                console.log(oldValue, 'oldValue');
-                // oldValue.push(args.SATELLITE);
-                // console.log(oldValue, '2ndTime');
                 for (let i = 0; i < oldValue.length; i++) {
                     values.push(oldValue[i]);
                 }
                 values.push(args.SATELLITE);
-                // for (let i = 0; i < values.length; i++) {
-                // }
                 const joinedArray = values.join(',');
-                // const stringToAdd = JSON.stringify(joinedArray);
                 groupObject[args.GROUP] = joinedArray;
             }
             console.log(groupObject, 'updatedGroupVar');
         } else {
             return;
         }
-        const groupObjectString = JSON.stringify(groupObject);
-        this._peripheral._client.publish(aliasesTopic, utf8Encode.encode(groupObjectString), options);
+        if (args.GROUP !== ' ' && args.SATELLITE !== ' ') {
+            const groupObjectString = JSON.stringify(groupObject);
+            this._peripheral._client.publish(aliasesTopic, utf8Encode.encode(groupObjectString), options);
+        }
+    }
+
+    deleteAGrouping (args) {
+        const message = ' ';
+        let group = '';
+        const options = {retain: true, qos: 2};
+        if (args.GROUP !== ' ') {
+            group = args.GROUP;
+        }
+        const groupTopic = `playspots/config/groups/${group}`;
+        console.log(groupTopic, 'topic');
+        if (group !== '') {
+            this._peripheral._client.publish(groupTopic, message, options);
+        }
     }
 
 }

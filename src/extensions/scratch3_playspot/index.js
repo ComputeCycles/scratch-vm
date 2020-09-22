@@ -227,6 +227,11 @@ class Playspot {
                     const keyValue = `${key}`;
                     const splitKeyValue = keyValue.split(',');
                     const keyToPush = splitKeyValue[0];
+                    let variable = stage.lookupVariableByNameAndType(`${keyToPush}`, Variable.LIST_TYPE);
+                    if (!variable) {
+                        variable = this._runtime.createNewGlobalVariable(`${keyToPush}`, Variable.SCALAR_TYPE);
+                        stage.variables[variable.id].value = keyToPush;
+                    }
                     finalVariableValues.push(keyToPush);
                 }
                 const satsSorted = Object.keys(this._satellites).sort();
@@ -293,6 +298,50 @@ class Playspot {
             console.log(this._satellitesList, 'satelliteListFromDictionary');
         };
 
+        this._setupGroups = (topic, payload) => {
+            const stage = this._runtime.getTargetForStage();
+            const decoder = new TextDecoder();
+            const message = decoder.decode(payload);
+            const splitTopic = topic.split('/');
+            const groupName = splitTopic[3];
+            if (message === ' ') {
+                const group = stage.lookupVariableByNameAndType(`${groupName}`, Variable.LIST_TYPE);
+                if (group) {
+                    stage.deleteVariable(group.id);
+                    vm.refreshWorkspace();
+                } else {
+                    return;
+                }
+                return;
+            }
+            if (message === 'placeholder') {
+                let group = stage.lookupVariableByNameAndType(`${groupName}`, Variable.LIST_TYPE);
+                if (!group) {
+                    group = this._runtime.createNewGlobalVariable(`${groupName}`, false, Variable.LIST_TYPE);
+                }
+                return;
+            }
+
+            const parsed = JSON.parse(message);
+            const newValue = Object.values(parsed);
+
+            if (newValue[0].includes(',')) {
+                const splitValues = newValue[0].split(',');
+                let group = stage.lookupVariableByNameAndType(`${groupName}`, Variable.LIST_TYPE);
+                if (!group) {
+                    group = this._runtime.createNewGlobalVariable(`${groupName}`, false, Variable.LIST_TYPE);
+                }
+                stage.variables[group.id].value = splitValues;
+            } else {
+                let group = stage.lookupVariableByNameAndType(`${groupName}`, Variable.LIST_TYPE);
+                if (!group) {
+                    group = this._runtime.createNewGlobalVariable(`${groupName}`, false, Variable.LIST_TYPE);
+                }
+                stage.variables[group.id].value = newValue;
+            }
+            vm.refreshWorkspace();
+        };
+
         this._firmwareHandler = payload => {
             // log.info(`firmware handler fired`);
             const json = JSON.parse(payload);
@@ -333,8 +382,10 @@ class Playspot {
                 this._presenceHandler(t[1], payload); // this is a presence message
             } else if (t[0] === 'app' && t[1] === 'menu' && t[2] === 'mode') {
                 this._modeHandler(payload); // this is a presence message
-            } else if (t[0] === 'playspots' && t[1] === 'config') {
+            } else if (t[0] === 'playspots' && t[1] === 'config' && t[2] === 'aliases') {
                 this._setupAliases(payload);
+            } else if (t[0] === 'playspots' && t[1] === 'config' && t[2] === 'groups') {
+                this._setupGroups(topic, payload);
             }
         };
 
@@ -374,6 +425,7 @@ class Playspot {
                 this._client.subscribe('fwserver/files');
                 this._client.subscribe('app/menu/mode');
                 this._client.subscribe('playspots/config/aliases');
+                this._client.subscribe('playspots/config/groups/+');
             }
 
             // Give everyone 5 seconds to report again
@@ -885,14 +937,14 @@ class Scratch3PlayspotBlocks {
      * @return {string} - the name of this extension.
      */
     static get EXTENSION_NAME () {
-        return 'Playspot';
+        return 'PlaySpots';
     }
 
     /**
      * @return {string} - the ID of this extension.
      */
     static get EXTENSION_ID () {
-        return 'playspot';
+        return 'PlaySpots';
     }
 
     get MODES () {
