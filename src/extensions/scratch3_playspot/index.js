@@ -220,6 +220,16 @@ class Playspot {
             const stage = this._runtime.getTargetForStage();
             const decoder = new TextDecoder();
             const message = decoder.decode(payload);
+            if (message === 'placeholder') {
+                let allSats = stage.lookupVariableByNameAndType('All_Satellites', Variable.LIST_TYPE);
+                if (!allSats) {
+                    allSats = this._runtime.createNewGlobalVariable('All_Satellites', false, Variable.LIST_TYPE);
+                }
+                stage.variables[allSats.id].value = Object.keys(this._satellites);
+                vm.refreshWorkspace();
+                return;
+            }
+            
             this._setupDictionary(message);
             if (this._satellitesList.length > 1) {
                 for (let i = 0; i < this._satellitesList.length; i++) {
