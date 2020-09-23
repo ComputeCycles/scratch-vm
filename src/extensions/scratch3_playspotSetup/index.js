@@ -148,7 +148,7 @@ class PlayspotSetup {
                     const keyValue = `${key}`;
                     const splitKeyValue = keyValue.split(',');
                     const keyToPush = splitKeyValue[0];
-                    let variable = stage.lookupVariableByNameAndType(`${keyToPush}`, Variable.LIST_TYPE);
+                    let variable = stage.lookupVariableByNameAndType(`${keyToPush}`, Variable.SCALAR_TYPE);
                     if (!variable) {
                         variable = this._runtime.createNewGlobalVariable(`${keyToPush}`, Variable.SCALAR_TYPE);
                         stage.variables[variable.id].value = keyToPush;

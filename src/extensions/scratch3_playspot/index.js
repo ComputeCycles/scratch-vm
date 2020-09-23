@@ -237,7 +237,7 @@ class Playspot {
                     const keyValue = `${key}`;
                     const splitKeyValue = keyValue.split(',');
                     const keyToPush = splitKeyValue[0];
-                    let variable = stage.lookupVariableByNameAndType(`${keyToPush}`, Variable.LIST_TYPE);
+                    let variable = stage.lookupVariableByNameAndType(`${keyToPush}`, Variable.SCALAR_TYPE);
                     if (!variable) {
                         variable = this._runtime.createNewGlobalVariable(`${keyToPush}`, Variable.SCALAR_TYPE);
                         stage.variables[variable.id].value = keyToPush;
@@ -305,7 +305,6 @@ class Playspot {
                 const parsed = JSON.parse(payload);
                 this._satellitesList.push(parsed);
             }
-            console.log(this._satellitesList, 'satelliteListFromDictionary');
         };
 
         this._setupGroups = (topic, payload) => {
@@ -1481,8 +1480,12 @@ class Scratch3PlayspotBlocks {
      * @param {object} args - a satellite id and a light sequence id.
      */
     displayLightSequence (args) {
-        if (this._peripheral.isConnected) {
-            this._peripheral.displayLightSequence(args);
+        if (this._peripheral.isConnected && args.SATELLITE && args.SEQUENCE) {
+            const sats = args.SATELLITE.split(' ');
+            for (let i = 0; i < sats.length; i++) {
+                const cmd = {SATELLITE: sats[i], SEQUENCE: args.SEQUENCE};
+                this._peripheral.displayLightSequence(cmd);
+            }
         }
     }
 
