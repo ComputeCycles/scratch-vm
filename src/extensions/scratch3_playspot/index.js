@@ -1134,6 +1134,29 @@ class Scratch3PlayspotBlocks {
                     }
                 },
                 {
+                    opcode: 'whenGameModeEquals',
+                    text: 'When game mode changes to: [MODE]',
+                    blockType: BlockType.HAT,
+                    arguments: {
+                        MODE: {
+                            type: ArgumentType.STRING,
+                            menu: 'modes',
+                            defaultValue: 'Unknown'
+                        }
+                    }
+                }, {
+                    opcode: 'isGameModeEqual',
+                    text: 'When the game mode equals: [MODE]',
+                    blockType: BlockType.BOOLEAN,
+                    arguments: {
+                        MODE: {
+                            type: ArgumentType.STRING,
+                            menu: 'modes',
+                            defaultValue: 'Unknown'
+                        }
+                    }
+                },
+                {
                     opcode: 'displayLightSequence',
                     text: '[SEQUENCE] lights on [SATELLITE]',
                     blockType: BlockType.COMMAND,
