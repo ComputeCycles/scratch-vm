@@ -953,7 +953,7 @@ class Scratch3PlayspotBlocks {
      * @return {string} - the ID of this extension.
      */
     static get EXTENSION_ID () {
-        return 'PlaySpots';
+        return 'playspot';
     }
 
     get MODES () {

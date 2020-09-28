@@ -239,6 +239,11 @@ class PlayspotSetup {
                 if (!group) {
                     group = this._runtime.createNewGlobalVariable(`${groupName}`, false, Variable.LIST_TYPE);
                 }
+                let groupVar = stage.lookupVariableByNameAndType(`${groupName}`, Variable.SCALAR_TYPE);
+                if (!groupVar) {
+                    groupVar = this._runtime.createNewGlobalVariable(`${groupName}`, false, Variable.SCALAR_TYPE);
+                }
+                stage.variables[groupVar.id].value = groupName;
                 return;
             }
 
@@ -252,12 +257,22 @@ class PlayspotSetup {
                     group = this._runtime.createNewGlobalVariable(`${groupName}`, false, Variable.LIST_TYPE);
                 }
                 stage.variables[group.id].value = splitValues;
+                let groupVar = stage.lookupVariableByNameAndType(`${groupName}`, Variable.SCALAR_TYPE);
+                if (!groupVar) {
+                    groupVar = this._runtime.createNewGlobalVariable(`${groupName}`, false, Variable.SCALAR_TYPE);
+                }
+                stage.variables[groupVar.id].value = groupName;
             } else {
                 let group = stage.lookupVariableByNameAndType(`${groupName}`, Variable.LIST_TYPE);
                 if (!group) {
                     group = this._runtime.createNewGlobalVariable(`${groupName}`, false, Variable.LIST_TYPE);
                 }
                 stage.variables[group.id].value = newValue;
+                let groupVar = stage.lookupVariableByNameAndType(`${groupName}`, Variable.SCALAR_TYPE);
+                if (!groupVar) {
+                    groupVar = this._runtime.createNewGlobalVariable(`${groupName}`, false, Variable.SCALAR_TYPE);
+                }
+                stage.variables[groupVar.id].value = groupName;
             }
             vm.refreshWorkspace();
         };
@@ -549,7 +564,7 @@ class Scratch3PlayspotSetup {
      * @return {string} - the ID of this extension.
      */
     static get EXTENSION_ID () {
-        return 'PlaySpotsSetup';
+        return 'playspotsSetup';
     }
     
     /**
@@ -764,18 +779,15 @@ class Scratch3PlayspotSetup {
         const options = {retain: true, qos: 2};
         const aliasesTopic = 'playspots/config/aliases';
         const satToChange = args.SATELLITE;
-        console.log(satToChange, 'satToChange');
         const sats = this._peripheral._satellitesList;
         let satsMessage = [];
         let changedKey = '';
         let index = 0;
         const message = 'placeholder';
-        console.log(this._peripheral._satellitesList, 'satList');
         for (let i = 0; i < sats.length; i++) {
             if (satToChange === Object.keys(sats[i])[0]) {
                 changedKey = Object.values(sats[i])[0];
                 index = i;
-                console.log(changedKey, 'matched');
             }
         }
         sats.splice(index, 1);
@@ -792,8 +804,7 @@ class Scratch3PlayspotSetup {
                 this._peripheral._client.publish(aliasesTopic, utf8Encode.encode(satsMessage), options);
             }
         }
-        console.log(satsMessage, 'message');
-        console.log(sats, 'sats');
+
     }
 
     createGrouping (args) {
@@ -807,14 +818,11 @@ class Scratch3PlayspotSetup {
             groupName = args.GROUP;
         }
 
-        console.log(groupName, 'groupName');
         const aliasesTopic = `playspots/config/groups/${groupName}`;
-        console.log(aliasesTopic, 'topic');
         const placeholder = 'placeholder';
 
         if (groupName !== '') {
             this._peripheral._client.publish(aliasesTopic, utf8Encode.encode(placeholder), options);
-            console.log('hit here');
         }
     }
 
@@ -826,7 +834,6 @@ class Scratch3PlayspotSetup {
         const options = {retain: true, qos: 2};
         const aliasesTopic = `playspots/config/groups/${args.GROUP}`;
         const group = stage.lookupVariableByNameAndType(`${args.GROUP}`, Variable.LIST_TYPE);
-        console.log(group, 'groupVar');
         if (group) {
             if (group.value.length === 0) {
                 values.push(args.SATELLITE);
@@ -842,7 +849,6 @@ class Scratch3PlayspotSetup {
                 const joinedArray = values.join(',');
                 groupObject[args.GROUP] = joinedArray;
             }
-            console.log(groupObject, 'updatedGroupVar');
         } else {
             return;
         }
@@ -860,7 +866,6 @@ class Scratch3PlayspotSetup {
             group = args.GROUP;
         }
         const groupTopic = `playspots/config/groups/${group}`;
-        console.log(groupTopic, 'topic');
         if (group !== '') {
             this._peripheral._client.publish(groupTopic, message, options);
         }
