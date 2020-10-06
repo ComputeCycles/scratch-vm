@@ -137,7 +137,6 @@ class PlayspotSetup {
                     allSats = this._runtime.createNewGlobalVariable('All_Satellites', false, Variable.LIST_TYPE);
                 }
                 stage.variables[allSats.id].value = Object.keys(this._satellites);
-                vm.refreshWorkspace();
                 return;
             }
             
@@ -150,8 +149,10 @@ class PlayspotSetup {
                     const keyToPush = splitKeyValue[0];
                     let variable = stage.lookupVariableByNameAndType(`${keyToPush}`, Variable.SCALAR_TYPE);
                     if (!variable) {
-                        variable = this._runtime.createNewGlobalVariable(`${keyToPush}`, Variable.SCALAR_TYPE);
-                        stage.variables[variable.id].value = keyToPush;
+                        variable = vm.workspace.createVariable(`${keyToPush}`, Variable.SCALAR_TYPE, false, false);
+                        const id = variable.id_;
+                        const newVariable = stage.lookupOrCreateVariable(id, `${keyToPush}`);
+                        stage.variables[newVariable.id].value = keyToPush;
                     }
                     finalVariableValues.push(keyToPush);
                 }
@@ -164,13 +165,20 @@ class PlayspotSetup {
                 }
 
                 stage.variables[this._satId].value = finalVariableValues;
-                vm.refreshWorkspace();
+                // vm.refreshWorkspace();
             } else {
                 for (let i = 0; i < this._satellitesList.length; i++) {
                     const [key] = Object.entries(this._satellitesList[i]);
                     const keyValue = `${key}`;
                     const splitKeyValue = keyValue.split(',');
                     const keyToPush = splitKeyValue[0];
+                    let variable = stage.lookupVariableByNameAndType(`${keyToPush}`, Variable.SCALAR_TYPE);
+                    if (!variable) {
+                        variable = vm.workspace.createVariable(`${keyToPush}`, Variable.SCALAR_TYPE, false, false);
+                        const id = variable.id_;
+                        const newVariable = stage.lookupOrCreateVariable(id, `${keyToPush}`);
+                        stage.variables[newVariable.id].value = keyToPush;
+                    }
                     finalVariableValues.push(keyToPush);
                 }
                 const satsSorted = Object.keys(this._satellites).sort();
@@ -181,9 +189,7 @@ class PlayspotSetup {
                     }
                 }
                 stage.variables[this._satId].value = finalVariableValues;
-                vm.refreshWorkspace();
             }
-            vm.refreshWorkspace();
         };
 
         this._matching = satellite => {
@@ -224,26 +230,33 @@ class PlayspotSetup {
             const message = decoder.decode(payload);
             const splitTopic = topic.split('/');
             const groupName = splitTopic[3];
+            const groupNameForList = `${splitTopic[3]} Grouping`;
+
             if (message === ' ') {
-                const group = stage.lookupVariableByNameAndType(`${groupName}`, Variable.LIST_TYPE);
+                const group = stage.lookupVariableByNameAndType(`${groupNameForList}`, Variable.LIST_TYPE);
+                const groupVar = stage.lookupVariableByNameAndType(`${groupName}`, Variable.SCALAR_TYPE);
                 if (group) {
-                    stage.deleteVariable(group.id);
-                    vm.refreshWorkspace();
+                    vm.workspace.deleteVariableById(group.id);
+                    vm.workspace.deleteVariableById(groupVar.id);
                 } else {
                     return;
                 }
                 return;
             }
+
             if (message === 'placeholder') {
-                let group = stage.lookupVariableByNameAndType(`${groupName}`, Variable.LIST_TYPE);
+                let group = stage.lookupVariableByNameAndType(`${groupNameForList}`, Variable.LIST_TYPE);
                 if (!group) {
-                    group = this._runtime.createNewGlobalVariable(`${groupName}`, false, Variable.LIST_TYPE);
+                    group = vm.workspace.createVariable(`${groupNameForList}`, Variable.LIST_TYPE, false, false);
                 }
+
                 let groupVar = stage.lookupVariableByNameAndType(`${groupName}`, Variable.SCALAR_TYPE);
                 if (!groupVar) {
-                    groupVar = this._runtime.createNewGlobalVariable(`${groupName}`, false, Variable.SCALAR_TYPE);
+                    groupVar = vm.workspace.createVariable(`${groupName}`, Variable.SCALAR_TYPE, false, false);
+                    const id = groupVar.id_;
+                    const newVariable = stage.lookupOrCreateVariable(id, `${groupName}`);
+                    stage.variables[newVariable.id].value = groupName;
                 }
-                stage.variables[groupVar.id].value = groupName;
                 return;
             }
 
@@ -252,29 +265,45 @@ class PlayspotSetup {
 
             if (newValue[0].includes(',')) {
                 const splitValues = newValue[0].split(',');
-                let group = stage.lookupVariableByNameAndType(`${groupName}`, Variable.LIST_TYPE);
-                if (!group) {
-                    group = this._runtime.createNewGlobalVariable(`${groupName}`, false, Variable.LIST_TYPE);
+                let group = stage.lookupVariableByNameAndType(`${groupNameForList}`, Variable.LIST_TYPE);
+                if (group) {
+                    stage.variables[group.id].value = splitValues;
+                } else {
+                    group = vm.workspace.createVariable(`${groupNameForList}`, Variable.LIST_TYPE, false, false);
+                    newVariable = stage.lookupOrCreateList(group.id_, `${groupNameForList}`);
+                    stage.variables[newVariable.id].value = splitValues;
                 }
-                stage.variables[group.id].value = splitValues;
+
                 let groupVar = stage.lookupVariableByNameAndType(`${groupName}`, Variable.SCALAR_TYPE);
-                if (!groupVar) {
-                    groupVar = this._runtime.createNewGlobalVariable(`${groupName}`, false, Variable.SCALAR_TYPE);
+                if (groupVar) {
+                    stage.variables[groupVar.id].value = groupName;
+                } else {
+                    groupVar = vm.workspace.createVariable(`${groupName}`, Variable.SCALAR_TYPE, false, false);
+                    id = groupVar.id_;
+                    const newVariable = stage.lookupOrCreateVariable(id, `${groupName}`);
+                    stage.variables[newVariable.id].value = groupName;
                 }
-                stage.variables[groupVar.id].value = groupName;
+
             } else {
-                let group = stage.lookupVariableByNameAndType(`${groupName}`, Variable.LIST_TYPE);
-                if (!group) {
-                    group = this._runtime.createNewGlobalVariable(`${groupName}`, false, Variable.LIST_TYPE);
-                }
-                stage.variables[group.id].value = newValue;
                 let groupVar = stage.lookupVariableByNameAndType(`${groupName}`, Variable.SCALAR_TYPE);
-                if (!groupVar) {
-                    groupVar = this._runtime.createNewGlobalVariable(`${groupName}`, false, Variable.SCALAR_TYPE);
+                if (groupVar) {
+                    stage.variables[groupVar.id].value = groupName;
+                } else {
+                    groupVar = vm.workspace.createVariable(`${groupName}`, Variable.SCALAR_TYPE, null, false, false);
+                    id = groupVar.id_;
+                    newVariable = stage.lookupVariableByNameAndType(`${groupName}`, Variable.SCALAR_TYPE);
+                    stage.variables[newVariable.id].value = groupName;
                 }
-                stage.variables[groupVar.id].value = groupName;
+
+                let group = stage.lookupVariableByNameAndType(`${groupNameForList}`, Variable.LIST_TYPE);
+                if (group) {
+                    stage.variables[group.id].value = newValue;
+                } else {
+                    group = vm.workspace.createVariable(`${groupNameForList}`, Variable.LIST_TYPE, null, false, false);
+                    newVariable = stage.lookupOrCreateList(group.id_, `${groupNameForList}`);
+                    stage.variables[newVariable.id].value = newValue;
+                }
             }
-            vm.refreshWorkspace();
         };
 
         this._firmwareHandler = payload => {
@@ -578,6 +607,19 @@ class Scratch3PlayspotSetup {
                 value: currentValue
             }));
     }
+
+    get ALIASES () {
+        const sats = [];
+        this._peripheral._satellitesList.map(current =>
+            sats.push(Object.keys(current)[0])
+        );
+        return this._peripheral._satellitesList.length === 0 ?
+            [{text: NOT_FOUND, value: NOT_FOUND}] :
+            sats.map(currentValue => ({
+                text: currentValue,
+                value: currentValue
+            }));
+    }
       
     /**
      * Construct a set of Playspot blocks.
@@ -606,9 +648,6 @@ class Scratch3PlayspotSetup {
         const defaultSatellite =
           Object.keys(this._peripheral._satellites).length === 0 ?
               NOT_FOUND : this._peripheral._satellites[Object.keys(this._peripheral._satellites)[0]];
-        const defaultName =
-          Object.keys(this._peripheral._satellitesList).length === 0 ?
-              NOT_FOUND : this._peripheral._satellitesList[Object.keys(this._peripheral._satellitesList)[0]];
         return {
             id: Scratch3PlayspotSetup.EXTENSION_ID,
             name: Scratch3PlayspotSetup.EXTENSION_NAME,
@@ -637,7 +676,7 @@ class Scratch3PlayspotSetup {
                     arguments: {
                         SATELLITE: {
                             type: ArgumentType.STRING,
-                            defaultValue: defaultName
+                            defaultValue: ' '
                         }
                     }
                 },
@@ -780,7 +819,7 @@ class Scratch3PlayspotSetup {
         const aliasesTopic = 'playspots/config/aliases';
         const satToChange = args.SATELLITE;
         const sats = this._peripheral._satellitesList;
-        let satsMessage = [];
+        const satsMessage = [];
         let changedKey = '';
         let index = 0;
         const message = 'placeholder';
@@ -832,8 +871,9 @@ class Scratch3PlayspotSetup {
         const stage = this._runtime.getTargetForStage();
         const utf8Encode = new TextEncoder();
         const options = {retain: true, qos: 2};
+        const grouping = `${args.GROUP} Grouping`;
         const aliasesTopic = `playspots/config/groups/${args.GROUP}`;
-        const group = stage.lookupVariableByNameAndType(`${args.GROUP}`, Variable.LIST_TYPE);
+        const group = stage.lookupVariableByNameAndType(`${grouping}`, Variable.LIST_TYPE);
         if (group) {
             if (group.value.length === 0) {
                 values.push(args.SATELLITE);
@@ -869,6 +909,7 @@ class Scratch3PlayspotSetup {
         if (group !== '') {
             this._peripheral._client.publish(groupTopic, message, options);
         }
+        console.log(vm.workspace, 'workspace');
     }
 
 }
