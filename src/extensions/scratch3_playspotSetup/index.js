@@ -165,7 +165,6 @@ class PlayspotSetup {
                 }
 
                 stage.variables[this._satId].value = finalVariableValues;
-                // vm.refreshWorkspace();
             } else {
                 for (let i = 0; i < this._satellitesList.length; i++) {
                     const [key] = Object.entries(this._satellitesList[i]);
