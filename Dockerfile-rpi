@@ -1,0 +1,16 @@
+# Playspot Standalone Scratch
+#
+# VERSION 1.0.0
+
+FROM arm32v7/node:8
+MAINTAINER Van Simmons <van.simmons@computecycles.com>
+
+RUN mkdir -p /scratch-vm
+WORKDIR /scratch-vm
+COPY ./package-lock.json .
+COPY ./package.json .
+COPY ./src ./src
+RUN npm install || true
+VOLUME ./game
+
+ENTRYPOINT ["node", "./src/index.js"]
