@@ -7,14 +7,6 @@ class Scratch3MicroworldBlocks {
          * @type {Runtime}
          */
         this.runtime = runtime;
-
-        this.nativeCallbacks = {};
-
-        this._nativeCallback = this._nativeCallback.bind(this);
-
-        if (this.runtime) {
-            this.runtime.on('NATIVE_CALLBACK', this._nativeCallback);
-        }
     }
 
     /**
@@ -23,95 +15,81 @@ class Scratch3MicroworldBlocks {
      */
     getPrimitives () {
         return {
-            event_whenmoved: this.movedGreaterThan,
-            sound_texttospeech: this.textToSpeech,
-            sound_nativestartsound: this.startSound,
-            sound_nativeplaymusic: this.playMusic,
-            sound_nativepausemusic: this.pauseMusic,
-            looks_showimagefor: this.showImageFor,
-            more_shakefor: this.shakeFor
+            looks_nextpixel: this.nextPixel,
+            looks_previouspixel: this.previousPixel,
+            looks_changecolor: this.changeColor,
+            looks_setcolor: this.setColor,
+            control_waitms: this.waitForMs,
+            looks_forwardpixel: this.forwardPixels,
+            looks_backpixel: this.backPixels,
+            looks_setallcolors: this.setAllPixels
         };
     }
 
     getHats () {
         return {
-            event_whenmoved: {
-                restartExistingThreads: false,
-                edgeActivated: true
+            event_whenstarted: {
+                restartExistingThreads: true
             }
         };
     }
 
-    _nativeCallback (id) {
-        const callback = this.nativeCallbacks[id];
-        if (callback) {
-            callback();
-            delete this.nativeCallbacks[id];
-        }
+    nextPixel () {
+        this.runtime.emit('PIXEL_EVENT', {
+            type: 'nextPixel'
+        });
     }
 
-    movedGreaterThan (args) {
+    previousPixel () {
+        this.runtime.emit('PIXEL_EVENT', {
+            type: 'previousPixel'
+        });
+    }
+
+    changeColor (args) {
         const value = Cast.toNumber(args.VALUE);
-        return this.runtime.getMovement() > value;
-    }
-
-    startSound (args) {
-        const sound = Cast.toString(args.SOUNDS);
-        this.runtime.emit('ANDROID_NATIVE', {
-            type: 'startSound',
-            value: sound
+        this.runtime.emit('PIXEL_EVENT', {
+            type: 'changeColor',
+            value: value
         });
     }
 
-    textToSpeech (args) {
-        return new Promise(resolve => {
-            const id = Math.round(Math.random() * Math.pow(2, 16));
-            this.nativeCallbacks[id] = resolve;
-            this.runtime.emit('ANDROID_NATIVE', {
-                type: 'textToSpeech',
-                value: args.MESSAGE,
-                callbackId: id
-            });
+    setColor (args) {
+        const value = Cast.toNumber(args.VALUE);
+        this.runtime.emit('PIXEL_EVENT', {
+            type: 'setColor',
+            value: value
         });
     }
 
-    playMusic () {
-        this.runtime.emit('ANDROID_NATIVE', {
-            type: 'musicPlayer',
-            value: 'play'
+    waitForMs (args) {
+        const duration = Cast.toNumber(args.VALUE);
+        return new Promise(resolve => setTimeout(resolve, duration));
+    }
+
+    forwardPixels (args) {
+        const value = Cast.toNumber(args.VALUE);
+        this.runtime.emit('PIXEL_EVENT', {
+            type: 'forwardPixel',
+            value: value
         });
     }
 
-    pauseMusic () {
-        this.runtime.emit('ANDROID_NATIVE', {
-            type: 'musicPlayer',
-            value: 'pause'
+    backPixels (args) {
+        const value = Cast.toNumber(args.VALUE);
+        this.runtime.emit('PIXEL_EVENT', {
+            type: 'backPixel',
+            value: value
         });
     }
 
-    showImageFor (args) {
-        const index = Cast.toNumber(args.VALUE);
-        const dur = Cast.toNumber(args.DURATION);
-        this.runtime.emit('ANDROID_SHOW_IMAGE', index);
-        return new Promise(resolve => {
-            setTimeout(() => {
-                this.runtime.emit('ANDROID_HIDE_IMAGE');
-                resolve();
-            }, dur * 1000);
+    setAllPixels (args) {
+        const value = Cast.toNumber(args.VALUE);
+        this.runtime.emit('PIXEL_EVENT', {
+            type: 'setAllPixels',
+            value: value
         });
     }
-
-    shakeFor (args) {
-        const dur = Cast.toNumber(args.DURATION);
-        this.runtime.emit('ANDROID_NATIVE', {
-            type: 'shake',
-            value: dur
-        });
-        return new Promise(resolve => {
-            setTimeout(resolve, dur * 1000);
-        });
-    }
-
 }
 
 module.exports = Scratch3MicroworldBlocks;

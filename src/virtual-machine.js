@@ -183,14 +183,8 @@ class VirtualMachine extends EventEmitter {
         this.runtime.on(Runtime.HAS_CLOUD_DATA_UPDATE, hasCloudData => {
             this.emit(Runtime.HAS_CLOUD_DATA_UPDATE, hasCloudData);
         });
-        this.runtime.on('ANDROID_NATIVE', data => {
-            this.emit('ANDROID_NATIVE', data);
-        });
-        this.runtime.on('ANDROID_SHOW_IMAGE', index => {
-            this.emit('ANDROID_SHOW_IMAGE', index);
-        });
-        this.runtime.on('ANDROID_HIDE_IMAGE', () => {
-            this.emit('ANDROID_HIDE_IMAGE');
+        this.runtime.on('PIXEL_EVENT', data => {
+            this.emit('PIXEL_EVENT', data);
         });
         this.runtime.on('ADD_SUB_MQTTCONTROL', topic => {
             this.emit('ADD_SUB_MQTTCONTROL', topic);
