@@ -16,6 +16,7 @@ const MathUtil = require('./util/math-util');
 const Runtime = require('./engine/runtime');
 const StringUtil = require('./util/string-util');
 const formatMessage = require('format-message');
+const MqttConnect = require('./engine/mqttConnect');
 
 const Variable = require('./engine/variable');
 const newBlockIds = require('./util/new-block-ids');
@@ -63,7 +64,15 @@ class VirtualMachine extends EventEmitter {
          */
         this.editingTarget = null;
 
+        this.client = null;
+
+        this.satellites = {};
+
         this.workspace = {};
+
+        this.app = {
+            mode: 0
+        };
         
         /**
          * The currently dragging target, for redirecting IO data.
@@ -112,6 +121,7 @@ class VirtualMachine extends EventEmitter {
             this.emit(Runtime.BLOCK_DRAG_END, blocks, topBlockId);
         });
         this.runtime.on(Runtime.EXTENSION_ADDED, categoryInfo => {
+            console.log('extension added');
             this.emit(Runtime.EXTENSION_ADDED, categoryInfo);
         });
         this.runtime.on(Runtime.EXTENSION_FIELD_ADDED, (fieldName, fieldImplementation) => {
@@ -129,9 +139,21 @@ class VirtualMachine extends EventEmitter {
         this.runtime.on(Runtime.PERIPHERAL_LIST_UPDATE, info => {
             this.emit(Runtime.PERIPHERAL_LIST_UPDATE, info);
         });
-        this.runtime.on(Runtime.PERIPHERAL_CONNECTED, () =>
-            this.emit(Runtime.PERIPHERAL_CONNECTED)
-        );
+        this.runtime.on(Runtime.USER_PICKED_PERIPHERAL, info => {
+            this.emit(Runtime.USER_PICKED_PERIPHERAL, info);
+        });
+        this.runtime.on(Runtime.PERIPHERAL_CONNECTED, () => {
+            console.log('peripheral connected');
+            this.emit(Runtime.PERIPHERAL_CONNECTED);
+        });
+        this.runtime.on(Runtime.CLIENT_CONNECTED, () => {
+            console.log('client connected');
+            this.emit(Runtime.CLIENT_CONNECTED);
+        });
+        this.runtime.on(Runtime.CLIENT_DISCONNECTED, () => {
+            this.setClient(null);
+            this.emit(Runtime.CLIENT_DISCONNECTED);
+        });
         this.runtime.on(Runtime.PERIPHERAL_REQUEST_ERROR, () =>
             this.emit(Runtime.PERIPHERAL_REQUEST_ERROR)
         );
@@ -153,6 +175,126 @@ class VirtualMachine extends EventEmitter {
         this.runtime.on(Runtime.HAS_CLOUD_DATA_UPDATE, hasCloudData => {
             this.emit(Runtime.HAS_CLOUD_DATA_UPDATE, hasCloudData);
         });
+        this.runtime.on('RESET_GAME', data => {
+            this.emit('RESET_GAME', data);
+        });
+        this.runtime.on('SEND_SOUND', data => {
+            this.emit('SEND_SOUND', data);
+        });
+        this.runtime.on('PLAY_SOUND_MQTT', data => {
+            this.emit('PLAY_SOUND_MQTT', data);
+        });
+        this.runtime.on('SET_VOLUME', data => {
+            if (this.client) {
+                const outboundTopic = `sat/${data.SATELLITE}/cmd/fx`;
+                const string = `AS: vol ${[data.VALUE]}`;
+                const utf8Encode = new TextEncoder();
+                const arr = utf8Encode.encode(string);
+                this.client.publish(outboundTopic, arr);
+            }
+        });
+        this.runtime.on('SET_SATELLITES', data => {
+            this.setSatellites(data);
+            this.emit('SET_SATELLITES', data);
+        });
+        this.runtime.on('SET_SATELLITE_VARS', data => {
+            this.createSatelliteVariables(data);
+            this.emit('SET_SATELLITE_VARS', data);
+        });
+        this.runtime.on('SET_SOUND_VARS', data => {
+            this.setUpSoundVars(data);
+            this.emit('SET_SOUND_VARS', data);
+        });
+        this.runtime.on('SET_LIGHTS', data => {
+            this.createLightVariables(data);
+            this.emit('SET_LIGHTS', data);
+        });
+        this.runtime.on('PUBLISH_TO_CLIENT', data => {
+            this.publishToClient(data);
+        });
+        this.runtime.on('SET_VOLUME', data => {
+            if (this.client) {
+                const outboundTopic = `sat/${data.SATELLITE}/cmd/fx`;
+                const string = `AS: vol ${[data.VALUE]}`;
+                const utf8Encode = new TextEncoder();
+                const arr = utf8Encode.encode(string);
+                this.client.publish(outboundTopic, arr);
+            }
+        });
+        this.runtime.on('CHECK_MODE', args => {
+            if (this.client) {
+                if (args.MODE === this._app.mode) {
+                    this.runtime.emit('MODE_CHECKED_TRUE');
+                } else {
+                    this.runtime.emit('MODE_CHECKED_FALSE');
+                }
+            }
+        });
+        this.runtime.on('DISPLAY_IMAGE', data => {
+            if (this.client) {
+                this.client.publish(data.topic, data.message);
+                return Promise.resolve();
+            }
+        });
+        this.runtime.on('ANIMATE_IMAGE', data => {
+            if (this.client) {
+                this.client.publish(data.topic, data.message);
+                return Promise.resolve();
+            }
+        });
+        this.runtime.on('FILL_IMAGE', data => {
+            if (this.client) {
+                this.client.publish(data.topic, data.message);
+                return Promise.resolve();
+            }
+        });
+        this.runtime.on('DISPLAY_HISTOGRAM', data => {
+            if (this.client) {
+                this.client.publish(data.topic, data.message);
+                return Promise.resolve();
+            }
+        });
+        this.runtime.on('HAS_PRESENCE', data => {
+            this.emit('HAS_PRESENCE', data);
+        });
+        this.runtime.on('SET_RADAR', data => {
+            if (this.client) {
+                const outboundTopic = `sat/${data.SATELLITE}/in/radar/config`;
+                this.client.publish(outboundTopic, data.SENSITIVITY);
+            }
+        });
+        this.runtime.on('STOP_EVENT', data => {
+            if (this.client) {
+                this.client.publish(data.topic, data.message);
+            }
+        });
+        this.runtime.on('CYCLE_POWER', () => {
+            // This function is untested and copied directly from old scratch VM
+            if (this.client) {
+                const outboundTopic = `relay`;
+                const string = '';
+                const utf8Encode = new TextEncoder();
+                const arr = utf8Encode.encode(string);
+                this.client.publish(outboundTopic, arr);
+                return Promise.resolve();
+            }
+        });
+        this.runtime.on('REBOOT_SATELLITE', args => {
+            if (this.client) {
+                const outboundTopic = `sat/${args.SATELLITE}/cmd/reboot`;
+                this.client.publish(outboundTopic, '[0x1]');
+            }
+        });
+        this.runtime.on('SEND_BROADCAST', data => {
+            if (this.client) {
+                const topic = data.topic;
+                const bracketValue = {action: data.action, value: data.value};
+                const value = JSON.stringify(bracketValue);
+                const utf8Encode = new TextEncoder();
+                const message = utf8Encode.encode(value);
+                this.client.publish(topic, message);
+            }
+        });
 
         this.extensionManager = new ExtensionManager(this.runtime);
 
@@ -165,6 +307,66 @@ class VirtualMachine extends EventEmitter {
         this.flyoutBlockListener = this.flyoutBlockListener.bind(this);
         this.monitorBlockListener = this.monitorBlockListener.bind(this);
         this.variableListener = this.variableListener.bind(this);
+    }
+
+    setClient (client) {
+        this.client = client;
+    }
+
+    getClient () {
+        return this.client;
+    }
+
+    getSatellites () {
+        return this.satellites;
+    }
+
+    setSatellites (satellites) {
+        this.satellites = satellites;
+    }
+
+    publishToClient (data) {
+        console.log('publish', data);
+        this.client.publish(data.topic, data.message);
+        return Promise.resolve();
+    }
+
+    setUpSoundVars (wavs) {
+        const stage = this.runtime.getTargetForStage();
+        let allSounds = stage.lookupVariableByNameAndType('All_Sounds', 'list');
+        if (!allSounds) {
+            allSounds = this.workspace.createVariable('All_Sounds', 'list', false, false);
+            console.log(allSounds, 'allSounds');
+        }
+        setTimeout(() => {
+            stage.variables[allSounds.id_].value = wavs.map(currentValue => currentValue.replace('.wav', ''));
+        }, 5000);
+    }
+
+    createLightVariables (data) {
+        const stage = this.runtime.getTargetForStage();
+        let allLights = stage.lookupVariableByNameAndType('All_Lights', 'list');
+        if (!allLights) {
+            allLights = this.workspace.createVariable('All_Lights', 'list', false, false);
+        }
+        setTimeout(() => {
+            stage.variables[allLights.id_].value = data.map(currentValue => currentValue.replace('.txt', ''));
+        }, 5000);
+        this.runtime.emit(this.runtime.constructor.CLIENT_CONNECTED);
+    }
+
+    createSatelliteVariables (data) {
+        const stage = this.runtime.getTargetForStage();
+        let singleSat = stage.lookupVariableByNameAndType(`${data}`, '');
+        let allSats = stage.lookupVariableByNameAndType('All_Satellites', 'list');
+        if (!allSats) {
+            allSats = this.workspace.createVariable(`All_Satellites`, 'list', false, false);
+            singleSat = this.workspace.createVariable(`${data}`, '', false, false);
+        }
+        setTimeout(() => {
+            stage.variables[allSats.id_].value = Object.keys(this.satellites);
+            stage.variables[singleSat.id_].value = `${data}`;
+        }, 5000);
     }
 
     /**
@@ -275,7 +477,16 @@ class VirtualMachine extends EventEmitter {
      * @param {number} password - the password for the peripheral, if any.
      */
     connectPeripheral (extensionId, peripheralId, userName, password) {
+        const client = MqttConnect.connect(peripheralId, userName, password, this.runtime);
+        this.setClient(client);
+        (console.log(extensionId, peripheralId, userName, password, 'from connectPeripheral'));
         this.runtime.connectPeripheral(extensionId, peripheralId, userName, password);
+    }
+
+    connectMqtt (extensionId, peripheralId, userName, password) {
+        const client = MqttConnect.connect(peripheralId, userName, password, this.runtime);
+        this.setClient(client);
+        (console.log(extensionId, peripheralId, userName, password, 'from connectMqtt'));
     }
 
     /**
