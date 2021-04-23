@@ -260,11 +260,11 @@ class VirtualMachine extends EventEmitter {
         this.runtime.on('SET_RADAR', data => {
             const utf8Encode = new TextEncoder();
             const options = {qos: 0};
-            const fSpeedTopic = 'sat/${args.SATELLITE}/cfg/radar/fSpeed';
-            const bSpeedTopic = 'sat/${args.SATELLITE}/cfg/radar/bSpeed';
-            const fMagTopic = 'sat/${args.SATELLITE}/cfg/radar/fMag';
-            const bMagTopic = 'sat/${args.SATELLITE}/cfg/radar/bMag';
-            const detEnTopic = 'sat/${args.SATELLITE}/cfg/radar/detEn';
+            const fSpeedTopic = 'sat/${data.SATELLITE}/cfg/radar/fSpeed';
+            const bSpeedTopic = 'sat/${data.SATELLITE}/cfg/radar/bSpeed';
+            const fMagTopic = 'sat/${data.SATELLITE}/cfg/radar/fMag';
+            const bMagTopic = 'sat/${data.SATELLITE}/cfg/radar/bMag';
+            const detEnTopic = 'sat/${data.SATELLITE}/cfg/radar/detEn';
 
             if (this.client && this.client != undefined) {
                 if (data.SENSITIVITY == "off") {
