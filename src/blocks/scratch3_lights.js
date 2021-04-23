@@ -55,7 +55,7 @@ class LightBlocks {
         const newHEX = Color.rgbToHex(newRGB);
         return newHEX;
     }
-    
+
     mqttSendMessage (args, util) {
         console.log(args, 'from mqttSendMessage');
         const message = args.VALUE;
@@ -68,7 +68,7 @@ class LightBlocks {
             };
             this.runtime.emit('PUBLISH_TO_CLIENT', data);
         } else {
-            const newMessage = `LS: 5,${message}.txt`;
+            const newMessage = `LS: -1,${message}.txt`;
             const data = {
                 topic: topic,
                 message: newMessage

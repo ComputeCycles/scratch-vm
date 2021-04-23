@@ -38,10 +38,11 @@ const _volumes = Object.freeze({
 });
 
 const _sensitivities = Object.freeze({
-    Near: 'set short',
-    Medium: 'set medium',
-    Far: 'set long',
-    Max: 'set max'
+    Off: 'off',
+    Near: 'near',
+    Medium: 'medium',
+    Far: 'far',
+    Max: 'max'
 });
 
 const _images = Object.freeze({
