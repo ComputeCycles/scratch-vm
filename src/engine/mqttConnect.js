@@ -50,10 +50,14 @@ class MqttConnect extends EventEmitter {
     }
 
     static performConnection () {
-        let options = null;
+        let options = {
+            keepalive: 10,
+            reconnectPeriod: 250,
+            resubscribe: true
+        };
         console.log(this.username, 'username');
         console.log(this.password, 'password');
-        if (this._clent) {
+        if (this._client) {
             console.log(`performConnection fired but already connected`);
             return;
         }
@@ -88,12 +92,7 @@ class MqttConnect extends EventEmitter {
         this._client.on('error', error => this.onError(error));
         this._client.on('reconnect', () => this.onReconnect());
         this._client.on('message', (topic, payload) => MqttControl.onMessage(topic, payload, this.runtime));
-      
-
-        // this._onStatusTimer = this._onStatusTimer.bind(this);
-        // this._onConnectTimer = this._onConnectTimer.bind(this);
-
-        // this._performConnectTimeout = setTimeout(this._onConnectTimer, 10000);
+        this._client.on('disconnect', () => this.onDisconnect());
     }
 
     static onConnect () {
@@ -129,7 +128,15 @@ class MqttConnect extends EventEmitter {
         console.log(`onClose fired`);
         this._connected = false;
         // this.props.setFirstSatName('');
-        this.closeConnection();
+        // this.closeConnection();
+    }
+
+    static onDisconnect () {
+        console.log(`onDisconnect fired`);
+        // subscribe to all status, radar detection and touch events
+        if (this._client) {
+            performConnection();
+        }
     }
 
     static closeConnection () {
@@ -142,12 +149,12 @@ class MqttConnect extends EventEmitter {
             this._client.removeListener('message', (topic, payload) => MqttControl.onMessage(topic, payload, this.runtime));
             this._client.removeListener('close', this.onClose);
             this._client.removeListener('error', this.onError);
+            this._client.removeListener('disconnect', this.onDisconnect);
             this._client = null;
         });
 
         this.runtime.emit(this.runtime.constructor.CLIENT_DISCONNECTED);
     }
-
 }
 
 module.exports = MqttConnect;
