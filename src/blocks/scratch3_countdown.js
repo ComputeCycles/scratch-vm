@@ -122,6 +122,7 @@ class Scratch3Countdown {
             message_sendGameMQTT: this.sendGameMQTT,
             message_receiveGameMQTT: this.listenToTopicMQTT,
             message_waitUntilBroadcast: this.waitUntil,
+            message_resetgame: this.resetGame,
             countdown_gameMode: this.gameMode,
             countdown_startCelebration: this.startCelebration,
             countdown_whenTimerStarted: this.whenTimerStarted,
@@ -297,6 +298,10 @@ class Scratch3Countdown {
         }
     }
 
+    resetGame () {
+        this.runtime.emit('RESET_GAME');
+        this.runtime.greenFlag();
+    }
 }
 
 module.exports = Scratch3Countdown;

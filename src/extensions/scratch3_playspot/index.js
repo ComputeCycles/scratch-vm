@@ -1448,7 +1448,7 @@ class Scratch3PlayspotBlocks {
                     }
                 },
                 {
-                    opcode: 'resetGame',
+                    opcode: 'resetgame',
                     text: 'Game Finished',
                     blockType: BlockType.COMMAND
                 }

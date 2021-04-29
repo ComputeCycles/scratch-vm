@@ -27,14 +27,8 @@ class Scratch3EventBlocks {
             event_whentouchingobject: this.touchingObject,
             event_broadcast: this.broadcast,
             event_broadcastandwait: this.broadcastAndWait,
-            event_whengreaterthan: this.hatGreaterThanPredicate,
-            event_resetGame: this.resetGame
+            event_whengreaterthan: this.hatGreaterThanPredicate
         };
-    }
-
-    resetGame () {
-        this.runtime.emit('RESET_GAME');
-        this.runtime.greenFlag();
     }
 
     getHats () {
