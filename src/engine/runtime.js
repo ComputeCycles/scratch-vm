@@ -765,6 +765,7 @@ class Runtime extends EventEmitter {
      */
     _registerBlockPackages () {
         for (const packageName in defaultBlockPackages) {
+            // debugger
             if (defaultBlockPackages.hasOwnProperty(packageName)) {
                 // @todo pass a different runtime depending on package privilege?
                 const packageObject = new (defaultBlockPackages[packageName])(this);

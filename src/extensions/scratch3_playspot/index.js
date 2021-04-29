@@ -1550,7 +1550,7 @@ class Scratch3PlayspotBlocks {
         }
     }
 
-    resetGame () {
+    resetThread () {
         this.runtime.emit('RESET_GAME');
         this.runtime.gameGreenFlag();
     }
