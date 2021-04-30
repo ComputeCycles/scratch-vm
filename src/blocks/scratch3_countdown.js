@@ -213,7 +213,7 @@ class Scratch3Countdown {
     }
 
     waitUntil (args, util) {
-        console.log(args, 'args from waitUtil');
+        console.log(args, 'args from waitUntil');
         const topic = args.TOPIC.split('/');
         const last = topic.length - 1;
         const action = topic[last];
