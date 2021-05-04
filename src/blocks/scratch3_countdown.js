@@ -158,9 +158,9 @@ class Scratch3Countdown {
 
     sendGameMQTT (args, util) {
         if (args.TOPIC === '' ||
-      args.TOPIC === 'topic' ||
-      args.VALUE === '' ||
-      args.VALUE === 'value') {
+            args.TOPIC === 'topic' ||
+            args.VALUE === '' ||
+            args.VALUE === 'value') {
             return;
         }
         const topic = args.TOPIC.split('/');
