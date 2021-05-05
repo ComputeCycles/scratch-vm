@@ -68,7 +68,7 @@ class MqttControl extends EventEmitter{
 
 
     static onMessage (topic, payload, runtime) {
-        // console.log(`onMessage fired for topic: ${topic}, payload: ${payload}`);
+        console.log(`onMessage fired for topic: ${topic}, payload: ${payload}`);
         this.runtime = runtime;
         const t = topic.split('/');
         console.log(topic, 'topics');

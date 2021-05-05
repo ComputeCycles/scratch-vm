@@ -298,9 +298,13 @@ class Scratch3Countdown {
         }
     }
 
-    resetGame () {
+    resetGame (util) {
         this.runtime.emit('RESET_GAME');
-        this.runtime.greenFlag();
+        // this.runtime.greenFlag();
+        util.startBranch(1, true);
+        // try this instead of calling greenFlag
+        //  make sure to include util as a parameter
+        
     }
 }
 
