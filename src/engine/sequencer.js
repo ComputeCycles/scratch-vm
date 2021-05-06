@@ -303,18 +303,12 @@ class Sequencer {
      * For sending the computational thread to the topblock, testing as of 5/6/21
      */
     stepToTopBlock (thread, branchNum, isLoop) {
-        // debugger
         if (!branchNum) {
             branchNum = 1;
         }
         const topBlockId = thread.topBlock;
-        // const branchId = thread.target.blocks.getBranch(
-        //     currentBlockId,
-        //     branchNum
-        // );
         thread.peekStackFrame().isLoop = isLoop;
         if (topBlockId) {
-            // Push branch ID to the thread's stack.
             thread.pushStack(topBlockId);
         } else {
             thread.pushStack(null);
