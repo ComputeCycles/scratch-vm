@@ -69,7 +69,6 @@ class Scratch3Countdown {
                 this.touchedSattleite = '';
                 this.isSatelliteTouched = !!(data.touched);
             }
-          
             console.log(this.touchedSattleite, 'touched sat', this.isSatelliteTouched, 'is sat touched');
         });
 
@@ -122,7 +121,7 @@ class Scratch3Countdown {
             message_sendGameMQTT: this.sendGameMQTT,
             message_receiveGameMQTT: this.listenToTopicMQTT,
             message_waitUntilBroadcast: this.waitUntil,
-            message_resetgame: this.resetGame,
+            message_resetThread: this.resetThread,
             countdown_gameMode: this.gameMode,
             countdown_startCelebration: this.startCelebration,
             countdown_whenTimerStarted: this.whenTimerStarted,
@@ -142,7 +141,7 @@ class Scratch3Countdown {
     gameMode (args, util) {
         this.runtime.emit('CHECK_MODE', args);
         const condition = this.mode_match;
-      
+    
         if (!condition) {
             util.yield();
         }
@@ -157,10 +156,10 @@ class Scratch3Countdown {
     }
 
     sendGameMQTT (args, util) {
-        if (args.TOPIC === '' ||
-      args.TOPIC === 'topic' ||
-      args.VALUE === '' ||
-      args.VALUE === 'value') {
+        if (    args.TOPIC === '' ||
+                args.TOPIC === 'topic' ||
+                args.VALUE === '' ||
+                args.VALUE === 'value') {
             return;
         }
         const topic = args.TOPIC.split('/');
@@ -213,7 +212,7 @@ class Scratch3Countdown {
     }
 
     waitUntil (args, util) {
-        console.log(args, 'args from waitUtil');
+        console.log(args, 'args from waitUntil');
         const topic = args.TOPIC.split('/');
         const last = topic.length - 1;
         const action = topic[last];
@@ -298,9 +297,11 @@ class Scratch3Countdown {
         }
     }
 
-    resetGame () {
+    resetThread (args, util) {
         this.runtime.emit('RESET_GAME');
-        this.runtime.greenFlag();
+        // params: (branchNum, isLoop) 
+        util.startBranchFromTopBlock(1, false);
+        
     }
 }
 
