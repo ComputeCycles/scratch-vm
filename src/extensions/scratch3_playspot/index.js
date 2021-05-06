@@ -422,6 +422,7 @@ class Playspot {
         this._onError = this._onError.bind(this);
         this._onStatusTimer = this._onStatusTimer.bind(this);
         this._onConnectTimer = this._onConnectTimer.bind(this);
+        this.connect()
     }
 
     closeConnection () {
