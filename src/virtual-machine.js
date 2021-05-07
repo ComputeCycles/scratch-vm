@@ -178,6 +178,10 @@ class VirtualMachine extends EventEmitter {
         this.runtime.on('RESET_GAME', data => {
             this.emit('RESET_GAME', data);
         });
+        // Duplicate of above but for new RESET_THREAD 
+        this.runtime.on('RESET_THREAD', data => {
+            this.emit('RESET_THREAD', data);
+        });
         this.runtime.on('SEND_SOUND', data => {
             this.emit('SEND_SOUND', data);
         });

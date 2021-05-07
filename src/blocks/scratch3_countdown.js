@@ -110,6 +110,13 @@ class Scratch3Countdown {
                 this.actions[i] = {[`${keys[0]}`]: false};
             }
         });
+        // Duplicate of above but for new RESET_THREAD 
+        this.runtime.on('RESET_THREAD', () => {
+            for (let i = 0; i < this.actions.length; i++) {
+                const keys = Object.keys(this.actions[i]);
+                this.actions[i] = {[`${keys[0]}`]: false};
+            }
+        });
     }
 
     /**
@@ -298,6 +305,7 @@ class Scratch3Countdown {
     }
 
     resetThread (args, util) {
+        this.runtime.emit('RESET_THREAD');
         this.runtime.emit('RESET_GAME');
         // params: (branchNum, isLoop) 
         util.startBranchFromTopBlock(1, false);
