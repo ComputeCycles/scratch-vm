@@ -112,6 +112,8 @@ class MqttConnect extends EventEmitter {
             this._client.subscribe('sat/+/ev/touch');
             this._client.subscribe('+/sat/+/ev/touch');
             this._client.subscribe('app/menu/mode');
+            // for testing: 
+            this._client.subscribe('sat/+/mode');
             this.runtime.emit(this.runtime.constructor.CLIENT_CONNECTED);
         }
 

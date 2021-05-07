@@ -300,7 +300,7 @@ class Sequencer {
     }
 
     /**
-     * For sending the computational thread to the topblock, testing as of 5/6/21
+     * For sending the computational thread to the topblock, May 2021
      */
     stepToTopBlock (thread, branchNum, isLoop) {
         if (!branchNum) {
