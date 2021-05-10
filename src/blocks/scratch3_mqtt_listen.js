@@ -6,7 +6,7 @@ const SoundData = require('../import/SoundFiles/soundData');
 const Timer = require('../util/timer');
 const VM = require('../virtual-machine');
 
-class Scratch3Countdown {
+class Scratch3MQTTListeners {
     constructor (runtime) {
         /**
          * The runtime instantiating this block package.
@@ -28,7 +28,6 @@ class Scratch3Countdown {
         this.touchedSattleite = '';
 
         this.mode_match = false;
-        this.mode_complex = false;
 
         this.runtime.on('TOUCH_EVENT_ONE', args => {
             if (this.runtime._editingTarget.blocks._scripts.length === 0) {
@@ -57,16 +56,6 @@ class Scratch3Countdown {
 
         this.runtime.on('MODE_CHECKED_FALSE', () => {
             this.mode_match = false;
-        });
-        
-        this.runtime.on('MODE_CHANGE', data => {
-            debugger
-            console.log(`MODE_CHANGE from scratch3_countdown, data: ${data}, topic chain: ${t}`)
-            if (data == 'Complex') {
-
-                this.mode_complex = true
-            }
-            this.waitUntil(this.mode_complex);
         });
 
         this.runtime.on('IS_TOUCHED', data => {
@@ -230,7 +219,6 @@ class Scratch3Countdown {
     }
 
     waitUntil (args, util) {
-        debugger
         console.log(args, 'args from waitUntil');
         const topic = args.TOPIC.split('/');
         const last = topic.length - 1;
@@ -273,56 +261,11 @@ class Scratch3Countdown {
 
     }
 
-    startTimer (args) {
-        this.runtime.emit('START_TIMER');
-    }
-
-    startCelebration (args) {
-        this.runtime.emit('START_CELEBRATION');
-    }
-
-    whenTimerStarted (args, util) {
-        if (!this.timerFirst) {
-            this.runtime.emit('ADD_TIMER_START_LISTENER');
-        }
-
-        this.timerFirst = true;
-        const condition = this.timerStart;
-
-        if (!condition) {
-            util.yield();
-        } else {
-            setTimeout(() => {
-                this.runtime.emit('RESET_TIMER_STARTED');
-            }, 2000);
-        }
-    }
-
-    whenCelebrationStarted (args, util) {
-        if (!this.celebrateFirst) {
-            this.runtime.emit('ADD_CELEBRATE_START_LISTENER');
-            console.log('celebrated');
-        }
-
-        this.celebrateFirst = true;
-        const condition = this.celebrateStart;
-
-        if (!condition) {
-            util.yield();
-        } else {
-            setTimeout(() => {
-                this.runtime.emit('RESET_CELEBRATION_STARTED');
-            }, 2000);
-        }
-    }
-
-    resetThread (args, util) {
-        this.runtime.emit('RESET_THREAD');
-        this.runtime.emit('RESET_GAME');
-        // params: (branchNum, isLoop) 
+    checkAndResetThread (args, util) {
+        
         util.startBranchFromTopBlock(1, false);
         
     }
 }
 
-module.exports = Scratch3Countdown;
+module.exports = Scratch3MQTTListeners;

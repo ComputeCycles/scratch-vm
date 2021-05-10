@@ -379,7 +379,7 @@ class Playspot {
         };
 
         this._onMessage = (topic, payload) => {
-            // log.info(`onMessage fired for topic: ${topic}, payload: ${payload}`);
+            log.info(`onMessage fired for topic: ${topic}, payload: ${payload}`);
             const t = topic.split('/');
             if (topic === null || t.count < 2) return;
             if (t[0] === 'fwserver' && t[1] === 'files') {
