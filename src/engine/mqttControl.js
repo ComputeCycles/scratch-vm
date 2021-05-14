@@ -275,7 +275,6 @@ class MqttControl extends EventEmitter {
     }
 
     static addUserSub(topic) {
-        debugger
         if (!userSubTopics.includes(topic)) {
             userSubTopics.push(topic);
         }

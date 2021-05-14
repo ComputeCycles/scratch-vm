@@ -179,7 +179,6 @@ class VirtualMachine extends EventEmitter {
             this.emit(Runtime.HAS_CLOUD_DATA_UPDATE, hasCloudData);
         });
         this.runtime.on('ADD_SUB_MQTTCONTROL', topic => {
-            debugger
             this.emit('ADD_SUB_MQTTCONTROL', topic);
         });
         this.runtime.on('RESET_GAME', data => {
@@ -362,7 +361,6 @@ class VirtualMachine extends EventEmitter {
 
     addSubscriptions(topic) {
         console.log('new mqttSub topic:', topic);
-        // debugger
         if (this.client && this.client != undefined && topic != 'topic') {
             this.client.subscribe(topic);
             if (!this.userSubscriptions.includes(topic)) {
@@ -370,25 +368,10 @@ class VirtualMachine extends EventEmitter {
             }
             console.log(`current array of User Subscriptions: ${this.userSubscriptions}`)
         }
-        
         MqttControl.addUserSub(topic);
-        
-        // this.runtime.emit('ADD_SUB_MQTTCONTROL', topic);
     }
 
     translatePublications(data) {
-        debugger
-
-        // const targetId = this.editingTarget.id;
-        // const target = this.runtime.getTargetById(targetId);
-        // console.log('target object on addSub block fire to :', target);
-        
-        // if (target.variables) {
-
-        //     console.log(`current variables bound to the current editingTarget: `, target.variables)
-        // } else {
-        //     return;
-        // }
 
         const stageVariables = this.runtime.getTargetForStage().variables;
         let messageNames = [];
@@ -1645,7 +1628,6 @@ class VirtualMachine extends EventEmitter {
      */
     emitWorkspaceUpdate() {
         // Create a list of broadcast message Ids according to the stage variables
-        debugger
         const stageVariables = this.runtime.getTargetForStage().variables;
         let messageIds = [];
         for (const varId in stageVariables) {
