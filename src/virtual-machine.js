@@ -389,7 +389,6 @@ class VirtualMachine extends EventEmitter {
             const subsToDelete = this.userSubscriptions;
             for (let i = 0; i < subsToDelete.length; i++) {
                 const subTopic = subsToDelete[i];
-                debugger
                 this.client.unsubscribe(subTopic);
                 if (this.userSubscriptions.includes(subTopic)) {
                 }
