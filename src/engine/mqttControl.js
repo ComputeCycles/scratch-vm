@@ -56,25 +56,25 @@ class MqttControl extends EventEmitter {
         });
     }
 
-    static findSatelliteName(name) {
+    static findSatelliteName (name) {
         switch (name) {
-            case `${this.props.satOneName}`:
-                return 1;
-            case `${this.props.satTwoName}`:
-                return 2;
-            case `${this.props.satThreeName}`:
-                return 3;
-            case `${this.props.satFourName}`:
-                return 4;
+        case `${this.props.satOneName}`:
+            return 1;
+        case `${this.props.satTwoName}`:
+            return 2;
+        case `${this.props.satThreeName}`:
+            return 3;
+        case `${this.props.satFourName}`:
+            return 4;
         }
     }
 
 
-    static onMessage(topic, payload, runtime) {
-        console.log(`onMessage fired for topic: ${topic}, payload: ${payload}`);
+    static onMessage (topic, payload, runtime) {
+        // console.log(`onMessage fired for topic: ${topic}, payload: ${payload}`);
         this.runtime = runtime;
         const t = topic.split('/');
-        console.log(topic, 'topics');
+        // console.log(topic, 'topics');
         if (topic === null || t.count < 2) return;
         if (t[0] === 'sat' && t[1] === 'Virtual Sat' && t[2] === 'ev' && t[3] === 'touch') {
             let isTouched = false;
@@ -93,11 +93,11 @@ class MqttControl extends EventEmitter {
             this.props.vm.modeHandler(payload); // this is a presence message
         } else if (t[0] === 'sat' && t[2] === 'mode') {
             const parsedPayload = decoder.decode(payload);
-            const data = { 
+            const data = {
                 payload: parsedPayload,
                 topic: topic
             };
-            this.runtime.emit('MQTT_SAT_X_MODE_INBOUND', data ); 
+            this.runtime.emit('MQTT_SAT_X_MODE_INBOUND', data);
         } else if (t[0] === 'sat' && t[2] === 'cmd' && t[3] === 'fx') {
             const message = decoder.decode(payload);
             // this.props.setProjectState(true);
@@ -213,15 +213,15 @@ class MqttControl extends EventEmitter {
         } else if (userSubTopics.includes(topic)) {
             const parsedPayload = decoder.decode(payload);
             const data = {
-                payload: parsedPayload, 
+                payload: parsedPayload,
                 topic: topic
             }
             console.log('pub matching user input sub topic', data)
-            this.runtime.emit('USER_SUB_MQTT_PUB', data );  
+            this.runtime.emit('USER_SUB_MQTT_PUB', data);
         }
     }
 
-    static _satelliteStatusHandler(sender) {
+    static _satelliteStatusHandler (sender) {
         // log.info(`satelliteStatusHandler fired for sender: ${sender}`);
         satellites[sender] = {
             isTouched: false,
@@ -231,7 +231,7 @@ class MqttControl extends EventEmitter {
         this.runtime.emit('SET_SATELLITES', satellites);
     }
 
-    static firmwareHandler(payload) {
+    static firmwareHandler (payload) {
         // log.info(`firmware handler fired`);
         const json = JSON.parse(payload);
         const files = json.files;
@@ -240,7 +240,7 @@ class MqttControl extends EventEmitter {
         // this._runtime.emit(this._runtime.constructor.PERIPHERAL_LIST_UPDATE, this._satellites);
     }
 
-    static setupSoundVar(names) {
+    static setupSoundVar (names) {
         const wavs = names.filter(currentValue => (currentValue.includes('.wav')));
         const soundsByName = { Silence: 'AS: STOP' };
         wavs.forEach(currentValue => {
@@ -252,7 +252,7 @@ class MqttControl extends EventEmitter {
         this.runtime.emit('SET_SOUND_VARS', wavs);
     }
 
-    static touchHandler(sender, payload) {
+    static touchHandler (sender, payload) {
         // log.info(`touchHandler fired for payload: ${payload}`);
         if (!sender.includes('BC')) {
             return;
@@ -274,14 +274,14 @@ class MqttControl extends EventEmitter {
         }
     }
 
-    static addUserSub(topic) {
+    static addUserSub (topic) {
         if (!userSubTopics.includes(topic)) {
             userSubTopics.push(topic);
         }
         console.log(`current array of User Subscriptions from Mqtt Control: ${userSubTopics}`)
     }
 
-    static isTouched(sat) {
+    static isTouched (sat) {
         // const sat = this.findSatelliteSerial(satellite);
         console.log(sat, 'sat');
         return sat &&
@@ -293,7 +293,7 @@ class MqttControl extends EventEmitter {
             this.satellites[sat].isTouched;
     }
 
-    static hasPresence(sat) {
+    static hasPresence (sat) {
         console.log(sat, 'sat from has Presence');
         return sat &&
             sat !== this.NOT_FOUND &&
@@ -304,7 +304,7 @@ class MqttControl extends EventEmitter {
             this.satellites[sat].hasPresence;
     }
 
-    static playSoundMQTT(args, runtime) {
+    static playSoundMQTT (args, runtime) {
         this.runtime = runtime;
         // const satellite = this.findSatelliteSerial(args.satellite);
         console.log('PlaySoundMQTT', args);
@@ -321,7 +321,7 @@ class MqttControl extends EventEmitter {
         return Promise.resolve();
     }
 
-    static playSound(args) {
+    static playSound (args) {
         console.log(args, 'args');
         // const satellite = this.findSatelliteSerial(args.SATELLITE);
         const outboundTopic = `sat/${args.satellite}/cmd/fx`;
@@ -335,7 +335,7 @@ class MqttControl extends EventEmitter {
         return Promise.resolve();
     }
 
-    static setupLightVar(names) {
+    static setupLightVar (names) {
         const stage = this.runtime.getTargetForStage();
         const txts = names.filter(currentValue => (currentValue.includes('.txt')));
         const sequencesByName = {
@@ -355,7 +355,7 @@ class MqttControl extends EventEmitter {
         console.log(_sequencesByName, 'sequences');
     }
 
-    static playLightSequence(args) {
+    static playLightSequence (args) {
         // const satellite = this.findSatelliteSerial(args.satellite);
         console.log('PlayLights', args);
         // const outboundTopic = `sat/${args.SATELLITE}/cmd/fx`;
