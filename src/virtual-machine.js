@@ -371,9 +371,9 @@ class VirtualMachine extends EventEmitter {
     }
 
     translatePublications (data) {
-
+        debugger
         const stageVariables = this.runtime.getTargetForStage().variables;
-        let messageNames = [];
+        const messageNames = [];
         for (const varId in stageVariables) {
             if (stageVariables[varId].type === Variable.BROADCAST_MESSAGE_TYPE) {
                 messageNames.push(stageVariables[varId].name);
@@ -381,6 +381,18 @@ class VirtualMachine extends EventEmitter {
         }
         console.log(`broadcast msg names: `, messageNames);
     }
+
+    broadcast (args, util) {
+        const broadcastVar = util.runtime.getTargetForStage().lookupBroadcastMsg(
+            args.BROADCAST_OPTION.id, args.BROADCAST_OPTION.name);
+        if (broadcastVar) {
+            const broadcastOption = broadcastVar.name;
+            util.startHats('event_whenbroadcastreceived', {
+                BROADCAST_OPTION: broadcastOption
+            });
+        }
+    }
+
 
     deleteSubscriptions () {
         // console.log('remove all these subscriptions:', this.userSubscriptions);

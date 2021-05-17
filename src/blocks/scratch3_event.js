@@ -79,6 +79,7 @@ class Scratch3EventBlocks {
     }
 
     broadcast (args, util) {
+        debugger
         const broadcastVar = util.runtime.getTargetForStage().lookupBroadcastMsg(
             args.BROADCAST_OPTION.id, args.BROADCAST_OPTION.name);
         if (broadcastVar) {
