@@ -359,13 +359,12 @@ class VirtualMachine extends EventEmitter {
     }
 
     addSubscriptions (topic) {
-        console.log('new mqttSub topic:', topic);
-        if (this.client && this.client != undefined && topic != 'topic') {
+        if (this.client && topic !== 'topic') {
             this.client.subscribe(topic);
             if (!this.userSubscriptions.includes(topic)) {
                 this.userSubscriptions.push(topic);
             }
-            console.log(`current array of User Subscriptions: ${this.userSubscriptions}`)
+            console.log(`Current user subscriptions: ${this.userSubscriptions}`)
         }
         MqttControl.addUserSub(topic);
     }
@@ -387,7 +386,6 @@ class VirtualMachine extends EventEmitter {
             }
         }
         this.userSubscriptions.length = 0;
-        console.log('User Subs cleared, should be empty array', this.userSubscriptions);
     }
 
     publishToClient (data) {
@@ -549,12 +547,6 @@ class VirtualMachine extends EventEmitter {
     }
 
     connectMqtt (extensionId, peripheralId, userName, password) {
-        const client = MqttConnect.connect(peripheralId, userName, password, this.runtime);
-        this.setClient(client);
-        (console.log(extensionId, peripheralId, userName, password, 'from connectMqtt'));
-    }
-
-    addMqttUserSubTopic (extensionId, peripheralId, userName, password) {
         const client = MqttConnect.connect(peripheralId, userName, password, this.runtime);
         this.setClient(client);
         (console.log(extensionId, peripheralId, userName, password, 'from connectMqtt'));
