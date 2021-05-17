@@ -392,8 +392,9 @@ class VirtualMachine extends EventEmitter {
         //         if (this.userSubscriptions.includes(subTopic)) {
         //         }
         //     }
-        this.userSubscriptions.length = 0;
-        console.log('User Subs cleared, should be empty array', this.userSubscriptions);
+            this.userSubscriptions.length = 0;
+            console.log('User Subs cleared, should be empty array', this.userSubscriptions);
+        }
     }
 
     publishToClient (data) {
