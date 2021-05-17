@@ -590,7 +590,7 @@ class VirtualMachine extends EventEmitter {
      */
     loadProject (input) {
         if (typeof input === 'object' && !(input instanceof ArrayBuffer) &&
-            !ArrayBuffer.isView(input)) {
+          !ArrayBuffer.isView(input)) {
             // If the input is an object and not any ArrayBuffer
             // or an ArrayBuffer view (this includes all typed arrays and DataViews)
             // turn the object into a JSON string, because we suspect
