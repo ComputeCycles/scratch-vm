@@ -371,39 +371,21 @@ class VirtualMachine extends EventEmitter {
     }
 
     translatePublications (data) {
-        debugger
-        const stageVariables = this.runtime.getTargetForStage().variables;
-        const messageNames = [];
-        for (const varId in stageVariables) {
-            if (stageVariables[varId].type === Variable.BROADCAST_MESSAGE_TYPE) {
-                messageNames.push(stageVariables[varId].name);
-            }
-        }
-        console.log(`broadcast msg names: `, messageNames);
-    }
-
-    broadcast (args, util) {
-        const broadcastVar = util.runtime.getTargetForStage().lookupBroadcastMsg(
-            args.BROADCAST_OPTION.id, args.BROADCAST_OPTION.name);
+        const target = this.runtime.getTargetForStage();
+        const broadcastVar = target.lookupBroadcastMsg('', data.topic);
         if (broadcastVar) {
-            const broadcastOption = broadcastVar.name;
-            util.startHats('event_whenbroadcastreceived', {
-                BROADCAST_OPTION: broadcastOption
-            });
+            this.runtime.emit('MQTT_PUB_TO_BROADCAST_MSG', broadcastVar, data);
         }
     }
-
 
     deleteSubscriptions () {
-        // console.log('remove all these subscriptions:', this.userSubscriptions);
-        // if (this.client && this.client != undefined) {
-        //     const subsToDelete = this.userSubscriptions;
-        //     for (let i = 0; i < subsToDelete.length; i++) {
-        //         const subTopic = subsToDelete[i];
-        //         this.client.unsubscribe(subTopic);
-        //         if (this.userSubscriptions.includes(subTopic)) {
-        //         }
-        //     }
+        if (this.client) {
+            const subsToDelete = this.userSubscriptions;
+            for (let i = 0; i < subsToDelete.length; i++) {
+                const subTopic = subsToDelete[i];
+                this.client.unsubscribe(subTopic);
+            }
+        }
         this.userSubscriptions.length = 0;
         console.log('User Subs cleared, should be empty array', this.userSubscriptions);
     }

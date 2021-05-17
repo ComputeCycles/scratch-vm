@@ -59,10 +59,8 @@ class Scratch3Countdown {
             this.mode_match = false;
         });
         
-        this.runtime.on('MQTT_MODE_INBOUND', data => {
-            if (data.payload && data.topic) {
-                this.listenToModeMQTT(data);
-            }
+        this.runtime.on('MQTT_PUB_TO_BROADCAST_MSG', (broadcastVar, data) => {
+            this.makeBroadcastMsg(broadcastVar, data);
         });
 
         this.runtime.on('IS_TOUCHED', data => {
@@ -132,7 +130,7 @@ class Scratch3Countdown {
             message_resetThread: this.resetThread,
             message_addSubscription: this.addSubscription,
             message_deleteSubscriptions: this.deleteSubscriptions,
-            listen_whenMQTTpubreceived: this.listenToModeMQTT,
+            listen_whenMQTTpubreceived: this.makeBroadcastMsg,
             countdown_gameMode: this.gameMode,
             countdown_startCelebration: this.startCelebration,
             countdown_whenTimerStarted: this.whenTimerStarted,
@@ -185,20 +183,25 @@ class Scratch3Countdown {
     }
 
     addSubscription (args, util) {
-        this.runtime.emit('ADD_MQTT_SUBSCRIPTION', args.TOPIC);
+        if (args) {
+            this.runtime.emit('ADD_MQTT_SUBSCRIPTION', args.TOPIC);
+        }
+        this.runtime.on('MQTT_INBOUND', topic => {
+            util.startHats('event_whenbroadcastreceived', {
+                BROADCAST_OPTION: topic
+            });
+        });
     }
 
     deleteSubscriptions () {
         this.runtime.emit('DELETE_ALL_USER_MQTT_SUBSCRIPTIONS');
     }
 
-    listenToModeMQTT (data) {
-        const topic = data.topic;
-        const payload = data.payload;
-        this.runtime.emit('MQTT_INBOUND', {
-            topic: topic,
-            payload: payload
-        });
+    makeBroadcastMsg (broadcastVar, data) {
+        const topic = broadcastVar.name;
+        if (data.payload === '1') {
+            this.runtime.emit('MQTT_INBOUND', topic);
+        }
     }
 
     waitUntil (args, util) {
@@ -289,7 +292,7 @@ class Scratch3Countdown {
 
     resetThread (args, util) {
         this.runtime.emit('RESET_THREAD');
-        // params: (branchNum, isLoop) 
+        // params: (branchNum, isLoop)
         util.startBranchFromTopBlock(1, false);
         
     }
