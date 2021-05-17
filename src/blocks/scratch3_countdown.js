@@ -6,6 +6,7 @@ const SoundData = require('../import/SoundFiles/soundData');
 const Timer = require('../util/timer');
 const VM = require('../virtual-machine');
 
+
 class Scratch3Countdown {
     constructor (runtime) {
         /**
@@ -56,6 +57,12 @@ class Scratch3Countdown {
 
         this.runtime.on('MODE_CHECKED_FALSE', () => {
             this.mode_match = false;
+        });
+        
+        this.runtime.on('MQTT_MODE_INBOUND', data => {
+            if (data.payload && data.topic) {
+                this.listenToModeMQTT(data);
+            }
         });
 
         this.runtime.on('IS_TOUCHED', data => {
@@ -110,6 +117,7 @@ class Scratch3Countdown {
                 this.actions[i] = {[`${keys[0]}`]: false};
             }
         });
+        
     }
 
     /**
@@ -119,9 +127,12 @@ class Scratch3Countdown {
     getPrimitives () {
         return {
             message_sendGameMQTT: this.sendGameMQTT,
-            message_receiveGameMQTT: this.listenToTopicMQTT,
+            message_receiveGameMQTT: this.whenGameStarted,
             message_waitUntilBroadcast: this.waitUntil,
             message_resetThread: this.resetThread,
+            message_addSubscription: this.addSubscription,
+            message_deleteSubscriptions: this.deleteSubscriptions,
+            listen_whenMQTTpubreceived: this.listenToModeMQTT,
             countdown_gameMode: this.gameMode,
             countdown_startCelebration: this.startCelebration,
             countdown_whenTimerStarted: this.whenTimerStarted,
@@ -173,41 +184,20 @@ class Scratch3Countdown {
         });
     }
 
-    listenToTopicMQTT (args, util) {
-        let stringActions = '';
+    addSubscription (args, util) {
+        this.runtime.emit('ADD_MQTT_SUBSCRIPTION', args.TOPIC);
+    }
 
-        if (args.TOPIC === '') {
-            return;
-        }
+    deleteSubscriptions () {
+        this.runtime.emit('DELETE_ALL_USER_MQTT_SUBSCRIPTIONS');
+    }
 
-        if (args.TOPIC === 'topic') {
-            return;
-        }
-
-        const topic = args.TOPIC.split('/');
-        const last = topic.length - 1;
-        const action = topic[last];
-
-        if (this.actions.length === 0) {
-            const add = {[`${action}`]: false};
-            this.actions.push(add);
-        } else {
-            stringActions = JSON.stringify(this.actions);
-            if (stringActions.includes(action)) {
-                this.actions.length = 0;
-                const add = {[`${action}`]: false};
-                this.actions.push(add);
-            } else {
-                const add = {[`${action}`]: false};
-                this.actions.push(add);
-            }
-        }
-
-        console.log(this.actions, 'actions');
-
-        this.runtime.emit('SET_BROADCAST_LISTENER', {
-            topic: args.TOPIC,
-            action: action
+    listenToModeMQTT (data) {
+        const topic = data.topic;
+        const payload = data.payload;
+        this.runtime.emit('MQTT_INBOUND', {
+            topic: topic,
+            payload: payload
         });
     }
 
@@ -298,7 +288,7 @@ class Scratch3Countdown {
     }
 
     resetThread (args, util) {
-        this.runtime.emit('RESET_GAME');
+        this.runtime.emit('RESET_THREAD');
         // params: (branchNum, isLoop) 
         util.startBranchFromTopBlock(1, false);
         

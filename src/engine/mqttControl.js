@@ -2,6 +2,7 @@
 const decoder = new TextDecoder();
 const EventEmitter = require('events');
 const satellites = {};
+const userSubTopics = [];
 let _sequencesByName = {};
 // import SoundFiles from '../lib/soundFiles';
 
@@ -50,8 +51,10 @@ class MqttControl extends EventEmitter{
         this.runtime.on('SEQUENCE_STARTED', data => {
             this.playLightSequence(data);
         });
+        this.runtime.on('ADD_SUB_MQTTCONTROL', topic => {
+            this.addUserSub(topic);
+        });
     }
-    
 
     static findSatelliteName (name) {
         switch (name) {
@@ -68,10 +71,8 @@ class MqttControl extends EventEmitter{
 
 
     static onMessage (topic, payload, runtime) {
-        console.log(`onMessage fired for topic: ${topic}, payload: ${payload}`);
         this.runtime = runtime;
         const t = topic.split('/');
-        console.log(topic, 'topics');
         if (topic === null || t.count < 2) return;
         if (t[0] === 'sat' && t[1] === 'Virtual Sat' && t[2] === 'ev' && t[3] === 'touch') {
             let isTouched = false;
@@ -88,6 +89,13 @@ class MqttControl extends EventEmitter{
             this.runtime.emit('IS_TOUCHED', data);
         } else if (t[0] === 'app' && t[1] === 'menu' && t[2] === 'mode') {
             this.props.vm.modeHandler(payload); // this is a presence message
+        } else if (t[0] === 'sat' && t[2] === 'mode') {
+            const parsedPayload = decoder.decode(payload);
+            const data = {
+                payload: parsedPayload,
+                topic: topic
+            };
+            this.runtime.emit('MQTT_SAT_X_MODE_INBOUND', data);
         } else if (t[0] === 'sat' && t[2] === 'cmd' && t[3] === 'fx') {
             const message = decoder.decode(payload);
             // this.props.setProjectState(true);
@@ -134,7 +142,7 @@ class MqttControl extends EventEmitter{
                     this.displaySequence4(satellite, message);
                 }
             }
-         
+
         } else if (t[1] === 'sat' && t[3] === 'cmd' && t[4] === 'fx') {
             const message = decoder.decode(payload);
             this.props.setProjectState(true);
@@ -182,7 +190,7 @@ class MqttControl extends EventEmitter{
                     this.displaySequence4(satellite, message);
                 }
             }
-        
+
         } else if (t[0] === 'sat' && t[2] === 'ev' && t[3] === 'touch') {
             const message = decoder.decode(payload);
             console.log(topic[1], 'topic');
@@ -200,6 +208,14 @@ class MqttControl extends EventEmitter{
                 sensing: message
             };
             this.runtime.emit('HAS_PRESENCE', data);
+        } else if (userSubTopics.includes(topic)) {
+            const parsedPayload = decoder.decode(payload);
+            const data = {
+                payload: parsedPayload,
+                topic: topic
+            }
+            console.log('pub matching user input sub topic', data)
+            this.runtime.emit('USER_SUB_MQTT_PUB', data);
         }
     }
 
@@ -254,6 +270,13 @@ class MqttControl extends EventEmitter{
             });
             console.log('hit for payload 0');
         }
+    }
+
+    static addUserSub (topic) {
+        if (!userSubTopics.includes(topic)) {
+            userSubTopics.push(topic);
+        }
+        console.log(`current array of User Subscriptions from Mqtt Control: ${userSubTopics}`)
     }
 
     static isTouched (sat) {
@@ -345,7 +368,6 @@ class MqttControl extends EventEmitter{
         // // this._client.publish(outboundTopic, arr);
         // return Promise.resolve();
     }
-    
 }
 
 module.exports = MqttControl;

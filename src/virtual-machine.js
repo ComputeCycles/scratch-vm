@@ -17,6 +17,7 @@ const Runtime = require('./engine/runtime');
 const StringUtil = require('./util/string-util');
 const formatMessage = require('format-message');
 const MqttConnect = require('./engine/mqttConnect');
+const MqttControl = require('./engine/mqttControl');
 
 const Variable = require('./engine/variable');
 const newBlockIds = require('./util/new-block-ids');
@@ -73,6 +74,8 @@ class VirtualMachine extends EventEmitter {
         this.app = {
             mode: 0
         };
+
+        this.userSubscriptions = [];
 
         /**
          * The currently dragging target, for redirecting IO data.
@@ -174,6 +177,9 @@ class VirtualMachine extends EventEmitter {
         });
         this.runtime.on(Runtime.HAS_CLOUD_DATA_UPDATE, hasCloudData => {
             this.emit(Runtime.HAS_CLOUD_DATA_UPDATE, hasCloudData);
+        });
+        this.runtime.on('ADD_SUB_MQTTCONTROL', topic => {
+            this.emit('ADD_SUB_MQTTCONTROL', topic);
         });
         this.runtime.on('RESET_GAME', data => {
             this.emit('RESET_GAME', data);
@@ -311,6 +317,18 @@ class VirtualMachine extends EventEmitter {
             }
         });
 
+        this.runtime.on('ADD_MQTT_SUBSCRIPTION', topic => {
+            this.addSubscriptions(topic);
+        });
+
+        this.runtime.on('USER_SUB_MQTT_PUB', data => {
+            this.translatePublications(data);
+        });
+
+        this.runtime.on('DELETE_ALL_USER_MQTT_SUBSCRIPTIONS', () => {
+            this.deleteSubscriptions();
+        });
+
         this.extensionManager = new ExtensionManager(this.runtime);
 
         // Load core extensions
@@ -338,6 +356,35 @@ class VirtualMachine extends EventEmitter {
 
     setSatellites (satellites) {
         this.satellites = satellites;
+    }
+
+    addSubscriptions (topic) {
+        console.log('new mqttSub topic:', topic);
+        if (this.client && this.client != undefined && topic != 'topic') {
+            this.client.subscribe(topic);
+            if (!this.userSubscriptions.includes(topic)) {
+                this.userSubscriptions.push(topic);
+            }
+            console.log(`current array of User Subscriptions: ${this.userSubscriptions}`)
+        }
+        MqttControl.addUserSub(topic);
+    }
+
+    translatePublications (data) {
+
+        const stageVariables = this.runtime.getTargetForStage().variables;
+        let messageNames = [];
+        for (const varId in stageVariables) {
+            if (stageVariables[varId].type === Variable.BROADCAST_MESSAGE_TYPE) {
+                messageNames.push(stageVariables[varId].name);
+            }
+        }
+        console.log(`broadcast msg names: `, messageNames);
+    }
+
+    deleteSubscriptions () {
+        this.userSubscriptions.length = 0;
+        console.log('User Subs cleared, should be empty array', this.userSubscriptions);
     }
 
     publishToClient (data) {
@@ -499,6 +546,12 @@ class VirtualMachine extends EventEmitter {
     }
 
     connectMqtt (extensionId, peripheralId, userName, password) {
+        const client = MqttConnect.connect(peripheralId, userName, password, this.runtime);
+        this.setClient(client);
+        (console.log(extensionId, peripheralId, userName, password, 'from connectMqtt'));
+    }
+
+    addMqttUserSubTopic (extensionId, peripheralId, userName, password) {
         const client = MqttConnect.connect(peripheralId, userName, password, this.runtime);
         this.setClient(client);
         (console.log(extensionId, peripheralId, userName, password, 'from connectMqtt'));
