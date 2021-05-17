@@ -6,7 +6,7 @@ const userSubTopics = [];
 let _sequencesByName = {};
 // import SoundFiles from '../lib/soundFiles';
 
-class MqttControl extends EventEmitter {
+class MqttControl extends EventEmitter{
     constructor (runtime) {
         super();
         this.positionsCopy = [];
@@ -242,7 +242,7 @@ class MqttControl extends EventEmitter {
 
     static setupSoundVar (names) {
         const wavs = names.filter(currentValue => (currentValue.includes('.wav')));
-        const soundsByName = { Silence: 'AS: STOP' };
+        const soundsByName = {Silence: 'AS: STOP'};
         wavs.forEach(currentValue => {
             const val = currentValue.replace('.wav', '');
             soundsByName[val] = `AS: 1,${currentValue}`;
@@ -285,23 +285,23 @@ class MqttControl extends EventEmitter {
         // const sat = this.findSatelliteSerial(satellite);
         console.log(sat, 'sat');
         return sat &&
-            sat !== this.NOT_FOUND &&
-            this.satellites &&
-            this.satellites !== this.NOT_FOUND &&
-            this.satellites[sat] &&
-            this.satellites[sat] !== this.NOT_FOUND &&
-            this.satellites[sat].isTouched;
+        sat !== this.NOT_FOUND &&
+        this.satellites &&
+        this.satellites !== this.NOT_FOUND &&
+        this.satellites[sat] &&
+        this.satellites[sat] !== this.NOT_FOUND &&
+        this.satellites[sat].isTouched;
     }
 
     static hasPresence (sat) {
         console.log(sat, 'sat from has Presence');
         return sat &&
-            sat !== this.NOT_FOUND &&
-            this.satellites &&
-            this.satellites !== this.NOT_FOUND &&
-            this.satellites[sat] &&
-            this.satellites[sat] !== this.NOT_FOUND &&
-            this.satellites[sat].hasPresence;
+        sat !== this.NOT_FOUND &&
+        this.satellites &&
+        this.satellites !== this.NOT_FOUND &&
+        this.satellites[sat] &&
+        this.satellites[sat] !== this.NOT_FOUND &&
+        this.satellites[sat].hasPresence;
     }
 
     static playSoundMQTT (args, runtime) {
@@ -370,7 +370,6 @@ class MqttControl extends EventEmitter {
         // // this._client.publish(outboundTopic, arr);
         // return Promise.resolve();
     }
-
 }
 
 module.exports = MqttControl;
