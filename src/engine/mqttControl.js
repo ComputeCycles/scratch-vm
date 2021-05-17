@@ -71,10 +71,8 @@ class MqttControl extends EventEmitter{
 
 
     static onMessage (topic, payload, runtime) {
-        // console.log(`onMessage fired for topic: ${topic}, payload: ${payload}`);
         this.runtime = runtime;
         const t = topic.split('/');
-        // console.log(topic, 'topics');
         if (topic === null || t.count < 2) return;
         if (t[0] === 'sat' && t[1] === 'Virtual Sat' && t[2] === 'ev' && t[3] === 'touch') {
             let isTouched = false;
