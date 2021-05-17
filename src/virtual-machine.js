@@ -383,15 +383,6 @@ class VirtualMachine extends EventEmitter {
     }
 
     deleteSubscriptions () {
-        // console.log('remove all these subscriptions:', this.userSubscriptions);
-        // if (this.client && this.client != undefined) {
-        //     const subsToDelete = this.userSubscriptions;
-        //     for (let i = 0; i < subsToDelete.length; i++) {
-        //         const subTopic = subsToDelete[i];
-        //         this.client.unsubscribe(subTopic);
-        //         if (this.userSubscriptions.includes(subTopic)) {
-        //         }
-        //     }
         this.userSubscriptions.length = 0;
         console.log('User Subs cleared, should be empty array', this.userSubscriptions);
     }
