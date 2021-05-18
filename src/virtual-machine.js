@@ -359,32 +359,33 @@ class VirtualMachine extends EventEmitter {
     }
 
     addSubscriptions (topic) {
-        console.log('new mqttSub topic:', topic);
-        if (this.client && this.client != undefined && topic != 'topic') {
+        if (this.client && topic !== 'topic') {
             this.client.subscribe(topic);
             if (!this.userSubscriptions.includes(topic)) {
                 this.userSubscriptions.push(topic);
             }
-            console.log(`current array of User Subscriptions: ${this.userSubscriptions}`)
+            console.log(`Current user subscriptions: ${this.userSubscriptions}`)
         }
         MqttControl.addUserSub(topic);
     }
 
     translatePublications (data) {
-
-        const stageVariables = this.runtime.getTargetForStage().variables;
-        let messageNames = [];
-        for (const varId in stageVariables) {
-            if (stageVariables[varId].type === Variable.BROADCAST_MESSAGE_TYPE) {
-                messageNames.push(stageVariables[varId].name);
-            }
+        const target = this.runtime.getTargetForStage();
+        const broadcastVar = target.lookupBroadcastMsg('', data.topic);
+        if (broadcastVar) {
+            this.runtime.emit('MQTT_PUB_TO_BROADCAST_MSG', broadcastVar, data);
         }
-        console.log(`broadcast msg names: `, messageNames);
     }
 
     deleteSubscriptions () {
+        if (this.client) {
+            const subsToDelete = this.userSubscriptions;
+            for (let i = 0; i < subsToDelete.length; i++) {
+                const subTopic = subsToDelete[i];
+                this.client.unsubscribe(subTopic);
+            }
+        }
         this.userSubscriptions.length = 0;
-        console.log('User Subs cleared, should be empty array', this.userSubscriptions);
     }
 
     publishToClient (data) {
@@ -546,12 +547,6 @@ class VirtualMachine extends EventEmitter {
     }
 
     connectMqtt (extensionId, peripheralId, userName, password) {
-        const client = MqttConnect.connect(peripheralId, userName, password, this.runtime);
-        this.setClient(client);
-        (console.log(extensionId, peripheralId, userName, password, 'from connectMqtt'));
-    }
-
-    addMqttUserSubTopic (extensionId, peripheralId, userName, password) {
         const client = MqttConnect.connect(peripheralId, userName, password, this.runtime);
         this.setClient(client);
         (console.log(extensionId, peripheralId, userName, password, 'from connectMqtt'));
