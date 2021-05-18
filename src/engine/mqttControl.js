@@ -88,7 +88,9 @@ class MqttControl extends EventEmitter{
             };
             this.runtime.emit('IS_TOUCHED', data);
         } else if (t[0] === 'app' && t[1] === 'menu' && t[2] === 'mode') {
-            this.props.vm.modeHandler(payload); // this is a presence message
+            if (this.props) {
+                this.props.vm.modeHandler(payload); // this is a presence message
+            }
         } else if (t[0] === 'sat' && t[2] === 'mode') {
             const parsedPayload = decoder.decode(payload);
             const data = {

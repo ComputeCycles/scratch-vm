@@ -420,16 +420,14 @@ class VirtualMachine extends EventEmitter {
 
     createSatelliteVariables (data) {
         const stage = this.runtime.getTargetForStage();
-        let singleSat = stage.lookupVariableByNameAndType(`${data}`, '');
         let allSats = stage.lookupVariableByNameAndType('All_Satellites', 'list');
+        let singleSat = stage.lookupVariableByNameAndType(`${data}`, '');
         if (!allSats) {
             allSats = this.workspace.createVariable(`All_Satellites`, 'list', false, false);
+        }
+        if (!singleSat) {
             singleSat = this.workspace.createVariable(`${data}`, '', false, false);
         }
-        setTimeout(() => {
-            stage.variables[allSats.id_].value = Object.keys(this.satellites);
-            stage.variables[singleSat.id_].value = `${data}`;
-        }, 5000);
     }
 
     /**
