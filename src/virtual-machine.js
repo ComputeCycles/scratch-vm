@@ -428,6 +428,14 @@ class VirtualMachine extends EventEmitter {
         if (!singleSat) {
             singleSat = this.workspace.createVariable(`${data}`, '', false, false);
         }
+        if (singleSat && !singleSat.value) {
+            // debugger
+            singleSat.value = data;
+        }
+        setTimeout(() => {
+            stage.variables[allSats.id_].value = Object.keys(this.satellites);
+            stage.variables[singleSat.id_].value = `${data}`;
+        }, 5000);
     }
 
     /**
