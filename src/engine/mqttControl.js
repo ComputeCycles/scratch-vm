@@ -228,7 +228,7 @@ class MqttControl extends EventEmitter{
             hasPresence: false
         };
         this.runtime.emit('SET_SATELLITE_VARS', sender);
-        this.runtime.emit('SET_SATELLITES', satellites);
+        this.runtime.emit('SET_ALL_SATELLITES', satellites);
     }
 
     static firmwareHandler (payload) {
