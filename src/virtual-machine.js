@@ -199,12 +199,12 @@ class VirtualMachine extends EventEmitter {
                 this.client.publish(outboundTopic, arr);
             }
         });
-        this.runtime.on('SET_SATELLITES', data => {
-            this.setSatellites(data);
-            this.emit('SET_SATELLITES', data);
+        this.runtime.on('SET_ALL_SATELLITES', data => {
+            this.setAllSatellites(data);
+            this.emit('SET_ALL_SATELLITES', data);
         });
         this.runtime.on('SET_SATELLITE_VARS', data => {
-            this.createSatelliteVariables(data);
+            this.createSatelliteVariable(data);
             this.emit('SET_SATELLITE_VARS', data);
         });
         this.runtime.on('SET_SOUND_VARS', data => {
@@ -354,10 +354,6 @@ class VirtualMachine extends EventEmitter {
         return this.satellites;
     }
 
-    setSatellites (satellites) {
-        this.satellites = satellites;
-    }
-
     addSubscriptions (topic) {
         if (this.client && topic !== 'topic') {
             this.client.subscribe(topic);
@@ -403,7 +399,7 @@ class VirtualMachine extends EventEmitter {
         }
         setTimeout(() => {
             stage.variables[allSounds.id_].value = wavs.map(currentValue => currentValue.replace('.wav', ''));
-        }, 5000);
+        }, 100);
     }
 
     createLightVariables (data) {
@@ -414,20 +410,31 @@ class VirtualMachine extends EventEmitter {
         }
         setTimeout(() => {
             stage.variables[allLights.id_].value = data.map(currentValue => currentValue.replace('.txt', ''));
-        }, 5000);
+        }, 100);
         this.runtime.emit(this.runtime.constructor.CLIENT_CONNECTED);
     }
 
-    createSatelliteVariables (data) {
+    setAllSatellites (satellites) {
+        this.satellites = satellites;
         const stage = this.runtime.getTargetForStage();
         let allSats = stage.lookupVariableByNameAndType('All_Satellites', 'list');
-        let singleSat = stage.lookupVariableByNameAndType(`${data}`, '');
         if (!allSats) {
             allSats = this.workspace.createVariable(`All_Satellites`, 'list', false, false);
         }
+        setTimeout(() => {
+            stage.variables[allSats.id_].value = Object.keys(this.satellites);
+        }, 100);
+    }
+
+    createSatelliteVariable (data) {
+        const stage = this.runtime.getTargetForStage();
+        let singleSat = stage.lookupVariableByNameAndType(`${data}`, '');
         if (!singleSat) {
             singleSat = this.workspace.createVariable(`${data}`, '', false, false);
         }
+        setTimeout(() => {
+            stage.variables[singleSat.id_].value = `${data}`;
+        }, 100);
     }
 
     /**
