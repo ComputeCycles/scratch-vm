@@ -264,23 +264,26 @@ class VirtualMachine extends EventEmitter {
             this.emit('HAS_PRESENCE', data);
         });
         this.runtime.on('SET_RADAR', data => {
-            const utf8Encode = new TextEncoder();
-            const options = {qos: 0};
-            const fSpeedTopic = `sat/${data.SATELLITE}/cfg/radar/fSpeed`;
-            const bSpeedTopic = `sat/${data.SATELLITE}/cfg/radar/bSpeed`;
-            const fMagTopic = `sat/${data.SATELLITE}/cfg/radar/fMag`;
-            const bMagTopic = `sat/${data.SATELLITE}/cfg/radar/bMag`;
-            const detEnTopic = `sat/${data.SATELLITE}/cfg/radar/detEn`;
-
-            if (this.client && this.client != undefined) {
-                if (data.SENSITIVITY == "off") {
-                    this.client.publish(detEnTopic, utf8Encode.encode('0'), options);
-                } else {
-                    this.client.publish(detEnTopic, utf8Encode.encode('1'), options);
-                    this.client.publish(fSpeedTopic, utf8Encode.encode('2'), options);
-                    this.client.publish(bSpeedTopic, utf8Encode.encode('2'), options);
-                    this.client.publish(fMagTopic, utf8Encode.encode('5'), options);
-                    this.client.publish(bMagTopic, utf8Encode.encode('5'), options);
+            if (data.SATELLITE !== 'satellite') {
+                
+                const utf8Encode = new TextEncoder();
+                const options = {qos: 0, retain: true};
+                const fSpeedTopic = `sat/${data.SATELLITE}/cfg/radar/fSpeed`;
+                const bSpeedTopic = `sat/${data.SATELLITE}/cfg/radar/bSpeed`;
+                const fMagTopic = `sat/${data.SATELLITE}/cfg/radar/fMag`;
+                const bMagTopic = `sat/${data.SATELLITE}/cfg/radar/bMag`;
+                const detEnTopic = `sat/${data.SATELLITE}/cfg/radar/detEn`;
+                
+                if (this.client && this.client != undefined) {
+                    if (data.SENSITIVITY == "off") {
+                        this.client.publish(detEnTopic, utf8Encode.encode('0'), options);
+                    } else {
+                        this.client.publish(detEnTopic, utf8Encode.encode('1'), options);
+                        this.client.publish(fSpeedTopic, utf8Encode.encode('2'), options);
+                        this.client.publish(bSpeedTopic, utf8Encode.encode('2'), options);
+                        this.client.publish(fMagTopic, utf8Encode.encode('5'), options);
+                        this.client.publish(bMagTopic, utf8Encode.encode('5'), options);
+                    }
                 }
             }
         });
