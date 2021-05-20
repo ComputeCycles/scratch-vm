@@ -265,7 +265,7 @@ class VirtualMachine extends EventEmitter {
         });
         this.runtime.on('SET_RADAR', data => {
             if (data.SATELLITE !== 'satellite') {
-                
+
                 const utf8Encode = new TextEncoder();
                 const options = {qos: 0, retain: true};
                 const fSpeedTopic = `sat/${data.SATELLITE}/cfg/radar/fSpeed`;
@@ -330,6 +330,10 @@ class VirtualMachine extends EventEmitter {
 
         this.runtime.on('DELETE_ALL_USER_MQTT_SUBSCRIPTIONS', () => {
             this.deleteSubscriptions();
+        });
+
+        this.runtime.on('SET_TOUCH_VARS', touchedSatVars => {
+            this.createTouchVariables(touchedSatVars);
         });
 
         this.extensionManager = new ExtensionManager(this.runtime);
@@ -438,6 +442,46 @@ class VirtualMachine extends EventEmitter {
         setTimeout(() => {
             stage.variables[singleSat.id_].value = `${data}`;
         }, 100);
+    }
+
+    createTouchVariables (touchedSatVars) {
+        const stage = this.runtime.getTargetForStage();
+        
+        let allSatTouchSatIdVar = stage.lookupVariableByNameAndType('ALL_SAT_TOUCH_SATID', '');
+        if (!allSatTouchSatIdVar) {
+            allSatTouchSatIdVar = this.workspace.createVariable('ALL_SAT_TOUCH_SATID', '', false, false);
+            
+            setTimeout(() => {
+                stage.variables[allSatTouchSatIdVar.id_].value = `${touchedSatVars.ALL_SAT_TOUCH_SATID}`;
+            }, 100);
+        }
+        if (allSatTouchSatIdVar) {
+            allSatTouchSatIdVar.value = touchedSatVars.ALL_SAT_TOUCH_SATID;
+        }
+
+        let allSatTouchValue = stage.lookupVariableByNameAndType('ALL_SAT_TOUCH_VALUE', '');
+        if (!allSatTouchValue) {
+            allSatTouchValue = this.workspace.createVariable('ALL_SAT_TOUCH_VALUE', '', false, false);
+            
+            setTimeout(() => {
+                stage.variables[allSatTouchValue.id_].value = `${touchedSatVars.ALL_SAT_TOUCH_VALUE}`;
+            }, 100);
+        }
+        if (allSatTouchValue) {
+            allSatTouchValue.value = touchedSatVars.ALL_SAT_TOUCH_VALUE;
+        }
+
+        let singleSatTouchValue = stage.lookupVariableByNameAndType(`${touchedSatVars.ALL_SAT_TOUCH_SATID}_TOUCH_VALUE`, '');
+        if (!singleSatTouchValue) {
+            singleSatTouchValue = this.workspace.createVariable(`${touchedSatVars.ALL_SAT_TOUCH_SATID}_TOUCH_VALUE`, '', false, false);
+            
+            setTimeout(() => {
+                stage.variables[singleSatTouchValue.id_].value = `${touchedSatVars.ALL_SAT_TOUCH_VALUE}`;
+            }, 100);
+        }
+        if (singleSatTouchValue) {
+            singleSatTouchValue.value = touchedSatVars.ALL_SAT_TOUCH_VALUE;
+        }
     }
 
     /**
