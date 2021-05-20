@@ -77,14 +77,6 @@ class VirtualMachine extends EventEmitter {
 
         this.userSubscriptions = [];
 
-        this.touchedSatVars = {
-            ALL_SAT_TOUCH_SATID: '',
-            ALL_SAT_TOUCH_VALUE: ''
-        };
-
-        touchedSatVars = this.workspace.createVariable(`${topic}`, '', false, false);
-
-
         /**
          * The currently dragging target, for redirecting IO data.
          * @type {Target}
@@ -454,6 +446,7 @@ class VirtualMachine extends EventEmitter {
 
     createTouchVariables (touchedSatVars) {
         const stage = this.runtime.getTargetForStage();
+        
         let allSatTouchSatIdVar = stage.lookupVariableByNameAndType('ALL_SAT_TOUCH_SATID', '');
         if (!allSatTouchSatIdVar) {
             allSatTouchSatIdVar = this.workspace.createVariable('ALL_SAT_TOUCH_SATID', '', false, false);
@@ -464,6 +457,18 @@ class VirtualMachine extends EventEmitter {
         }
         if (allSatTouchSatIdVar) {
             allSatTouchSatIdVar.value = touchedSatVars.ALL_SAT_TOUCH_SATID;
+        }
+
+        let allSatTouchValue = stage.lookupVariableByNameAndType('ALL_SAT_TOUCH_VALUE', '');
+        if (!allSatTouchValue) {
+            allSatTouchValue = this.workspace.createVariable('ALL_SAT_TOUCH_VALUE', '', false, false);
+            
+            setTimeout(() => {
+                stage.variables[allSatTouchValue.id_].value = `${touchedSatVars.ALL_SAT_TOUCH_VALUE}`;
+            }, 100);
+        }
+        if (allSatTouchValue) {
+            allSatTouchValue.value = touchedSatVars.ALL_SAT_TOUCH_VALUE;
         }
     }
 

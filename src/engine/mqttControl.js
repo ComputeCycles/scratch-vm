@@ -230,7 +230,6 @@ class MqttControl extends EventEmitter{
             ALL_SAT_TOUCH_SATID: t[1],
             ALL_SAT_TOUCH_VALUE: message
         };
-        debugger
         this.runtime.emit('SET_TOUCH_VARS', touchedSatVars);
     }
 
