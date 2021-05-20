@@ -470,6 +470,18 @@ class VirtualMachine extends EventEmitter {
         if (allSatTouchValue) {
             allSatTouchValue.value = touchedSatVars.ALL_SAT_TOUCH_VALUE;
         }
+
+        let singleSatTouchValue = stage.lookupVariableByNameAndType(`${touchedSatVars.ALL_SAT_TOUCH_SATID}_TOUCH_VALUE`, '');
+        if (!singleSatTouchValue) {
+            singleSatTouchValue = this.workspace.createVariable(`${touchedSatVars.ALL_SAT_TOUCH_SATID}_TOUCH_VALUE`, '', false, false);
+            
+            setTimeout(() => {
+                stage.variables[singleSatTouchValue.id_].value = `${touchedSatVars.ALL_SAT_TOUCH_VALUE}`;
+            }, 100);
+        }
+        if (singleSatTouchValue) {
+            singleSatTouchValue.value = touchedSatVars.ALL_SAT_TOUCH_VALUE;
+        }
     }
 
     /**
