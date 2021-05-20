@@ -72,10 +72,9 @@ class TouchBlocks {
                 this.touchedSattleite = '';
                 this.isSatelliteTouched = (data.touched) ? true : false;
             };
-            
+            this.translateTouchInput(data);
             console.log(this.touchedSattleite, "touched sat", this.isSatelliteTouched, "is sat touched");
-          });
-  
+        });
 
         this.runtime.on('TOUCH_EVENT_SATELLITE', (args) => {
             const satellite = args.satellite;
@@ -173,6 +172,23 @@ class TouchBlocks {
         if (!condition) {
             util.yield();
         }
+    }
+
+    translateTouchInput (data) {
+        const target = this.runtime.getTargetForStage();
+        const uniqueBroadcastVar = target.lookupBroadcastMsg('', `sat/${data.sender}/ev/touch`); // params: (id, name)
+        const wildBroadcastVar = target.lookupBroadcastMsg('', `sat/+/ev/touch`); // params: (id, name)
+        if (uniqueBroadcastVar) {
+            this.runtime.startHats('event_whenbroadcastreceived', {
+                BROADCAST_OPTION: `sat/${data.sender}/ev/touch`
+            });
+        }
+        if (wildBroadcastVar) {
+            this.runtime.startHats('event_whenbroadcastreceived', {
+                BROADCAST_OPTION: `sat/+/ev/touch`
+            });
+        }
+    
     }
 }
 
