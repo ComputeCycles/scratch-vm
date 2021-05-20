@@ -77,6 +77,14 @@ class VirtualMachine extends EventEmitter {
 
         this.userSubscriptions = [];
 
+        this.touchedSatVars = {
+            ALL_SAT_TOUCH_SATID: '',
+            ALL_SAT_TOUCH_VALUE: ''
+        };
+
+        touchedSatVars = this.workspace.createVariable(`${topic}`, '', false, false);
+
+
         /**
          * The currently dragging target, for redirecting IO data.
          * @type {Target}
@@ -265,7 +273,7 @@ class VirtualMachine extends EventEmitter {
         });
         this.runtime.on('SET_RADAR', data => {
             if (data.SATELLITE !== 'satellite') {
-                
+
                 const utf8Encode = new TextEncoder();
                 const options = {qos: 0, retain: true};
                 const fSpeedTopic = `sat/${data.SATELLITE}/cfg/radar/fSpeed`;
@@ -330,6 +338,10 @@ class VirtualMachine extends EventEmitter {
 
         this.runtime.on('DELETE_ALL_USER_MQTT_SUBSCRIPTIONS', () => {
             this.deleteSubscriptions();
+        });
+
+        this.runtime.on('SET_TOUCH_VARS', touchedSatVars => {
+            this.createTouchVariables(touchedSatVars);
         });
 
         this.extensionManager = new ExtensionManager(this.runtime);
@@ -438,6 +450,21 @@ class VirtualMachine extends EventEmitter {
         setTimeout(() => {
             stage.variables[singleSat.id_].value = `${data}`;
         }, 100);
+    }
+
+    createTouchVariables (touchedSatVars) {
+        const stage = this.runtime.getTargetForStage();
+        let allSatTouchSatIdVar = stage.lookupVariableByNameAndType('ALL_SAT_TOUCH_SATID', '');
+        if (!allSatTouchSatIdVar) {
+            allSatTouchSatIdVar = this.workspace.createVariable('ALL_SAT_TOUCH_SATID', '', false, false);
+            
+            setTimeout(() => {
+                stage.variables[allSatTouchSatIdVar.id_].value = `${touchedSatVars.ALL_SAT_TOUCH_SATID}`;
+            }, 100);
+        }
+        if (allSatTouchSatIdVar) {
+            allSatTouchSatIdVar.value = touchedSatVars.ALL_SAT_TOUCH_SATID;
+        }
     }
 
     /**

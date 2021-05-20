@@ -307,6 +307,7 @@ class Sequencer {
             branchNum = 1;
         }
         const topBlockId = thread.topBlock;
+        console.log(thread.topBlock.status);
         thread.peekStackFrame().isLoop = isLoop;
         if (topBlockId) {
             thread.pushStack(topBlockId);

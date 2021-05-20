@@ -5,6 +5,10 @@ const satellites = {};
 const userSubTopics = [];
 let _sequencesByName = {};
 // import SoundFiles from '../lib/soundFiles';
+let touchedSatVars = {
+    ALL_SAT_TOUCH_SATID: '',
+    ALL_SAT_TOUCH_VALUE: ''
+};
 
 class MqttControl extends EventEmitter{
     constructor (runtime) {
@@ -197,7 +201,7 @@ class MqttControl extends EventEmitter{
             const message = decoder.decode(payload);
             console.log(topic[1], 'topic');
             console.log(message, 'message');
-            // this.props.setProjectState(true);
+            this.setTouchVars(topic, message, t)
             this.touchHandler(t[1], message);
         } else if (t[0] === 'sat' && t[2] === 'online') {
             this._satelliteStatusHandler(t[1]);
@@ -219,6 +223,15 @@ class MqttControl extends EventEmitter{
             console.log('pub matching user input sub topic', data)
             this.runtime.emit('USER_SUB_MQTT_PUB', data);
         }
+    }
+
+    static setTouchVars (topic, message, t) {
+        touchedSatVars = {
+            ALL_SAT_TOUCH_SATID: t[1],
+            ALL_SAT_TOUCH_VALUE: message
+        };
+        debugger
+        this.runtime.emit('SET_TOUCH_VARS', touchedSatVars);
     }
 
     static _satelliteStatusHandler (sender) {
