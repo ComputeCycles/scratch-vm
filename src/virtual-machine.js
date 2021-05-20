@@ -77,6 +77,14 @@ class VirtualMachine extends EventEmitter {
 
         this.userSubscriptions = [];
 
+        this.touchedSatVars = {
+            ALL_SAT_TOUCH_SATID: '',
+            ALL_SAT_TOUCH_VALUE: ''
+        };
+
+        touchedSatVars = this.workspace.createVariable(`${topic}`, '', false, false);
+
+
         /**
          * The currently dragging target, for redirecting IO data.
          * @type {Target}
@@ -446,7 +454,6 @@ class VirtualMachine extends EventEmitter {
 
     createTouchVariables (touchedSatVars) {
         const stage = this.runtime.getTargetForStage();
-        
         let allSatTouchSatIdVar = stage.lookupVariableByNameAndType('ALL_SAT_TOUCH_SATID', '');
         if (!allSatTouchSatIdVar) {
             allSatTouchSatIdVar = this.workspace.createVariable('ALL_SAT_TOUCH_SATID', '', false, false);

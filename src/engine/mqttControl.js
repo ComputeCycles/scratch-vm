@@ -10,6 +10,11 @@ let touchedSatVars = {
     ALL_SAT_TOUCH_VALUE: ''
 };
 
+let radarSatVars = {
+    ALL_SAT_RADAR_SATID: '',
+    ALL_SAT_RADAR_VALUE: ''
+};
+
 class MqttControl extends EventEmitter{
     constructor (runtime) {
         super();
@@ -213,6 +218,7 @@ class MqttControl extends EventEmitter{
                 satellite: t[1],
                 sensing: message
             };
+            this.setRadarVars(topic, message, t)
             this.runtime.emit('HAS_PRESENCE', data);
         } else if (userSubTopics.includes(topic)) {
             const parsedPayload = decoder.decode(payload);
@@ -231,6 +237,14 @@ class MqttControl extends EventEmitter{
             ALL_SAT_TOUCH_VALUE: message
         };
         this.runtime.emit('SET_TOUCH_VARS', touchedSatVars);
+    }
+
+    static setRadarVars (topic, message, t) {
+        radarSatVars = {
+            ALL_SAT_RADAR_SATID: t[1],
+            ALL_SAT_RADAR_VALUE: message
+        };
+        this.runtime.emit('SET_RADAR_VARS', radarSatVars);
     }
 
     static _satelliteStatusHandler (sender) {
