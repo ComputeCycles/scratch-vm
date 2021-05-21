@@ -32,7 +32,7 @@ class MovementBlocks {
                 this.sensingSattelite = '';
                 this.isSatelliteSensing = false;
             }
-            
+            this.translateMovementInput(data);
             console.log(this.sensingSattelite, 'sensed sat', this.isSatelliteSensing, 'is sat sensed');
         });
 
@@ -109,6 +109,22 @@ class MovementBlocks {
         const condition = this.isSatelliteSensing;
         if (!condition) {
             util.yield();
+        }
+    }
+
+    translateMovementInput (data) {
+        const target = this.runtime.getTargetForStage();
+        const uniqueBroadcastVar = target.lookupBroadcastMsg('', `sat/${data.satellite}/ev/radar`);
+        const wildBroadcastVar = target.lookupBroadcastMsg('', `sat/+/ev/radar`);
+        if (uniqueBroadcastVar) {
+            this.runtime.startHats('event_whenbroadcastreceived', {
+                BROADCAST_OPTION: `sat/${data.satellite}/ev/radar`
+            });
+        }
+        if (wildBroadcastVar) {
+            this.runtime.startHats('event_whenbroadcastreceived', {
+                BROADCAST_OPTION: `sat/+/ev/radar`
+            });
         }
     }
 
