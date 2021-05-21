@@ -124,13 +124,9 @@ class Scratch3Countdown {
      */
     getPrimitives () {
         return {
-            message_sendGameMQTT: this.sendGameMQTT,
-            message_receiveGameMQTT: this.whenGameStarted,
-            message_waitUntilBroadcast: this.waitUntil,
-            message_resetThread: this.resetThread,
+            message_sendValueToTopic: this.sendValueToTopic,
             message_addSubscription: this.addSubscription,
             message_deleteSubscriptions: this.deleteSubscriptions,
-            listen_whenMQTTpubreceived: this.makeBroadcastMsg,
             countdown_gameMode: this.gameMode,
             countdown_startCelebration: this.startCelebration,
             countdown_whenTimerStarted: this.whenTimerStarted,
@@ -164,7 +160,7 @@ class Scratch3Countdown {
         return false;
     }
 
-    sendGameMQTT (args, util) {
+    sendValueToTopic (args, util) {
         if (    args.TOPIC === '' ||
                 args.TOPIC === 'topic' ||
                 args.VALUE === '' ||

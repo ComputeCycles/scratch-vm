@@ -339,6 +339,10 @@ class VirtualMachine extends EventEmitter {
         this.runtime.on('SET_RADAR_VARS', radarSatVars => {
             this.setRadarVariables(radarSatVars);
         });
+        
+        this.runtime.on('DISCONNECT_FROM_MQTT', () => {
+            this.DisconnectMqtt();
+        });
 
         this.extensionManager = new ExtensionManager(this.runtime);
 
@@ -646,6 +650,11 @@ class VirtualMachine extends EventEmitter {
         const client = MqttConnect.connect(peripheralId, userName, password, this.runtime);
         this.setClient(client);
         (console.log(extensionId, peripheralId, userName, password, 'from connectMqtt'));
+    }
+
+    DisconnectMqtt () {
+        const client = MqttConnect.closeConnection();
+        this.setClient(client);        
     }
 
     /**
