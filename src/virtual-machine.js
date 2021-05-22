@@ -545,20 +545,23 @@ class VirtualMachine extends EventEmitter {
     }
 
     setAliasVariables (data) {
-        const stage = this.runtime.getTargetForStage();
-        const aliasVariable = this.workspace.createVariable(`${data.alias}`, '', false, false);
-        setTimeout(() => {
-            stage.variables[aliasVariable.id_].value = data.payload;
-        }, 100);
-            
+        if (typeof data.payload === 'string' && data.payload !== '') {
+            const stage = this.runtime.getTargetForStage();
+            const aliasVariable = this.workspace.createVariable(`${data.alias}`, '', false, false);
+            setTimeout(() => {
+                stage.variables[aliasVariable.id_].value = data.payload;
+            }, 100);
+        }    
     }
 
     setGroupVariables (data) {
-        const stage = this.runtime.getTargetForStage();
-        const groupVariable = this.workspace.createVariable(`${data.group}`, 'list', false, false);
-        setTimeout(() => {
-            stage.variables[groupVariable.id_].value = data.payload;
-        }, 100);
+        if (Array.isArray(data.payload) && data.payload !== []) {
+            const stage = this.runtime.getTargetForStage();
+            const groupVariable = this.workspace.createVariable(`${data.group}`, 'list', false, false);
+            setTimeout(() => {
+                stage.variables[groupVariable.id_].value = data.payload;
+            }, 100);
+        }
     }
 
     clearAllScratchVariables () {

@@ -102,20 +102,24 @@ class MqttControl extends EventEmitter{
             }
         } else if (t[0] === 'alias') {
             const parsedPayload = decoder.decode(payload);
-            const json = JSON.parse(parsedPayload);
-            const data = {
-                payload: json,
-                alias: t[1]
-            };
-            this.runtime.emit('MQTT_ALIAS_VAR_INBOUND', data);
+            if (this.IsJson(parsedPayload)) {
+                const json = JSON.parse(parsedPayload);
+                const data = {
+                    payload: json,
+                    alias: t[1]
+                };
+                this.runtime.emit('MQTT_ALIAS_VAR_INBOUND', data);
+            }
         } else if (t[0] === 'group') {
             const parsedPayload = decoder.decode(payload);
-            const json = JSON.parse(parsedPayload);
-            const data = {
-                payload: json,
-                group: t[1]
-            };
-            this.runtime.emit('MQTT_GROUP_VAR_INBOUND', data);
+            if (this.IsJson(parsedPayload)) {
+                const json = JSON.parse(parsedPayload);
+                const data = {
+                    payload: json,
+                    group: t[1]
+                };
+                this.runtime.emit('MQTT_GROUP_VAR_INBOUND', data);
+            }
         } else if (t[0] === 'sat' && t[2] === 'cmd' && t[3] === 'fx') {
             const message = decoder.decode(payload);
             // this.props.setProjectState(true);
@@ -404,6 +408,15 @@ class MqttControl extends EventEmitter{
         // this.runtime.emit('PUBLISH_TO_CLIENT', data);
         // // this._client.publish(outboundTopic, arr);
         // return Promise.resolve();
+    }
+
+    static IsJson (variable) {
+        try {
+            JSON.parse(variable);
+        } catch (e) {
+            return false;
+        }
+        return true;
     }
 }
 
