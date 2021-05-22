@@ -7,12 +7,12 @@ let _sequencesByName = {};
 // import SoundFiles from '../lib/soundFiles';
 let touchedSatVars = {
     ALL_SAT_TOUCH_SATID: '',
-    ALL_SAT_TOUCH_VALUE: ''
+    ALL_SAT_TOUCH_VALUE: 0
 };
 
 let radarSatVars = {
     ALL_SAT_RADAR_SATID: '',
-    ALL_SAT_RADAR_VALUE: ''
+    ALL_SAT_RADAR_VALUE: 0
 };
 
 class MqttControl extends EventEmitter{
@@ -100,13 +100,26 @@ class MqttControl extends EventEmitter{
             if (this.props) {
                 this.props.vm.modeHandler(payload); // this is a presence message
             }
-        } else if (t[0] === 'sat' && t[2] === 'mode') {
+        } else if (t[0] === 'alias') {
             const parsedPayload = decoder.decode(payload);
-            const data = {
-                payload: parsedPayload,
-                topic: topic
-            };
-            this.runtime.emit('MQTT_SAT_X_MODE_INBOUND', data);
+            if (this.IsJson(parsedPayload)) {
+                const json = JSON.parse(parsedPayload);
+                const data = {
+                    payload: json,
+                    alias: t[1]
+                };
+                this.runtime.emit('MQTT_ALIAS_VAR_INBOUND', data);
+            }
+        } else if (t[0] === 'group') {
+            const parsedPayload = decoder.decode(payload);
+            if (this.IsJson(parsedPayload)) {
+                const json = JSON.parse(parsedPayload);
+                const data = {
+                    payload: json,
+                    group: t[1]
+                };
+                this.runtime.emit('MQTT_GROUP_VAR_INBOUND', data);
+            }
         } else if (t[0] === 'sat' && t[2] === 'cmd' && t[3] === 'fx') {
             const message = decoder.decode(payload);
             // this.props.setProjectState(true);
@@ -253,8 +266,12 @@ class MqttControl extends EventEmitter{
             isTouched: false,
             hasPresence: false
         };
+        touchedSatVars.ALL_SAT_TOUCH_SATID = sender;
+        radarSatVars.ALL_SAT_RADAR_SATID = sender;
         this.runtime.emit('SET_SATELLITE_VARS', sender);
         this.runtime.emit('SET_ALL_SATELLITES', satellites);
+        this.runtime.emit('SET_TOUCH_VARS', touchedSatVars);
+        this.runtime.emit('SET_RADAR_VARS', radarSatVars);
     }
 
     static firmwareHandler (payload) {
@@ -395,6 +412,15 @@ class MqttControl extends EventEmitter{
         // this.runtime.emit('PUBLISH_TO_CLIENT', data);
         // // this._client.publish(outboundTopic, arr);
         // return Promise.resolve();
+    }
+
+    static IsJson (variable) {
+        try {
+            JSON.parse(variable);
+        } catch (e) {
+            return false;
+        }
+        return true;
     }
 }
 

@@ -347,6 +347,14 @@ class VirtualMachine extends EventEmitter {
         this.runtime.on('DISCONNECT_FROM_MQTT', () => {
             this.DisconnectMqtt();
         });
+        
+        this.runtime.on('MQTT_ALIAS_VAR_INBOUND', data => {
+            this.setAliasVariables(data);
+        });
+        
+        this.runtime.on('MQTT_GROUP_VAR_INBOUND', data => {
+            this.setGroupVariables(data);
+        });
 
         this.extensionManager = new ExtensionManager(this.runtime);
 
@@ -484,7 +492,7 @@ class VirtualMachine extends EventEmitter {
         }
 
         let singleSatTouchValue = stage.lookupVariableByNameAndType(`${touchedSatVars.ALL_SAT_TOUCH_SATID}_TOUCH_VALUE`, '');
-        if (!singleSatTouchValue) {
+        if (!singleSatTouchValue && touchedSatVars.ALL_SAT_TOUCH_SATID !== '') {
             singleSatTouchValue = this.workspace.createVariable(`${touchedSatVars.ALL_SAT_TOUCH_SATID}_TOUCH_VALUE`, '', false, false);
             
             setTimeout(() => {
@@ -496,7 +504,7 @@ class VirtualMachine extends EventEmitter {
         }
     }
 
-    setRadarVariables (touchedSatVars) {
+    setRadarVariables (radarSatVars) {
         const stage = this.runtime.getTargetForStage();
         
         let allSatRadarSatIdVar = stage.lookupVariableByNameAndType('ALL_SAT_RADAR_SATID', '');
@@ -504,11 +512,11 @@ class VirtualMachine extends EventEmitter {
             allSatRadarSatIdVar = this.workspace.createVariable('ALL_SAT_RADAR_SATID', '', false, false);
             
             setTimeout(() => {
-                stage.variables[allSatRadarSatIdVar.id_].value = `${touchedSatVars.ALL_SAT_RADAR_SATID}`;
+                stage.variables[allSatRadarSatIdVar.id_].value = `${radarSatVars.ALL_SAT_RADAR_SATID}`;
             }, 100);
         }
         if (allSatRadarSatIdVar) {
-            allSatRadarSatIdVar.value = touchedSatVars.ALL_SAT_RADAR_SATID;
+            allSatRadarSatIdVar.value = radarSatVars.ALL_SAT_RADAR_SATID;
         }
 
         let allSatRadarValue = stage.lookupVariableByNameAndType('ALL_SAT_RADAR_VALUE', '');
@@ -516,30 +524,50 @@ class VirtualMachine extends EventEmitter {
             allSatRadarValue = this.workspace.createVariable('ALL_SAT_RADAR_VALUE', '', false, false);
             
             setTimeout(() => {
-                stage.variables[allSatRadarValue.id_].value = `${touchedSatVars.ALL_SAT_RADAR_VALUE}`;
+                stage.variables[allSatRadarValue.id_].value = `${radarSatVars.ALL_SAT_RADAR_VALUE}`;
             }, 100);
         }
         if (allSatRadarValue) {
-            allSatRadarValue.value = touchedSatVars.ALL_SAT_RADAR_VALUE;
+            allSatRadarValue.value = radarSatVars.ALL_SAT_RADAR_VALUE;
         }
 
-        let singleSatRadarValue = stage.lookupVariableByNameAndType(`${touchedSatVars.ALL_SAT_RADAR_SATID}_RADAR_VALUE`, '');
-        if (!singleSatRadarValue) {
-            singleSatRadarValue = this.workspace.createVariable(`${touchedSatVars.ALL_SAT_RADAR_SATID}_RADAR_VALUE`, '', false, false);
+        let singleSatRadarValue = stage.lookupVariableByNameAndType(`${radarSatVars.ALL_SAT_RADAR_SATID}_RADAR_VALUE`, '');
+        if (!singleSatRadarValue && radarSatVars.ALL_SAT_RADAR_SATID !== '') {
+            singleSatRadarValue = this.workspace.createVariable(`${radarSatVars.ALL_SAT_RADAR_SATID}_RADAR_VALUE`, '', false, false);
             
             setTimeout(() => {
-                stage.variables[singleSatRadarValue.id_].value = `${touchedSatVars.ALL_SAT_RADAR_VALUE}`;
+                stage.variables[singleSatRadarValue.id_].value = `${radarSatVars.ALL_SAT_RADAR_VALUE}`;
             }, 100);
         }
         if (singleSatRadarValue) {
-            singleSatRadarValue.value = touchedSatVars.ALL_SAT_RADAR_VALUE;
+            singleSatRadarValue.value = radarSatVars.ALL_SAT_RADAR_VALUE;
+        }
+    }
+
+    setAliasVariables (data) {
+        if (typeof data.payload === 'string' && data.payload !== '') {
+            const stage = this.runtime.getTargetForStage();
+            const aliasVariable = this.workspace.createVariable(`${data.alias}`, '', false, false);
+            setTimeout(() => {
+                stage.variables[aliasVariable.id_].value = data.payload;
+            }, 100);
+        }    
+    }
+
+    setGroupVariables (data) {
+        if (Array.isArray(data.payload) && data.payload !== []) {
+            const stage = this.runtime.getTargetForStage();
+            const groupVariable = this.workspace.createVariable(`${data.group}`, 'list', false, false);
+            setTimeout(() => {
+                stage.variables[groupVariable.id_].value = data.payload;
+            }, 100);
         }
     }
 
     clearAllScratchVariables () {
-        const variablesToClear = this.runtime.getTargetForStage().variables;
-        for (const variable in variablesToClear) {
-            this.workspace.deleteVariableById(variable);
+        const variableIds = Object.keys(this.runtime.getTargetForStage().variables);
+        for (let i = 0; i < variableIds.length; i++) {
+            this.workspace.deleteVariableById(variableIds[i]);
         }
     }
 
