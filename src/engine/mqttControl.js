@@ -7,12 +7,12 @@ let _sequencesByName = {};
 // import SoundFiles from '../lib/soundFiles';
 let touchedSatVars = {
     ALL_SAT_TOUCH_SATID: '',
-    ALL_SAT_TOUCH_VALUE: ''
+    ALL_SAT_TOUCH_VALUE: 0
 };
 
 let radarSatVars = {
     ALL_SAT_RADAR_SATID: '',
-    ALL_SAT_RADAR_VALUE: ''
+    ALL_SAT_RADAR_VALUE: 0
 };
 
 class MqttControl extends EventEmitter{
@@ -266,8 +266,12 @@ class MqttControl extends EventEmitter{
             isTouched: false,
             hasPresence: false
         };
+        touchedSatVars.ALL_SAT_TOUCH_SATID = sender;
+        radarSatVars.ALL_SAT_RADAR_SATID = sender;
         this.runtime.emit('SET_SATELLITE_VARS', sender);
         this.runtime.emit('SET_ALL_SATELLITES', satellites);
+        this.runtime.emit('SET_TOUCH_VARS', touchedSatVars);
+        this.runtime.emit('SET_RADAR_VARS', radarSatVars);
     }
 
     static firmwareHandler (payload) {

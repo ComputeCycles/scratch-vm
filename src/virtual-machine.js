@@ -492,7 +492,7 @@ class VirtualMachine extends EventEmitter {
         }
 
         let singleSatTouchValue = stage.lookupVariableByNameAndType(`${touchedSatVars.ALL_SAT_TOUCH_SATID}_TOUCH_VALUE`, '');
-        if (!singleSatTouchValue) {
+        if (!singleSatTouchValue && touchedSatVars.ALL_SAT_TOUCH_SATID !== '') {
             singleSatTouchValue = this.workspace.createVariable(`${touchedSatVars.ALL_SAT_TOUCH_SATID}_TOUCH_VALUE`, '', false, false);
             
             setTimeout(() => {
@@ -504,7 +504,7 @@ class VirtualMachine extends EventEmitter {
         }
     }
 
-    setRadarVariables (touchedSatVars) {
+    setRadarVariables (radarSatVars) {
         const stage = this.runtime.getTargetForStage();
         
         let allSatRadarSatIdVar = stage.lookupVariableByNameAndType('ALL_SAT_RADAR_SATID', '');
@@ -512,11 +512,11 @@ class VirtualMachine extends EventEmitter {
             allSatRadarSatIdVar = this.workspace.createVariable('ALL_SAT_RADAR_SATID', '', false, false);
             
             setTimeout(() => {
-                stage.variables[allSatRadarSatIdVar.id_].value = `${touchedSatVars.ALL_SAT_RADAR_SATID}`;
+                stage.variables[allSatRadarSatIdVar.id_].value = `${radarSatVars.ALL_SAT_RADAR_SATID}`;
             }, 100);
         }
         if (allSatRadarSatIdVar) {
-            allSatRadarSatIdVar.value = touchedSatVars.ALL_SAT_RADAR_SATID;
+            allSatRadarSatIdVar.value = radarSatVars.ALL_SAT_RADAR_SATID;
         }
 
         let allSatRadarValue = stage.lookupVariableByNameAndType('ALL_SAT_RADAR_VALUE', '');
@@ -524,23 +524,23 @@ class VirtualMachine extends EventEmitter {
             allSatRadarValue = this.workspace.createVariable('ALL_SAT_RADAR_VALUE', '', false, false);
             
             setTimeout(() => {
-                stage.variables[allSatRadarValue.id_].value = `${touchedSatVars.ALL_SAT_RADAR_VALUE}`;
+                stage.variables[allSatRadarValue.id_].value = `${radarSatVars.ALL_SAT_RADAR_VALUE}`;
             }, 100);
         }
         if (allSatRadarValue) {
-            allSatRadarValue.value = touchedSatVars.ALL_SAT_RADAR_VALUE;
+            allSatRadarValue.value = radarSatVars.ALL_SAT_RADAR_VALUE;
         }
 
-        let singleSatRadarValue = stage.lookupVariableByNameAndType(`${touchedSatVars.ALL_SAT_RADAR_SATID}_RADAR_VALUE`, '');
-        if (!singleSatRadarValue) {
-            singleSatRadarValue = this.workspace.createVariable(`${touchedSatVars.ALL_SAT_RADAR_SATID}_RADAR_VALUE`, '', false, false);
+        let singleSatRadarValue = stage.lookupVariableByNameAndType(`${radarSatVars.ALL_SAT_RADAR_SATID}_RADAR_VALUE`, '');
+        if (!singleSatRadarValue && radarSatVars.ALL_SAT_RADAR_SATID !== '') {
+            singleSatRadarValue = this.workspace.createVariable(`${radarSatVars.ALL_SAT_RADAR_SATID}_RADAR_VALUE`, '', false, false);
             
             setTimeout(() => {
-                stage.variables[singleSatRadarValue.id_].value = `${touchedSatVars.ALL_SAT_RADAR_VALUE}`;
+                stage.variables[singleSatRadarValue.id_].value = `${radarSatVars.ALL_SAT_RADAR_VALUE}`;
             }, 100);
         }
         if (singleSatRadarValue) {
-            singleSatRadarValue.value = touchedSatVars.ALL_SAT_RADAR_VALUE;
+            singleSatRadarValue.value = radarSatVars.ALL_SAT_RADAR_VALUE;
         }
     }
 
