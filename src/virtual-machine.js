@@ -215,6 +215,10 @@ class VirtualMachine extends EventEmitter {
             this.createLightVariables(data);
             this.emit('SET_LIGHTS', data);
         });
+        this.runtime.on('CLEAR_ALL_SCRATCH_VARS', () => {
+            this.clearAllScratchVariables();
+            this.emit('CLEAR_ALL_SCRATCH_VARS');
+        });
         this.runtime.on('PUBLISH_TO_CLIENT', data => {
             this.publishToClient(data);
         });
@@ -532,6 +536,13 @@ class VirtualMachine extends EventEmitter {
         }
     }
 
+    clearAllScratchVariables () {
+        const variablesToClear = this.runtime.getTargetForStage().variables;
+        for (const variable in variablesToClear) {
+            this.workspace.deleteVariableById(variable);
+        }
+    }
+
     /**
      * Start running the VM - do this before anything else.
      */
@@ -654,7 +665,8 @@ class VirtualMachine extends EventEmitter {
 
     DisconnectMqtt () {
         const client = MqttConnect.closeConnection();
-        this.setClient(client);        
+        this.setClient(client);
+        this.runtime.emit('CLEAR_ALL_SCRATCH_VARS');
     }
 
     /**
