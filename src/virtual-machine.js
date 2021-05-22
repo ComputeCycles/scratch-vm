@@ -347,6 +347,14 @@ class VirtualMachine extends EventEmitter {
         this.runtime.on('DISCONNECT_FROM_MQTT', () => {
             this.DisconnectMqtt();
         });
+        
+        this.runtime.on('MQTT_ALIAS_VAR_INBOUND', data => {
+            this.setAliasVariables(data);
+        });
+        
+        this.runtime.on('MQTT_GROUP_VAR_INBOUND', data => {
+            this.setGroupVariables(data);
+        });
 
         this.extensionManager = new ExtensionManager(this.runtime);
 
@@ -536,10 +544,27 @@ class VirtualMachine extends EventEmitter {
         }
     }
 
+    setAliasVariables (data) {
+        const stage = this.runtime.getTargetForStage();
+        const aliasVariable = this.workspace.createVariable(`${data.alias}`, '', false, false);
+        setTimeout(() => {
+            stage.variables[aliasVariable.id_].value = data.payload;
+        }, 100);
+            
+    }
+
+    setGroupVariables (data) {
+        const stage = this.runtime.getTargetForStage();
+        const groupVariable = this.workspace.createVariable(`${data.group}`, 'list', false, false);
+        setTimeout(() => {
+            stage.variables[groupVariable.id_].value = data.payload;
+        }, 100);
+    }
+
     clearAllScratchVariables () {
-        const variablesToClear = this.runtime.getTargetForStage().variables;
-        for (const variable in variablesToClear) {
-            this.workspace.deleteVariableById(variable);
+        const variableIds = Object.keys(this.runtime.getTargetForStage().variables);
+        for (let i = 0; i < variableIds.length; i++) {
+            this.workspace.deleteVariableById(variableIds[i]);
         }
     }
 
