@@ -39,7 +39,8 @@ class LightBlocks {
     getPrimitives () {
         return {
             lights_startsequence: this.startSequence,
-            lights_sendMessage: this.mqttSendMessage
+            lights_sendSequence: this.mqttSendSequence,
+            lights_sendSequenceGroup: this.mqttSendSequenceGroup
         };
     }
 
@@ -56,8 +57,8 @@ class LightBlocks {
         return newHEX;
     }
 
-    mqttSendMessage (args, util) {
-        console.log(args, 'from mqttSendMessage');
+    mqttSendSequence (args, util) {
+        console.log(args, 'from mqttSendSequence');
         const message = args.VALUE;
         const satellite = args.SATELLITE;
         const topic = `sat/${satellite}/cmd/fx`;
@@ -74,6 +75,34 @@ class LightBlocks {
                 message: newMessage
             };
             this.runtime.emit('PUBLISH_TO_CLIENT', data);
+        }
+    }
+
+    mqttSendSequenceGroup (args, util) {
+        debugger
+        console.log(args, 'from mqttSendSequenceGroup');
+        const varId = args.SATELLITE_GROUP;
+        const variable = this.runtime.getTargetForStage().lookupVariableById(varId);
+        const satList = variable.value;
+        for (let i = 0; i < satList.length; i++) {
+            args.SATELLITE = satList[i];
+            const message = args.VALUE;
+            const satellite = args.SATELLITE;
+            const topic = `sat/${satellite}/cmd/fx`;
+            if (message.includes('LS')) {
+                const data = {
+                    topic: topic,
+                    message: message
+                };
+                this.runtime.emit('PUBLISH_TO_CLIENT', data);
+            } else {
+                const newMessage = `LS: -1,${message}.txt`;
+                const data = {
+                    topic: topic,
+                    message: newMessage
+                };
+                this.runtime.emit('PUBLISH_TO_CLIENT', data);
+            }
         }
     }
 
