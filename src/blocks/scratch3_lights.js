@@ -79,7 +79,6 @@ class LightBlocks {
     }
 
     mqttSendSequenceGroup (args, util) {
-        debugger
         console.log(args, 'from mqttSendSequenceGroup');
         const varId = args.SATELLITE_GROUP;
         const variable = this.runtime.getTargetForStage().lookupVariableById(varId);

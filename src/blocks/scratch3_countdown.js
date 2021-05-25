@@ -124,9 +124,9 @@ class Scratch3Countdown {
      */
     getPrimitives () {
         return {
-            message_sendValueToTopic: this.sendValueToTopic,
-            message_addSubscription: this.addSubscription,
-            message_deleteSubscriptions: this.deleteSubscriptions,
+            messages_sendValueToTopic: this.sendValueToTopic,
+            messages_addSubscription: this.addSubscription,
+            messages_deleteSubscriptions: this.deleteSubscriptions,
             countdown_gameMode: this.gameMode,
             countdown_startCelebration: this.startCelebration,
             countdown_whenTimerStarted: this.whenTimerStarted,

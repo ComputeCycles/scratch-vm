@@ -796,6 +796,7 @@ class VirtualMachine extends EventEmitter {
      * @returns {string} Project in a Scratch 3.0 JSON representation.
      */
     saveProjectSb3 () {
+        
         const soundDescs = serializeSounds(this.runtime);
         const costumeDescs = serializeCostumes(this.runtime);
         const projectJson = this.toJSON();
@@ -927,7 +928,6 @@ class VirtualMachine extends EventEmitter {
      */
     installTargets (targets, extensions, wholeProject) {
         const extensionPromises = [];
-
         extensions.extensionIDs.forEach(extensionID => {
             if (!this.extensionManager.isExtensionLoaded(extensionID)) {
                 const extensionURL = extensions.extensionURLs.get(extensionID) || extensionID;

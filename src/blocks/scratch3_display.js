@@ -27,10 +27,10 @@ class DisplayBlocks {
      */
     getPrimitives () {
         return {
-            display_image: this.displayImage,
-            display_animateImage: this.animateImage,
-            display_fillImage: this.fillImage,
-            display_displayHistogram: this.displayHistogram
+            playspotDisplay_image: this.displayImage,
+            playspotDisplay_animateImage: this.animateImage,
+            playspotDisplay_fillImage: this.fillImage,
+            playspotDisplay_displayHistogram: this.displayHistogram
         };
     }
 
