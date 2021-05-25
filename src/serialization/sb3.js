@@ -56,7 +56,6 @@ const CORE_EXTENSIONS = [
     'sensing',
     'sound',
     'virtualsat',
-    'countdown',
     'lights',
     'movement',
     'touch',
