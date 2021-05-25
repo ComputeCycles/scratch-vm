@@ -349,7 +349,6 @@ class MqttControl extends EventEmitter{
 
     static playSoundMQTT (args, runtime) {
         this.runtime = runtime;
-        // const satellite = this.findSatelliteSerial(args.satellite);
         console.log('PlaySoundMQTT', args);
         const outboundTopic = `sat/${args.SATELLITE}/cmd/fx`;
         const string = [this._soundsByName[args.SOUND]];
@@ -360,7 +359,6 @@ class MqttControl extends EventEmitter{
             message: arr
         };
         this.runtime.emit('PUBLISH_TO_CLIENT', data);
-        // this._client.publish(outboundTopic, arr);
         return Promise.resolve();
     }
 

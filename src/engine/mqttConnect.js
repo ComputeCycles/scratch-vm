@@ -99,18 +99,18 @@ class MqttConnect extends EventEmitter {
         console.log(`onConnect fired`);
         // subscribe to all status, radar detection and touch events
         if (this._client) {
-            this._client.subscribe('+/sat/+/online');
+            // this._client.subscribe('+/sat/+/online');
             this._client.subscribe('sat/+/online');
             this._client.subscribe('fwserver/online');
             this._client.subscribe('fwserver/files');
-            this._client.subscribe(`sat/${this.username}/cmd/fx`);
-            this._client.subscribe(`+/sat/${this.username}/cmd/fx`);
-            this._client.subscribe(`sat/${this.username}/sound/fx`);
-            this._client.subscribe(`+/sat/${this.username}/sound/fx`);
+            // this._client.subscribe(`sat/${this.username}/cmd/fx`);
+            // this._client.subscribe(`+/sat/${this.username}/cmd/fx`);
+            // this._client.subscribe(`sat/${this.username}/sound/fx`);
+            // this._client.subscribe(`+/sat/${this.username}/sound/fx`);
             this._client.subscribe('sat/+/ev/radar');
-            this._client.subscribe('+/sat/+/ev/radar');
+            // this._client.subscribe('+/sat/+/ev/radar');
             this._client.subscribe('sat/+/ev/touch');
-            this._client.subscribe('+/sat/+/ev/touch');
+            // this._client.subscribe('+/sat/+/ev/touch');
             this._client.subscribe('app/menu/mode');
             this._client.subscribe('alias/+');
             this._client.subscribe('group/+');

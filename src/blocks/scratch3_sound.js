@@ -143,7 +143,8 @@ class Scratch3SoundBlocks {
             sound_volume: this.getVolume,
             sound_playSound: this.playSatSound,
             sound_setVolume: this.setSatVolume,
-            sound_playSoundFromMQTT: this.playSoundMQTT
+            sound_playSoundFromMQTT: this.playSoundMQTT,
+            sound_playSoundFromMQTTGroup: this.playSoundMQTTGroup
         };
     }
 
@@ -152,12 +153,17 @@ class Scratch3SoundBlocks {
     }
 
     playSoundMQTT (args) {
-        // const satellite = this.findSatelliteSerial(args.SATELLITE);
-        // this.runtime.emit('PLAY_SOUND_MQTT', {
-        //     satellite: args.SATELLITE,
-        //     sound: args.SOUND
-        // });
         MqttControl.playSoundMQTT(args, this.runtime);
+    }
+
+    playSoundMQTTGroup (args) {
+        const varId = args.SATELLITE_GROUP;
+        const variable = this.runtime.getTargetForStage().lookupVariableById(varId);
+        const satList = variable.value;
+        for (let i = 0; i < satList.length; i++) {
+            args.SATELLITE = satList[i];
+            MqttControl.playSoundMQTT(args, this.runtime);
+        }
     }
 
     setSatVolume (args) {
