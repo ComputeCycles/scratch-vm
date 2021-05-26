@@ -106,14 +106,17 @@ class VirtualSatBlocks {
     }
 
     stopEvent (args, util) {
-        const message = args.VALUE;
-        const satellite = args.SATELLITE;
-        const topic = `sat/${satellite}/cmd/fx`;
-        // this.runtime.vm.client.publish(topic, message);
-        this.runtime.emit('STOP_EVENT', {
-            topic: topic,
-            message: message
-        });
+        if (args.SATELLITE && args.VALUE) {
+            const message = args.VALUE;
+            const satList = args.SATELLITE.split(' ');
+            for (let i = 0; i < satList.length; i++) {
+                const topic = `sat/${satList[i]}/cmd/fx`;
+                this.runtime.emit('STOP_EVENT', {
+                    topic: topic,
+                    message: message
+                });
+            }
+        }
     }
 
 }
