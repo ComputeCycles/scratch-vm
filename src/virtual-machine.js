@@ -190,15 +190,6 @@ class VirtualMachine extends EventEmitter {
         this.runtime.on('PLAY_SOUND_MQTT', data => {
             this.emit('PLAY_SOUND_MQTT', data);
         });
-        this.runtime.on('SET_VOLUME', data => {
-            if (this.client) {
-                const outboundTopic = `sat/${data.SATELLITE}/cmd/fx`;
-                const string = `AS: vol ${[data.VALUE]}`;
-                const utf8Encode = new TextEncoder();
-                const arr = utf8Encode.encode(string);
-                this.client.publish(outboundTopic, arr);
-            }
-        });
         this.runtime.on('SET_ALL_SATELLITES', data => {
             this.setAllSatellites(data);
             this.emit('SET_ALL_SATELLITES', data);
@@ -223,12 +214,15 @@ class VirtualMachine extends EventEmitter {
             this.publishToClient(data);
         });
         this.runtime.on('SET_VOLUME', data => {
-            if (this.client) {
-                const outboundTopic = `sat/${data.SATELLITE}/cmd/fx`;
-                const string = `AS: vol ${[data.VALUE]}`;
-                const utf8Encode = new TextEncoder();
-                const arr = utf8Encode.encode(string);
-                this.client.publish(outboundTopic, arr);
+            if (this.client && data.SATELLITE && data.VALUE) {
+                const satList = data.SATELLITE.split(' ');
+                for (let i = 0; i < satList.length; i++) {
+                    const outboundTopic = `sat/${satList[i]}/cmd/fx`;
+                    const string = `AS: vol ${[data.VALUE]}`;
+                    const utf8Encode = new TextEncoder();
+                    const arr = utf8Encode.encode(string);
+                    this.client.publish(outboundTopic, arr);
+                }
             }
         });
         this.runtime.on('CHECK_MODE', args => {
