@@ -425,7 +425,9 @@ class VirtualMachine extends EventEmitter {
             console.log(allSounds, 'allSounds');
         }
         setTimeout(() => {
-            stage.variables[allSounds.id_].value = wavs.map(currentValue => currentValue.replace('.wav', ''));
+            if (stage.variables[allSounds.id_]) {
+                stage.variables[allSounds.id_].value = wavs.map(currentValue => currentValue.replace('.wav', ''));
+            }
         }, 100);
     }
 
@@ -436,9 +438,11 @@ class VirtualMachine extends EventEmitter {
             allLights = this.workspace.createVariable('All_Lights', 'list', false, false);
         }
         setTimeout(() => {
-            stage.variables[allLights.id_].value = data.map(currentValue => currentValue.replace('.txt', ''));
+            if (stage.variables[allLights.id_]  !== undefined) {
+                stage.variables[allLights.id_].value = data.map(currentValue => currentValue.replace('.txt', ''));
+                this.runtime.emit(this.runtime.constructor.CLIENT_CONNECTED);
+            }
         }, 100);
-        this.runtime.emit(this.runtime.constructor.CLIENT_CONNECTED);
     }
 
     setAllSatellites (satellites) {
@@ -449,7 +453,9 @@ class VirtualMachine extends EventEmitter {
             allSats = this.workspace.createVariable(`All_Satellites`, 'list', false, false);
         }
         setTimeout(() => {
-            stage.variables[allSats.id_].value = Object.keys(this.satellites);
+            if (stage.variables[allSats.id_] !== undefined) {
+                stage.variables[allSats.id_].value = Object.keys(this.satellites);
+            }
         }, 100);
     }
 
@@ -460,7 +466,9 @@ class VirtualMachine extends EventEmitter {
             singleSat = this.workspace.createVariable(`${data}`, '', false, false);
         }
         setTimeout(() => {
-            stage.variables[singleSat.id_].value = `${data}`;
+            if (stage.variables[singleSat.id_] !== undefined) {
+                stage.variables[singleSat.id_].value = `${data}`;
+            }
         }, 100);
     }
 

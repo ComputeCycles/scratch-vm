@@ -797,17 +797,6 @@ const specMap = {
             }
         ]
     },
-    'satGroup:': {
-        opcode: 'lights_sendSequenceGroup',
-        argMap: [
-            {
-                type: 'input',
-                inputOp: 'sat_group_menu',
-                inputName: 'SATELLITE_GROUP',
-                variableType: Variable.SATELLITE_GROUP
-            }
-        ]
-    },
     'doBroadcastAndWait': {
         opcode: 'event_broadcastandwait',
         argMap: [

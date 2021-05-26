@@ -350,16 +350,19 @@ class MqttControl extends EventEmitter{
     static playSoundMQTT (args, runtime) {
         this.runtime = runtime;
         console.log('PlaySoundMQTT', args);
-        const outboundTopic = `sat/${args.SATELLITE}/cmd/fx`;
-        const string = [this._soundsByName[args.SOUND]];
-        const utf8Encode = new TextEncoder();
-        const arr = utf8Encode.encode(string);
-        const data = {
-            topic: outboundTopic,
-            message: arr
-        };
-        this.runtime.emit('PUBLISH_TO_CLIENT', data);
-        return Promise.resolve();
+        if (this._soundsByName !== undefined) {
+            const outboundTopic = `sat/${args.SATELLITE}/cmd/fx`;
+            const string = [this._soundsByName[args.SOUND]];
+
+            const utf8Encode = new TextEncoder();
+            const arr = utf8Encode.encode(string);
+            const data = {
+                topic: outboundTopic,
+                message: arr
+            };
+            this.runtime.emit('PUBLISH_TO_CLIENT', data);
+            return Promise.resolve();
+        }
     }
 
     static playSound (args) {
