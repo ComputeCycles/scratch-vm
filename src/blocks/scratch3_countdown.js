@@ -26,7 +26,7 @@ class Scratch3Countdown {
 
         this.isSatelliteTouched = false;
         this.satelliteToCheck = '';
-        this.touchedSattleite = '';
+        this.touchedSatellite = '';
 
         this.mode_match = false;
 
@@ -68,13 +68,13 @@ class Scratch3Countdown {
             console.log(data.sender, 'data.sender');
             console.log(data, 'DATAINisTOUCH');
             if (data.touched === true) {
-                this.touchedSattleite = data.sender;
+                this.touchedSatellite = data.sender;
                 this.isSatelliteTouched = !!(data.touched);
             } else {
-                this.touchedSattleite = '';
+                this.touchedSatellite = '';
                 this.isSatelliteTouched = !!(data.touched);
             }
-            console.log(this.touchedSattleite, 'touched sat', this.isSatelliteTouched, 'is sat touched');
+            console.log(this.touchedSatellite, 'touched sat', this.isSatelliteTouched, 'is sat touched');
         });
 
 
