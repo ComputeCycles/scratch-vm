@@ -79,14 +79,15 @@ class MovementBlocks {
     }
 
     arePresencesSensed (args) {
-        this.satelliteToCheck = args.SATELLITE;
         if (args.SATELLITE !== 'SATELLITE' || args.SATELLITE !== '' || args.SATELLITE !== undefined) {
-            if (this.satelliteToCheck === this.sensingSattelite && this.isSatelliteSensing) {
-                return true;
+            const satList = args.SATELLITE.split(' ');
+            for (let i = 0; i < satList.length; i++) {
+                this.satelliteToCheck = satList[i];
+                if (this.satelliteToCheck === this.sensingSattelite && this.isSatelliteSensing) {
+                    return true;
+                }
             }
-            return false;
-            
-        }
+        }    
         return this.isSatelliteSensing;
     }
 

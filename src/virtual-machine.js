@@ -192,7 +192,6 @@ class VirtualMachine extends EventEmitter {
         });
         this.runtime.on('SET_ALL_SATELLITES', data => {
             this.setAllSatellites(data);
-            this.emit('SET_ALL_SATELLITES', data);
         });
         this.runtime.on('SET_SATELLITE_VARS', data => {
             this.createSatelliteVariable(data);
@@ -208,7 +207,6 @@ class VirtualMachine extends EventEmitter {
         });
         this.runtime.on('CLEAR_ALL_SCRATCH_VARS', () => {
             this.clearAllScratchVariables();
-            this.emit('CLEAR_ALL_SCRATCH_VARS');
         });
         this.runtime.on('PUBLISH_TO_CLIENT', data => {
             this.publishToClient(data);
@@ -263,24 +261,25 @@ class VirtualMachine extends EventEmitter {
         });
         this.runtime.on('SET_RADAR', data => {
             if (data.SATELLITE !== 'satellite') {
-
-                const utf8Encode = new TextEncoder();
-                const options = {qos: 0, retain: true};
-                const fSpeedTopic = `sat/${data.SATELLITE}/cfg/radar/fSpeed`;
-                const bSpeedTopic = `sat/${data.SATELLITE}/cfg/radar/bSpeed`;
-                const fMagTopic = `sat/${data.SATELLITE}/cfg/radar/fMag`;
-                const bMagTopic = `sat/${data.SATELLITE}/cfg/radar/bMag`;
-                const detEnTopic = `sat/${data.SATELLITE}/cfg/radar/detEn`;
-                
-                if (this.client && this.client != undefined) {
-                    if (data.SENSITIVITY == "off") {
-                        this.client.publish(detEnTopic, utf8Encode.encode('0'), options);
-                    } else {
-                        this.client.publish(detEnTopic, utf8Encode.encode('1'), options);
-                        this.client.publish(fSpeedTopic, utf8Encode.encode('2'), options);
-                        this.client.publish(bSpeedTopic, utf8Encode.encode('2'), options);
-                        this.client.publish(fMagTopic, utf8Encode.encode('5'), options);
-                        this.client.publish(bMagTopic, utf8Encode.encode('5'), options);
+                const satList = data.SATELLITE.split(' ');
+                for (let i = 0; i < satList.length; i++) {
+                    const utf8Encode = new TextEncoder();
+                    const options = {qos: 0, retain: true};
+                    const fSpeedTopic = `sat/${satList[i]}/cfg/radar/fSpeed`;
+                    const bSpeedTopic = `sat/${satList[i]}/cfg/radar/bSpeed`;
+                    const fMagTopic = `sat/${satList[i]}/cfg/radar/fMag`;
+                    const bMagTopic = `sat/${satList[i]}/cfg/radar/bMag`;
+                    const detEnTopic = `sat/${satList[i]}/cfg/radar/detEn`;
+                    if (this.client && this.client != undefined) {
+                        if (data.SENSITIVITY == "off") {
+                            this.client.publish(detEnTopic, utf8Encode.encode('0'), options);
+                        } else {
+                            this.client.publish(detEnTopic, utf8Encode.encode('1'), options);
+                            this.client.publish(fSpeedTopic, utf8Encode.encode('2'), options);
+                            this.client.publish(bSpeedTopic, utf8Encode.encode('2'), options);
+                            this.client.publish(fMagTopic, utf8Encode.encode('5'), options);
+                            this.client.publish(bMagTopic, utf8Encode.encode('5'), options);
+                        }
                     }
                 }
             }
@@ -303,8 +302,11 @@ class VirtualMachine extends EventEmitter {
         });
         this.runtime.on('REBOOT_SATELLITE', args => {
             if (this.client) {
-                const outboundTopic = `sat/${args.SATELLITE}/cmd/reboot`;
-                this.client.publish(outboundTopic, '[0x1]');
+                const satList = args.SATELLITE.split(' ');
+                for (let i = 0; i < satList.length; i++) {
+                    const outboundTopic = `sat/${satList[i]}/cmd/reboot`;
+                    this.client.publish(outboundTopic, '[0x1]');
+                }
             }
         });
         this.runtime.on('SEND_BROADCAST', data => {
