@@ -50,7 +50,7 @@ class TouchBlocks {
         this.actions = [];
 
         this.isSatelliteTouched = false;
-        this.touchedSattleite = '';
+        this.touchedSatellite = '';
         this.satelliteToCheck = '';
 
         this.runtime.on('TOUCH_EVENT_ONE', (args) => {
@@ -66,14 +66,14 @@ class TouchBlocks {
 
         this.runtime.on('IS_TOUCHED', (data) => {
             if (data.touched === true) {
-                this.touchedSattleite = data.sender;
+                this.touchedSatellite = data.sender;
                 this.isSatelliteTouched = (data.touched) ? true : false;
             } else {
-                this.touchedSattleite = '';
+                this.touchedSatellite = '';
                 this.isSatelliteTouched = (data.touched) ? true : false;
             };
             this.translateTouchInput(data);
-            console.log(this.touchedSattleite, "touched sat", this.isSatelliteTouched, "is sat touched");
+            console.log(this.touchedSatellite, "touched sat", this.isSatelliteTouched, "is sat touched");
         });
 
         this.runtime.on('TOUCH_EVENT_SATELLITE', (args) => {
@@ -114,13 +114,13 @@ class TouchBlocks {
         return {
             touch_whenAnySatTouched: this.whenAnySatTouched,
             touch_isTouched: this.isTouched,
-            touch_waitUntilSatTouched: this.mqttWaitUntilSatTouched,
+            touch_waitUntilSatTouched: this.mqttWaitUntilSatTouched
         };
     }
 
-    resetTouchEvent(satellite) {
+    resetTouchEvent (satellite) {
         for (let i = 0; i < this.actions.length; i++) {
-                const keys = Object.keys(this.actions[i]);
+            const keys = Object.keys(this.actions[i]);
             if (satellite === keys[0]) {
                 this.actions[i] = {[`${satellite}`]: false}
                 break;
@@ -131,38 +131,39 @@ class TouchBlocks {
     stopSequence () {
         this._timeoutIds.forEach(id => clearTimeout(id));
         this._time = 0;
-        let positions = ['#000000', '#000000', '#000000', '#000000', '#000000', '#000000', '#000000', '#000000', '#000000', '#000000', '#000000', '#000000', '#000000', '#000000', '#000000', '#000000'];
+        const positions = ['#000000', '#000000', '#000000', '#000000', '#000000', '#000000', '#000000', '#000000', '#000000', '#000000', '#000000', '#000000', '#000000', '#000000', '#000000', '#000000'];
         this.positionsCopy = [...positions];
         this.runtime.emit('PIXEL_EVENT_1', {
             type: 'sequence1',
             value: this.positionsCopy
-        })
+        });
     }
 
     isTouched (args) {
-        this.satelliteToCheck = args.SATELLITE;
-        if(args.SATELLITE !== 'SATELLITE' || args.SATELLITE !== '' || args.SATELLITE !== undefined) {
-            if(this.satelliteToCheck === this.touchedSattleite && this.isSatelliteTouched) {
-                return true;
-            } else {
-                return false;
+        if (args.SATELLITE !== 'SATELLITE' || args.SATELLITE !== '' || args.SATELLITE !== undefined) {
+            const satList = args.SATELLITE.split(' ');
+            for (let i = 0; i < satList.length; i++) {
+                this.satelliteToCheck = satList[i];
+                if (this.satelliteToCheck === this.touchedSatellite && this.isSatelliteTouched) {
+                    return true;
+                }
             }
+            return this.isSatelliteTouched;
         }
-        return this.isSatelliteTouched;
-      } 
+    }
 
 
     whenAnySatTouched (args, util) {
         let condition = false;
-        if(args.SATELLITE !== 'SATELLITE' || args.SATELLITE !== '' || args.SATELLITE !== undefined) {
-            if(args.SATELLITE === this.touchedSattleite && this.isSatelliteTouched){
+        if (args.SATELLITE !== 'SATELLITE' || args.SATELLITE !== '' || args.SATELLITE !== undefined) {
+            if (args.SATELLITE === this.touchedSatellite && this.isSatelliteTouched){
                 condition = true;
             } else {
                 condition = false;
             }
         }
 
-        if(!condition){
+        if (!condition){
             util.yield();
         }
     }
