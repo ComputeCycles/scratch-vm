@@ -70,6 +70,12 @@ class VirtualMachine extends EventEmitter {
         this.satellites = {};
 
         this.workspace = {};
+        
+        this.standaloneMode = false;
+
+        if (process.title !== 'browser') {
+            this.standaloneMode = true;
+        }
 
         this.app = {
             mode: 0
@@ -345,11 +351,21 @@ class VirtualMachine extends EventEmitter {
         });
         
         this.runtime.on('MQTT_ALIAS_VAR_INBOUND', data => {
-            this.setAliasVariables(data);
+            if (this.standaloneMode === true) {
+                this.setStandaloneAliasVariables(data);
+            }
+            if (this.standaloneMode === false) {
+                this.setAliasVariables(data);
+            }
         });
         
         this.runtime.on('MQTT_GROUP_VAR_INBOUND', data => {
-            this.setGroupVariables(data);
+            if (this.standaloneMode === true) {
+                this.setStandaloneGroupVariables(data);
+            }
+            if (this.standaloneMode === false) {
+                this.setGroupVariables(data);
+            }
         });
 
         this.extensionManager = new ExtensionManager(this.runtime);
@@ -555,7 +571,7 @@ class VirtualMachine extends EventEmitter {
             setTimeout(() => {
                 stage.variables[aliasVariable.id_].value = data.payload;
             }, 100);
-        }    
+        }
     }
 
     setGroupVariables (data) {
@@ -564,6 +580,28 @@ class VirtualMachine extends EventEmitter {
             const groupVariable = this.workspace.createVariable(`${data.group}`, 'list', false, false);
             setTimeout(() => {
                 stage.variables[groupVariable.id_].value = data.payload;
+            }, 100);
+        }
+    }
+
+    setStandaloneAliasVariables (data) {
+        if (typeof data.payload === 'string' && data.payload !== '') {
+            const stage = this.runtime.getTargetForStage();
+            // params (id, name, type, isCloud)
+            stage.createVariable(`${data.alias}`, `${data.alias}`, '', false);
+            setTimeout(() => {
+                stage.variables[data.alias].value = data.payload;
+            }, 100);
+        }
+    }
+
+    setStandaloneGroupVariables (data) {
+        if (Array.isArray(data.payload) && data.payload !== []) {
+            const stage = this.runtime.getTargetForStage();
+            // params (id, name, type, isCloud)
+            stage.createVariable(`${data.group}`, `${data.group}`, 'list', false);
+            setTimeout(() => {
+                stage.variables[data.group].value = data.payload;
             }, 100);
         }
     }
