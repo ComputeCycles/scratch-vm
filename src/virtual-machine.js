@@ -727,8 +727,8 @@ class VirtualMachine extends EventEmitter {
         this.runtime.connectPeripheral(extensionId, peripheralId, userName, password);
     }
 
-    connectMqtt (extensionId, peripheralId, userName, password) {
-        const client = MqttConnect.connect(peripheralId, userName, password, this.runtime);
+    connectMqtt (extensionId, peripheralId, port, userName, password) {
+        const client = MqttConnect.connect(peripheralId, port, userName, password, this.runtime);
         this.setClient(client);
         (console.log(extensionId, peripheralId, userName, password, 'from connectMqtt'));
     }
