@@ -108,8 +108,7 @@ class MqttControl extends EventEmitter{
                     payload: json,
                     alias: t[1]
                 };
-                this.runtime.emit('MQTT_ALIAS_VAR_INBOUND', data);
-                // replace above with a call to function on this module: setGroupAliasVars
+                this.setAliasVars(topic, data, t);
             }
         } else if (t[0] === 'group') {
             const parsedPayload = decoder.decode(payload);
@@ -119,8 +118,7 @@ class MqttControl extends EventEmitter{
                     payload: json,
                     group: t[1]
                 };
-                this.runtime.emit('MQTT_GROUP_VAR_INBOUND', data);
-                // replace above with a call to function on this module: setGroupAliasVars
+                this.setGroupVars(topic, data, t);
             }
         } else if (t[0] === 'sat' && t[2] === 'cmd' && t[3] === 'fx') {
             const message = decoder.decode(payload);
@@ -262,8 +260,24 @@ class MqttControl extends EventEmitter{
         this.runtime.emit('SET_RADAR_VARS', radarSatVars);
     }
     
-    static setGroupAliasVars (topic, message, t) {
+    static setAliasVars (topic, data, t) {
+        if (t[0] === 'alias') {
+            const aliasVar = {
+                alias: t[1],
+                payload: data.payload
+            };
+            this.runtime.emit('SET_ALIAS_VARS', aliasVar);
+        }
+    }
 
+    static setGroupVars (topic, data, t) {
+        if (t[0] === 'group') {
+            const groupVar = {
+                group: t[1],
+                payload: data.payload
+            };
+            this.runtime.emit('SET_GROUP_VARS', groupVar);
+        }
     }
 
     static _satelliteStatusHandler (sender) {
