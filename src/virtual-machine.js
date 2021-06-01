@@ -70,12 +70,6 @@ class VirtualMachine extends EventEmitter {
         this.satellites = {};
 
         this.workspace = {};
-        
-        this.standaloneMode = false;
-
-        if (process.title !== 'browser') {
-            this.standaloneMode = true;
-        }
 
         this.app = {
             mode: 0
@@ -350,22 +344,12 @@ class VirtualMachine extends EventEmitter {
             this.DisconnectMqtt();
         });
         
-        this.runtime.on('MQTT_ALIAS_VAR_INBOUND', data => {
-            if (this.standaloneMode === true) {
-                this.setStandaloneAliasVariables(data);
-            }
-            if (this.standaloneMode === false) {
-                this.setAliasVariables(data);
-            }
+        this.runtime.on('SET_ALIAS_VARS', data => {
+            this.setAliasVariables(data);
         });
         
-        this.runtime.on('MQTT_GROUP_VAR_INBOUND', data => {
-            if (this.standaloneMode === true) {
-                this.setStandaloneGroupVariables(data);
-            }
-            if (this.standaloneMode === false) {
-                this.setGroupVariables(data);
-            }
+        this.runtime.on('SET_GROUP_VARS', data => {
+            this.setGroupVariables(data);
         });
 
         this.extensionManager = new ExtensionManager(this.runtime);
@@ -567,9 +551,15 @@ class VirtualMachine extends EventEmitter {
     setAliasVariables (data) {
         if (typeof data.payload === 'string' && data.payload !== '') {
             const stage = this.runtime.getTargetForStage();
-            const aliasVariable = this.workspace.createVariable(`${data.alias}`, '', false, false);
+            let aliasVariable = stage.lookupVariableByNameAndType(`${data.alias}`, '');
+            if (!aliasVariable) {
+                aliasVariable = this.workspace.createVariable(`${data.alias}`, '', false, false);
+                console.log(aliasVariable, 'alias variable');
+            }
             setTimeout(() => {
-                stage.variables[aliasVariable.id_].value = data.payload;
+                if (stage.variables[aliasVariable.id_] !== undefined) {
+                    stage.variables[aliasVariable.id_].value = data.payload;
+                }
             }, 100);
         }
     }
@@ -577,31 +567,15 @@ class VirtualMachine extends EventEmitter {
     setGroupVariables (data) {
         if (Array.isArray(data.payload) && data.payload !== []) {
             const stage = this.runtime.getTargetForStage();
-            const groupVariable = this.workspace.createVariable(`${data.group}`, 'list', false, false);
+            let groupVariable = stage.lookupVariableByNameAndType(`${data.group}`, 'list');
+            if (!groupVariable) {
+                groupVariable = this.workspace.createVariable(`${data.group}`, 'list', false, false);
+                console.log(groupVariable, 'group variable');
+            }
             setTimeout(() => {
-                stage.variables[groupVariable.id_].value = data.payload;
-            }, 100);
-        }
-    }
-
-    setStandaloneAliasVariables (data) {
-        if (typeof data.payload === 'string' && data.payload !== '') {
-            const stage = this.runtime.getTargetForStage();
-            // params (id, name, type, isCloud)
-            stage.createVariable(`${data.alias}`, `${data.alias}`, '', false);
-            setTimeout(() => {
-                stage.variables[data.alias].value = data.payload;
-            }, 100);
-        }
-    }
-
-    setStandaloneGroupVariables (data) {
-        if (Array.isArray(data.payload) && data.payload !== []) {
-            const stage = this.runtime.getTargetForStage();
-            // params (id, name, type, isCloud)
-            stage.createVariable(`${data.group}`, `${data.group}`, 'list', false);
-            setTimeout(() => {
-                stage.variables[data.group].value = data.payload;
+                if (stage.variables[groupVariable.id_] !== undefined) {
+                    stage.variables[groupVariable.id_].value = data.payload;
+                }
             }, 100);
         }
     }
