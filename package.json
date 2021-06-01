@@ -54,7 +54,7 @@
     "scratch-translate-extension-languages": "0.0.20191118205314",
     "text-encoding": "0.7.0",
     "worker-loader": "^1.1.1",
-    "yargs": "^17.0.1"
+    "yargs": "^15.0.1"
   },
   "devDependencies": {
     "@babel/core": "^7.1.2",
