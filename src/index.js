@@ -27,13 +27,13 @@ const argv = yargs
     .help()
     .argv;
 
-const host = argv.host;
-const port = argv.port;
-const gamePath = argv.game;
-
+    
 const virtualMachine = new VirtualMachine();
-
+    
 if (process.title !== 'browser') {
+    const host = argv.host;
+    const port = argv.port;
+    const gamePath = argv.game;
 
     const file = new File('DefaultGame.sb3', {
         name: 'DefaultGame.sb3',
