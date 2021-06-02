@@ -251,7 +251,7 @@ class MqttControl extends EventEmitter{
         };
         this.runtime.emit('SET_TOUCH_VARS', touchedSatVars);
     }
-    
+
     static setRadarVars (topic, message, t) {
         radarSatVars = {
             ALL_SAT_RADAR_SATID: t[1],
@@ -259,7 +259,7 @@ class MqttControl extends EventEmitter{
         };
         this.runtime.emit('SET_RADAR_VARS', radarSatVars);
     }
-    
+
     static setAliasVars (topic, data, t) {
         if (t[0] === 'alias') {
             const aliasVar = {
@@ -302,7 +302,7 @@ class MqttControl extends EventEmitter{
         this.setupLightVar(files);
         // this._runtime.emit(this._runtime.constructor.PERIPHERAL_LIST_UPDATE, this._satellites);
     }
-    
+
     static setupSoundVar (names) {
         const wavs = names.filter(currentValue => (currentValue.includes('.wav')));
         const soundsByName = {Silence: 'AS: STOP'};
@@ -311,10 +311,10 @@ class MqttControl extends EventEmitter{
             soundsByName[val] = `AS: 1,${currentValue}`;
         });
         this._soundsByName = Object.freeze(soundsByName);
-        
+
         this.runtime.emit('SET_SOUND_VARS', wavs);
     }
-    
+
     static setupLightVar (names) {
         // const stage = this.runtime.getTargetForStage();
         const txts = names.filter(currentValue => (currentValue.includes('.txt')));
