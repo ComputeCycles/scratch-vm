@@ -344,11 +344,11 @@ class VirtualMachine extends EventEmitter {
             this.DisconnectMqtt();
         });
         
-        this.runtime.on('MQTT_ALIAS_VAR_INBOUND', data => {
+        this.runtime.on('SET_ALIAS_VARS', data => {
             this.setAliasVariables(data);
         });
         
-        this.runtime.on('MQTT_GROUP_VAR_INBOUND', data => {
+        this.runtime.on('SET_GROUP_VARS', data => {
             this.setGroupVariables(data);
         });
 
@@ -551,19 +551,31 @@ class VirtualMachine extends EventEmitter {
     setAliasVariables (data) {
         if (typeof data.payload === 'string' && data.payload !== '') {
             const stage = this.runtime.getTargetForStage();
-            const aliasVariable = this.workspace.createVariable(`${data.alias}`, '', false, false);
+            let aliasVariable = stage.lookupVariableByNameAndType(`${data.alias}`, '');
+            if (!aliasVariable) {
+                aliasVariable = this.workspace.createVariable(`${data.alias}`, '', false, false);
+                console.log(aliasVariable, 'alias variable');
+            }
             setTimeout(() => {
-                stage.variables[aliasVariable.id_].value = data.payload;
+                if (stage.variables[aliasVariable.id_] !== undefined) {
+                    stage.variables[aliasVariable.id_].value = data.payload;
+                }
             }, 100);
-        }    
+        }
     }
 
     setGroupVariables (data) {
         if (Array.isArray(data.payload) && data.payload !== []) {
             const stage = this.runtime.getTargetForStage();
-            const groupVariable = this.workspace.createVariable(`${data.group}`, 'list', false, false);
+            let groupVariable = stage.lookupVariableByNameAndType(`${data.group}`, 'list');
+            if (!groupVariable) {
+                groupVariable = this.workspace.createVariable(`${data.group}`, 'list', false, false);
+                console.log(groupVariable, 'group variable');
+            }
             setTimeout(() => {
-                stage.variables[groupVariable.id_].value = data.payload;
+                if (stage.variables[groupVariable.id_] !== undefined) {
+                    stage.variables[groupVariable.id_].value = data.payload;
+                }
             }, 100);
         }
     }
@@ -689,8 +701,8 @@ class VirtualMachine extends EventEmitter {
         this.runtime.connectPeripheral(extensionId, peripheralId, userName, password);
     }
 
-    connectMqtt (extensionId, peripheralId, userName, password) {
-        const client = MqttConnect.connect(peripheralId, userName, password, this.runtime);
+    connectMqtt (extensionId, peripheralId, port, userName, password) {
+        const client = MqttConnect.connect(peripheralId, port, userName, password, this.runtime);
         this.setClient(client);
         (console.log(extensionId, peripheralId, userName, password, 'from connectMqtt'));
     }

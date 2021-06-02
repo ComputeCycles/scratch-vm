@@ -13,8 +13,8 @@ class MqttConnect extends EventEmitter {
         this.runtime = null;
     }
 
-    static connect (host, username, password, runtime) {
-        console.log(`connected fired with url = ${host}`);
+    static connect (host, port, username, password, runtime) {
+        console.log(`connected fired with url = ${host} on port ${port}`);
         this.runtime = runtime;
         console.log(this.runtime, 'runtime from connect');
         if (host && !username) this.broker = `ws://${host}:3000`;

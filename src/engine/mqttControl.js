@@ -108,7 +108,7 @@ class MqttControl extends EventEmitter{
                     payload: json,
                     alias: t[1]
                 };
-                this.runtime.emit('MQTT_ALIAS_VAR_INBOUND', data);
+                this.setAliasVars(topic, data, t);
             }
         } else if (t[0] === 'group') {
             const parsedPayload = decoder.decode(payload);
@@ -118,7 +118,7 @@ class MqttControl extends EventEmitter{
                     payload: json,
                     group: t[1]
                 };
-                this.runtime.emit('MQTT_GROUP_VAR_INBOUND', data);
+                this.setGroupVars(topic, data, t);
             }
         } else if (t[0] === 'sat' && t[2] === 'cmd' && t[3] === 'fx') {
             const message = decoder.decode(payload);
@@ -260,6 +260,26 @@ class MqttControl extends EventEmitter{
         this.runtime.emit('SET_RADAR_VARS', radarSatVars);
     }
 
+    static setAliasVars (topic, data, t) {
+        if (t[0] === 'alias') {
+            const aliasVar = {
+                alias: t[1],
+                payload: data.payload
+            };
+            this.runtime.emit('SET_ALIAS_VARS', aliasVar);
+        }
+    }
+
+    static setGroupVars (topic, data, t) {
+        if (t[0] === 'group') {
+            const groupVar = {
+                group: t[1],
+                payload: data.payload
+            };
+            this.runtime.emit('SET_GROUP_VARS', groupVar);
+        }
+    }
+
     static _satelliteStatusHandler (sender) {
         // log.info(`satelliteStatusHandler fired for sender: ${sender}`);
         satellites[sender] = {
@@ -293,6 +313,26 @@ class MqttControl extends EventEmitter{
         this._soundsByName = Object.freeze(soundsByName);
 
         this.runtime.emit('SET_SOUND_VARS', wavs);
+    }
+
+    static setupLightVar (names) {
+        // const stage = this.runtime.getTargetForStage();
+        const txts = names.filter(currentValue => (currentValue.includes('.txt')));
+        const sequencesByName = {
+            'Clear': 'LS: CLEAR',
+            'Pause': 'LS: PAUSE',
+            'Stop': 'LS: STOP',
+            'Stop and Clear': 'LS: STOPCLEAR'
+        };
+        txts.forEach(currentValue => {
+            const val = currentValue.replace('.txt', '');
+            sequencesByName[val] = `LS: -1,${currentValue}`;
+        });
+        _sequencesByName = Object.freeze(sequencesByName);
+        
+        // Setup the variable
+        this.runtime.emit('SET_LIGHTS', txts);
+        console.log(_sequencesByName, 'sequences');
     }
 
     static touchHandler (sender, payload) {
@@ -377,26 +417,6 @@ class MqttControl extends EventEmitter{
         const arr = utf8Encode.encode(audio);
         this.props.vm.client.publish(outboundTopic, arr);
         return Promise.resolve();
-    }
-
-    static setupLightVar (names) {
-        const stage = this.runtime.getTargetForStage();
-        const txts = names.filter(currentValue => (currentValue.includes('.txt')));
-        const sequencesByName = {
-            'Clear': 'LS: CLEAR',
-            'Pause': 'LS: PAUSE',
-            'Stop': 'LS: STOP',
-            'Stop and Clear': 'LS: STOPCLEAR'
-        };
-        txts.forEach(currentValue => {
-            const val = currentValue.replace('.txt', '');
-            sequencesByName[val] = `LS: -1,${currentValue}`;
-        });
-        _sequencesByName = Object.freeze(sequencesByName);
-
-        // Setup the variable
-        this.runtime.emit('SET_LIGHTS', txts);
-        console.log(_sequencesByName, 'sequences');
     }
 
     static playLightSequence (args) {
