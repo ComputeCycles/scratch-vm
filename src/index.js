@@ -23,7 +23,7 @@ if (process.title !== 'browser') {
     console.log(inputs)
     const host = inputs.host ? `${inputs.host}` : 'localhost';
     const port = inputs.port ? `${inputs.port}` : '1883';
-    const gamePath = inputs.game ? `${inputs.game}` : `${process.cwd()}/game/DefaultGame.sb3`;
+    const gamePath = inputs.game ? `${inputs.game}` : `${process.cwd()}/game/newNamesDefaultGame.sb3`;
 
     const file = new File('DefaultGame.sb3', {
         name: 'DefaultGame.sb3',

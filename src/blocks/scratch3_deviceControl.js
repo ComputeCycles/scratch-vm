@@ -44,11 +44,11 @@ class DeviceControlBlocks {
      */
     getPrimitives () {
         return {
-            devicecontrol_stopEvent: this.stopEvent,
-            devicecontrol_addNewVirtualSat: this.addNewSat,
-            devicecontrol_setRadarSensitivities: this.setRadarSensitivity,
-            devicecontrol_cycleSatellitePower: this.cycleSatellitePower,
-            devicecontrol_rebootSatellite: this.rebootSatellite
+            deviceControl_stopEvent: this.stopEvent,
+            deviceControl_addNewVirtualSat: this.addNewSat,
+            deviceControl_setRadarSensitivities: this.setRadarSensitivity,
+            deviceControl_cycleSatellitePower: this.cycleSatellitePower,
+            deviceControl_rebootSatellite: this.rebootSatellite
         };
     }
 
