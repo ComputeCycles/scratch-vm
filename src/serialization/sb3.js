@@ -55,7 +55,7 @@ const CORE_EXTENSIONS = [
     'procedures',
     'sensing',
     'sound',
-    'deviceControl',
+    'virtualsat',
     'lights',
     'movement',
     'touch',
@@ -485,6 +485,7 @@ const serializeTarget = function (target, extensions) {
         obj.draggable = target.draggable;
         obj.rotationStyle = target.rotationStyle;
     }
+
     // Add found extensions to the extensions object
     targetExtensions.forEach(extensionId => {
         extensions.add(extensionId);
