@@ -28,7 +28,7 @@ const builtinExtensions = {
     mqttConnect: () => require('../engine/mqttConnect'),
     playspotDisplay: () => require('../blocks/scratch3_display'),
     movement: () => require('../blocks/scratch3_movement'),
-    virtualsat: () => require('../blocks/scratch3_deviceControl'),
+    deviceControl: () => require('../blocks/scratch3_deviceControl'),
     touch: () => require('../blocks/scratch3_touch'),
     lights: () => require('../blocks/scratch3_lights')
 };
