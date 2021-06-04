@@ -361,7 +361,6 @@ class VirtualMachine extends EventEmitter {
 
         this.createPlayspotVariable = (varName, varType, stage) => {
             let playspotVariable = {};
-            debugger
             if (this.workspace.createVariable) {
                 // workspace.createVariable(varName, OPTIONALvarType, OPTIONALvarId, OPTIONALisLocal, OPTIONALisCloud)
                 playspotVariable = this.workspace.createVariable(varName, varType, false, false);
