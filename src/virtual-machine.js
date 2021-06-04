@@ -483,7 +483,7 @@ class VirtualMachine extends EventEmitter {
             singleSat = this.createPlayspotVariable(varName, varType, stage);
         }
         setTimeout(() => {
-            if (stage.variables[singleSat] !== undefined) {
+            if (stage.variables[singleSat] !== undefined && stage.variables[singleSat.id_]) {
                 stage.variables[singleSat.id_].value = `${varName}`;
             }
         }, 100);
