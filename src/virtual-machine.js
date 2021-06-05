@@ -359,6 +359,18 @@ class VirtualMachine extends EventEmitter {
             this.extensionManager.loadExtensionIdSync(id);
         }
 
+        this.createPlayspotVariable = (varName, varType, stage) => {
+            let playspotVariable = {};
+            if (this.workspace.createVariable) {
+                // workspace.createVariable(varName, OPTIONALvarType, OPTIONALvarId, OPTIONALisLocal, OPTIONALisCloud)
+                playspotVariable = this.workspace.createVariable(varName, varType, false, false);
+            } else {
+                // stage.createVariable(id, name, type, isCloud)
+                playspotVariable = stage.createVariable('', varName, varType, false);
+            }
+            return playspotVariable;
+        };
+
         this.blockListener = this.blockListener.bind(this);
         this.flyoutBlockListener = this.flyoutBlockListener.bind(this);
         this.monitorBlockListener = this.monitorBlockListener.bind(this);
@@ -414,10 +426,12 @@ class VirtualMachine extends EventEmitter {
     }
 
     setUpSoundVars (wavs) {
+        const varName = 'All_Sounds';
+        const varType = 'list';
         const stage = this.runtime.getTargetForStage();
-        let allSounds = stage.lookupVariableByNameAndType('All_Sounds', 'list');
+        let allSounds = stage.lookupVariableByNameAndType(varName, varType);
         if (!allSounds) {
-            allSounds = this.workspace.createVariable('All_Sounds', 'list', false, false);
+            allSounds = this.createPlayspotVariable(varName, varType, stage);
             console.log(allSounds, 'allSounds');
         }
         setTimeout(() => {
@@ -428,10 +442,12 @@ class VirtualMachine extends EventEmitter {
     }
 
     createLightVariables (data) {
+        const varName = 'All_Lights';
+        const varType = 'list';
         const stage = this.runtime.getTargetForStage();
-        let allLights = stage.lookupVariableByNameAndType('All_Lights', 'list');
+        let allLights = stage.lookupVariableByNameAndType(varName, varType);
         if (!allLights) {
-            allLights = this.workspace.createVariable('All_Lights', 'list', false, false);
+            allLights = this.createPlayspotVariable(varName, varType, stage);
         }
         setTimeout(() => {
             if (stage.variables[allLights.id_]  !== undefined) {
@@ -442,11 +458,13 @@ class VirtualMachine extends EventEmitter {
     }
 
     setAllSatellites (satellites) {
+        const varName = 'All_Satellites';
+        const varType = 'list';
         this.satellites = satellites;
         const stage = this.runtime.getTargetForStage();
-        let allSats = stage.lookupVariableByNameAndType('All_Satellites', 'list');
+        let allSats = stage.lookupVariableByNameAndType(varName, varType);
         if (!allSats) {
-            allSats = this.workspace.createVariable(`All_Satellites`, 'list', false, false);
+            allSats = this.createPlayspotVariable(varName, varType, stage);
         }
         setTimeout(() => {
             if (stage.variables[allSats.id_] !== undefined) {
@@ -456,105 +474,100 @@ class VirtualMachine extends EventEmitter {
     }
 
     createSatelliteVariable (data) {
+        const varName = data;
+        const varType = '';
         const stage = this.runtime.getTargetForStage();
-        let singleSat = stage.lookupVariableByNameAndType(`${data}`, '');
+        let singleSat = stage.lookupVariableByNameAndType(varName, varType);
         if (!singleSat) {
-            singleSat = this.workspace.createVariable(`${data}`, '', false, false);
+            singleSat = this.createPlayspotVariable(varName, varType, stage);
         }
         setTimeout(() => {
-            if (stage.variables[singleSat.id_] !== undefined) {
-                stage.variables[singleSat.id_].value = `${data}`;
+            if (stage.variables[singleSat] !== undefined && stage.variables[singleSat.id_]) {
+                stage.variables[singleSat.id_].value = `${varName}`;
             }
         }, 100);
     }
+    
 
     setTouchVariables (touchedSatVars) {
         const stage = this.runtime.getTargetForStage();
-        
-        let allSatTouchSatIdVar = stage.lookupVariableByNameAndType('ALL_SAT_TOUCH_SATID', '');
-        if (!allSatTouchSatIdVar) {
-            allSatTouchSatIdVar = this.workspace.createVariable('ALL_SAT_TOUCH_SATID', '', false, false);
-            
+        const varType = '';
+
+        let allSatTouchSatIdVar = stage.lookupVariableByNameAndType('ALL_SAT_TOUCH_SATID', varType);
+        if (allSatTouchSatIdVar) {
+            allSatTouchSatIdVar.value = touchedSatVars.ALL_SAT_TOUCH_SATID;
+        } else if (!allSatTouchSatIdVar) {
+            allSatTouchSatIdVar = this.createPlayspotVariable('ALL_SAT_TOUCH_SATID', varType, stage);
             setTimeout(() => {
                 stage.variables[allSatTouchSatIdVar.id_].value = `${touchedSatVars.ALL_SAT_TOUCH_SATID}`;
             }, 100);
         }
-        if (allSatTouchSatIdVar) {
-            allSatTouchSatIdVar.value = touchedSatVars.ALL_SAT_TOUCH_SATID;
-        }
 
-        let allSatTouchValue = stage.lookupVariableByNameAndType('ALL_SAT_TOUCH_VALUE', '');
-        if (!allSatTouchValue) {
-            allSatTouchValue = this.workspace.createVariable('ALL_SAT_TOUCH_VALUE', '', false, false);
-            
+        let allSatTouchValue = stage.lookupVariableByNameAndType('ALL_SAT_TOUCH_VALUE', varType);
+        if (allSatTouchValue) {
+            allSatTouchValue.value = touchedSatVars.ALL_SAT_TOUCH_VALUE;
+        } else if (!allSatTouchValue) {
+            allSatTouchValue = this.createPlayspotVariable('ALL_SAT_TOUCH_VALUE', varType, stage);
             setTimeout(() => {
                 stage.variables[allSatTouchValue.id_].value = `${touchedSatVars.ALL_SAT_TOUCH_VALUE}`;
             }, 100);
         }
-        if (allSatTouchValue) {
-            allSatTouchValue.value = touchedSatVars.ALL_SAT_TOUCH_VALUE;
-        }
 
-        let singleSatTouchValue = stage.lookupVariableByNameAndType(`${touchedSatVars.ALL_SAT_TOUCH_SATID}_TOUCH_VALUE`, '');
-        if (!singleSatTouchValue && touchedSatVars.ALL_SAT_TOUCH_SATID !== '') {
-            singleSatTouchValue = this.workspace.createVariable(`${touchedSatVars.ALL_SAT_TOUCH_SATID}_TOUCH_VALUE`, '', false, false);
-            
+        let singleSatTouchValue = stage.lookupVariableByNameAndType(`${touchedSatVars.ALL_SAT_TOUCH_SATID}_TOUCH_VALUE`, varType);
+        if (singleSatTouchValue) {
+            singleSatTouchValue.value = touchedSatVars.ALL_SAT_TOUCH_VALUE;
+        } else if (!singleSatTouchValue && touchedSatVars.ALL_SAT_TOUCH_SATID !== '') {
+            singleSatTouchValue = this.createPlayspotVariable(`${touchedSatVars.ALL_SAT_TOUCH_SATID}_TOUCH_VALUE`, varType, stage);
             setTimeout(() => {
                 stage.variables[singleSatTouchValue.id_].value = `${touchedSatVars.ALL_SAT_TOUCH_VALUE}`;
             }, 100);
-        }
-        if (singleSatTouchValue) {
-            singleSatTouchValue.value = touchedSatVars.ALL_SAT_TOUCH_VALUE;
         }
     }
 
     setRadarVariables (radarSatVars) {
         const stage = this.runtime.getTargetForStage();
-        
-        let allSatRadarSatIdVar = stage.lookupVariableByNameAndType('ALL_SAT_RADAR_SATID', '');
-        if (!allSatRadarSatIdVar) {
-            allSatRadarSatIdVar = this.workspace.createVariable('ALL_SAT_RADAR_SATID', '', false, false);
-            
+        const varType = '';
+
+        let allSatRadarSatIdVar = stage.lookupVariableByNameAndType('ALL_SAT_RADAR_SATID', varType);
+        if (allSatRadarSatIdVar) {
+            allSatRadarSatIdVar.value = radarSatVars.ALL_SAT_RADAR_SATID;
+        } else if (!allSatRadarSatIdVar) {
+            allSatRadarSatIdVar = this.createPlayspotVariable('ALL_SAT_RADAR_SATID', varType, stage);
             setTimeout(() => {
                 stage.variables[allSatRadarSatIdVar.id_].value = `${radarSatVars.ALL_SAT_RADAR_SATID}`;
             }, 100);
         }
-        if (allSatRadarSatIdVar) {
-            allSatRadarSatIdVar.value = radarSatVars.ALL_SAT_RADAR_SATID;
-        }
 
-        let allSatRadarValue = stage.lookupVariableByNameAndType('ALL_SAT_RADAR_VALUE', '');
-        if (!allSatRadarValue) {
-            allSatRadarValue = this.workspace.createVariable('ALL_SAT_RADAR_VALUE', '', false, false);
-            
+        let allSatRadarValue = stage.lookupVariableByNameAndType('ALL_SAT_RADAR_VALUE', varType);
+        if (allSatRadarValue) {
+            allSatRadarValue.value = radarSatVars.ALL_SAT_RADAR_VALUE;
+        } else if (!allSatRadarValue) {
+            allSatRadarValue = this.createPlayspotVariable('ALL_SAT_RADAR_VALUE', varType, stage);
             setTimeout(() => {
                 stage.variables[allSatRadarValue.id_].value = `${radarSatVars.ALL_SAT_RADAR_VALUE}`;
             }, 100);
         }
-        if (allSatRadarValue) {
-            allSatRadarValue.value = radarSatVars.ALL_SAT_RADAR_VALUE;
-        }
 
-        let singleSatRadarValue = stage.lookupVariableByNameAndType(`${radarSatVars.ALL_SAT_RADAR_SATID}_RADAR_VALUE`, '');
-        if (!singleSatRadarValue && radarSatVars.ALL_SAT_RADAR_SATID !== '') {
-            singleSatRadarValue = this.workspace.createVariable(`${radarSatVars.ALL_SAT_RADAR_SATID}_RADAR_VALUE`, '', false, false);
-            
+        let singleSatRadarValue = stage.lookupVariableByNameAndType(`${radarSatVars.ALL_SAT_RADAR_SATID}_RADAR_VALUE`, varType);
+        if (singleSatRadarValue) {
+            singleSatRadarValue.value = radarSatVars.ALL_SAT_RADAR_VALUE;
+        } else if (!singleSatRadarValue && radarSatVars.ALL_SAT_RADAR_SATID !== '') {
+            singleSatRadarValue = this.createPlayspotVariable(`${radarSatVars.ALL_SAT_RADAR_SATID}_RADAR_VALUE`, varType, stage);
             setTimeout(() => {
                 stage.variables[singleSatRadarValue.id_].value = `${radarSatVars.ALL_SAT_RADAR_VALUE}`;
             }, 100);
         }
-        if (singleSatRadarValue) {
-            singleSatRadarValue.value = radarSatVars.ALL_SAT_RADAR_VALUE;
-        }
     }
 
     setAliasVariables (data) {
+        const varName = data.alias;
+        const varType = '';
         if (typeof data.payload === 'string' && data.payload !== '') {
             const stage = this.runtime.getTargetForStage();
-            let aliasVariable = stage.lookupVariableByNameAndType(`${data.alias}`, '');
+            let aliasVariable = stage.lookupVariableByNameAndType(varName, varType);
             if (!aliasVariable) {
-                aliasVariable = this.workspace.createVariable(`${data.alias}`, '', false, false);
-                console.log(aliasVariable, 'alias variable');
+                aliasVariable = this.createPlayspotVariable(varName, varType, stage);
+                console.log(varName, 'alias variable');
             }
             setTimeout(() => {
                 if (stage.variables[aliasVariable.id_] !== undefined) {
@@ -565,12 +578,14 @@ class VirtualMachine extends EventEmitter {
     }
 
     setGroupVariables (data) {
+        const varName = 'All_Satellites';
+        const varType = 'list';
         if (Array.isArray(data.payload) && data.payload !== []) {
             const stage = this.runtime.getTargetForStage();
-            let groupVariable = stage.lookupVariableByNameAndType(`${data.group}`, 'list');
+            let groupVariable = stage.lookupVariableByNameAndType(varName, varType);
             if (!groupVariable) {
-                groupVariable = this.workspace.createVariable(`${data.group}`, 'list', false, false);
-                console.log(groupVariable, 'group variable');
+                groupVariable = this.createPlayspotVariable(varName, varType, stage);
+                console.log(varName, 'group variable');
             }
             setTimeout(() => {
                 if (stage.variables[groupVariable.id_] !== undefined) {
@@ -579,6 +594,7 @@ class VirtualMachine extends EventEmitter {
             }, 100);
         }
     }
+
 
     clearAllScratchVariables () {
         const variableIds = Object.keys(this.runtime.getTargetForStage().variables);
