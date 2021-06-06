@@ -25,6 +25,7 @@ const newBlockIds = require('./util/new-block-ids');
 const {loadCostume} = require('./import/load-costume.js');
 const {loadSound} = require('./import/load-sound.js');
 const {serializeSounds, serializeCostumes} = require('./serialization/serialize-assets');
+const uid = require('./util/uid');
 require('canvas-toBlob');
 
 const RESERVED_NAMES = ['_mouse_', '_stage_', '_edge_', '_myself_', '_random_'];
@@ -366,7 +367,9 @@ class VirtualMachine extends EventEmitter {
                 playspotVariable = this.workspace.createVariable(varName, varType, false, false);
             } else {
                 // stage.createVariable(id, name, type, isCloud)
-                playspotVariable = stage.createVariable('', varName, varType, false);
+                let newId = uid();
+                stage.createVariable(newId, varName, varType, false);
+                playspotVariable = stage.variables[newId];
             }
             return playspotVariable;
         };
@@ -519,7 +522,7 @@ class VirtualMachine extends EventEmitter {
         } else if (!singleSatTouchValue && touchedSatVars.ALL_SAT_TOUCH_SATID !== '') {
             singleSatTouchValue = this.createPlayspotVariable(`${touchedSatVars.ALL_SAT_TOUCH_SATID}_TOUCH_VALUE`, varType, stage);
             setTimeout(() => {
-                stage.variables[singleSatTouchValue.id_].value = `${touchedSatVars.ALL_SAT_TOUCH_VALUE}`;
+                stage.variables[singleSatTouchValue.id].value = `${touchedSatVars.ALL_SAT_TOUCH_VALUE}`;
             }, 100);
         }
     }
@@ -554,7 +557,7 @@ class VirtualMachine extends EventEmitter {
         } else if (!singleSatRadarValue && radarSatVars.ALL_SAT_RADAR_SATID !== '') {
             singleSatRadarValue = this.createPlayspotVariable(`${radarSatVars.ALL_SAT_RADAR_SATID}_RADAR_VALUE`, varType, stage);
             setTimeout(() => {
-                stage.variables[singleSatRadarValue.id_].value = `${radarSatVars.ALL_SAT_RADAR_VALUE}`;
+                stage.variables[singleSatRadarValue.id].value = `${radarSatVars.ALL_SAT_RADAR_VALUE}`;
             }, 100);
         }
     }
