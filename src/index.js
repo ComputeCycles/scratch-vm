@@ -38,13 +38,16 @@ if (process.title === 'browser') {
     reader.onload = () => {
         log.info(`Loading ${gamePath}`);
         virtualMachine.loadProject(reader.result);
-        virtualMachine.connectMqtt('playspot', host, port, '', '');
     };
 
     reader.onerror = error => {
         log.info('No DefaultGame.sb3, exiting');
         process.exit();
     };
+
+    virtualMachine.runtime.on(Runtime.TARGETS_UPDATE, () => {
+        virtualMachine.connectMqtt('playspot', host, port, '', '');
+    });
 
     virtualMachine.runtime.on(Runtime.RUNTIME_STARTED, () => {
         reader.readAsArrayBuffer(file);
