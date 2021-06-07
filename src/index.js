@@ -1,4 +1,5 @@
 const VirtualMachine = require('./virtual-machine');
+const Runtime = require('./engine/runtime');
 const FileReader = require('filereader');
 const File = require('file-class');
 const minilog = require('minilog');
@@ -22,31 +23,34 @@ if (process.title === 'browser') {
 
 } else {
 
-    virtualMachine.start();
+    const reader = new FileReader();
+    
     const host = inputs.host ? `${inputs.host}` : 'localhost';
     const port = inputs.port ? `${inputs.port}` : '1883';
     const gamePath = inputs.game ? `${inputs.game}` : `${process.cwd()}/game/DefaultGame.sb3`;
     // params: (extensionId, peripheralId/connection address, port, userName, password)
-    virtualMachine.connectMqtt('playspot', host, port, '', '');
-    
-    const reader = new FileReader();
     
     const file = new File('DefaultGame.sb3', {
         name: 'DefaultGame.sb3',
         path: gamePath
     });
 
-    reader.readAsArrayBuffer(file);
-
     reader.onload = () => {
-        log.info(`Loading ${gamePath} to DefaultGame.sb3`);
+        log.info(`Loading ${gamePath}`);
         virtualMachine.loadProject(reader.result);
+        virtualMachine.connectMqtt('playspot', host, port, '', '');
     };
+
     reader.onerror = error => {
         log.info('No DefaultGame.sb3, exiting');
         process.exit();
     };
-    
+
+    virtualMachine.runtime.on(Runtime.RUNTIME_STARTED, () => {
+        reader.readAsArrayBuffer(file);
+    });
+
+    virtualMachine.start();    
 }
 
 
