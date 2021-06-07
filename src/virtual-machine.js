@@ -581,7 +581,7 @@ class VirtualMachine extends EventEmitter {
     }
 
     setGroupVariables (data) {
-        const varName = 'All_Satellites';
+        const varName = data.group;
         const varType = 'list';
         if (Array.isArray(data.payload) && data.payload !== []) {
             const stage = this.runtime.getTargetForStage();
