@@ -25,6 +25,7 @@ const newBlockIds = require('./util/new-block-ids');
 const {loadCostume} = require('./import/load-costume.js');
 const {loadSound} = require('./import/load-sound.js');
 const {serializeSounds, serializeCostumes} = require('./serialization/serialize-assets');
+const uid = require('./util/uid');
 require('canvas-toBlob');
 
 const RESERVED_NAMES = ['_mouse_', '_stage_', '_edge_', '_myself_', '_random_'];
@@ -366,7 +367,9 @@ class VirtualMachine extends EventEmitter {
                 playspotVariable = this.workspace.createVariable(varName, varType, false, false);
             } else {
                 // stage.createVariable(id, name, type, isCloud)
-                playspotVariable = stage.createVariable('', varName, varType, false);
+                let newId = uid();
+                stage.createVariable(newId, varName, varType, false);
+                playspotVariable = stage.variables[newId];
             }
             return playspotVariable;
         };
@@ -435,8 +438,10 @@ class VirtualMachine extends EventEmitter {
             console.log(allSounds, 'allSounds');
         }
         setTimeout(() => {
-            if (stage.variables[allSounds.id_]) {
+            if (stage.variables[allSounds.id_] !== undefined) {
                 stage.variables[allSounds.id_].value = wavs.map(currentValue => currentValue.replace('.wav', ''));
+            } else if (stage.variables[allSounds.id] !== undefined) {
+                stage.variables[allSounds.id].value = wavs.map(currentValue => currentValue.replace('.wav', ''));
             }
         }, 100);
     }
@@ -452,6 +457,9 @@ class VirtualMachine extends EventEmitter {
         setTimeout(() => {
             if (stage.variables[allLights.id_]  !== undefined) {
                 stage.variables[allLights.id_].value = data.map(currentValue => currentValue.replace('.txt', ''));
+                this.runtime.emit(this.runtime.constructor.CLIENT_CONNECTED);
+            } else if (stage.variables[allLights.id]  !== undefined) {
+                stage.variables[allLights.id].value = data.map(currentValue => currentValue.replace('.txt', ''));
                 this.runtime.emit(this.runtime.constructor.CLIENT_CONNECTED);
             }
         }, 100);
@@ -469,6 +477,8 @@ class VirtualMachine extends EventEmitter {
         setTimeout(() => {
             if (stage.variables[allSats.id_] !== undefined) {
                 stage.variables[allSats.id_].value = Object.keys(this.satellites);
+            } else if (stage.variables[allSats.id] !== undefined) {
+                stage.variables[allSats.id].value = Object.keys(this.satellites);
             }
         }, 100);
     }
@@ -484,6 +494,8 @@ class VirtualMachine extends EventEmitter {
         setTimeout(() => {
             if (stage.variables[singleSat] !== undefined && stage.variables[singleSat.id_]) {
                 stage.variables[singleSat.id_].value = `${varName}`;
+            } else if (stage.variables[singleSat] !== undefined && stage.variables[singleSat.id]) {
+                stage.variables[singleSat.id].value = `${varName}`;
             }
         }, 100);
     }
@@ -499,7 +511,11 @@ class VirtualMachine extends EventEmitter {
         } else if (!allSatTouchSatIdVar) {
             allSatTouchSatIdVar = this.createPlayspotVariable('ALL_SAT_TOUCH_SATID', varType, stage);
             setTimeout(() => {
-                stage.variables[allSatTouchSatIdVar.id_].value = `${touchedSatVars.ALL_SAT_TOUCH_SATID}`;
+                if (stage.variables[allSatTouchSatIdVar.id_] !== undefined) {
+                    stage.variables[allSatTouchSatIdVar.id_].value = `${touchedSatVars.ALL_SAT_TOUCH_SATID}`;
+                } else if (stage.variables[allSatTouchSatIdVar.id] !== undefined) {
+                    stage.variables[allSatTouchSatIdVar.id].value = `${touchedSatVars.ALL_SAT_TOUCH_SATID}`;
+                }
             }, 100);
         }
 
@@ -509,7 +525,11 @@ class VirtualMachine extends EventEmitter {
         } else if (!allSatTouchValue) {
             allSatTouchValue = this.createPlayspotVariable('ALL_SAT_TOUCH_VALUE', varType, stage);
             setTimeout(() => {
-                stage.variables[allSatTouchValue.id_].value = `${touchedSatVars.ALL_SAT_TOUCH_VALUE}`;
+                if (stage.variables[allSatTouchValue.id_] !== undefined) {
+                    stage.variables[allSatTouchValue.id_].value = `${touchedSatVars.ALL_SAT_TOUCH_VALUE}`;
+                } else if (stage.variables[allSatTouchValue.id] !== undefined) {
+                    stage.variables[allSatTouchValue.id].value = `${touchedSatVars.ALL_SAT_TOUCH_VALUE}`;
+                }
             }, 100);
         }
 
@@ -519,7 +539,11 @@ class VirtualMachine extends EventEmitter {
         } else if (!singleSatTouchValue && touchedSatVars.ALL_SAT_TOUCH_SATID !== '') {
             singleSatTouchValue = this.createPlayspotVariable(`${touchedSatVars.ALL_SAT_TOUCH_SATID}_TOUCH_VALUE`, varType, stage);
             setTimeout(() => {
-                stage.variables[singleSatTouchValue.id_].value = `${touchedSatVars.ALL_SAT_TOUCH_VALUE}`;
+                if (stage.variables[singleSatTouchValue.id_] !== undefined) {
+                    stage.variables[singleSatTouchValue.id_].value = `${touchedSatVars.ALL_SAT_TOUCH_VALUE}`;
+                } else if (stage.variables[singleSatTouchValue.id] !== undefined) {
+                    stage.variables[singleSatTouchValue.id].value = `${touchedSatVars.ALL_SAT_TOUCH_VALUE}`;
+                }
             }, 100);
         }
     }
@@ -534,7 +558,11 @@ class VirtualMachine extends EventEmitter {
         } else if (!allSatRadarSatIdVar) {
             allSatRadarSatIdVar = this.createPlayspotVariable('ALL_SAT_RADAR_SATID', varType, stage);
             setTimeout(() => {
-                stage.variables[allSatRadarSatIdVar.id_].value = `${radarSatVars.ALL_SAT_RADAR_SATID}`;
+                if (stage.variables[allSatRadarSatIdVar.id_] !== undefined) {
+                    stage.variables[allSatRadarSatIdVar.id_].value = `${radarSatVars.ALL_SAT_RADAR_SATID}`;
+                } else if (stage.variables[allSatRadarSatIdVar.id] !== undefined) {
+                    stage.variables[allSatRadarSatIdVar.id].value = `${radarSatVars.ALL_SAT_RADAR_SATID}`;
+                }
             }, 100);
         }
 
@@ -544,7 +572,11 @@ class VirtualMachine extends EventEmitter {
         } else if (!allSatRadarValue) {
             allSatRadarValue = this.createPlayspotVariable('ALL_SAT_RADAR_VALUE', varType, stage);
             setTimeout(() => {
-                stage.variables[allSatRadarValue.id_].value = `${radarSatVars.ALL_SAT_RADAR_VALUE}`;
+                if (stage.variables[allSatRadarValue.id_] !== undefined) {
+                    stage.variables[allSatRadarValue.id_].value = `${radarSatVars.ALL_SAT_RADAR_VALUE}`;
+                } else if (stage.variables[allSatRadarValue.id] !== undefined) {
+                    stage.variables[allSatRadarValue.id].value = `${radarSatVars.ALL_SAT_RADAR_VALUE}`;
+                }
             }, 100);
         }
 
@@ -554,7 +586,11 @@ class VirtualMachine extends EventEmitter {
         } else if (!singleSatRadarValue && radarSatVars.ALL_SAT_RADAR_SATID !== '') {
             singleSatRadarValue = this.createPlayspotVariable(`${radarSatVars.ALL_SAT_RADAR_SATID}_RADAR_VALUE`, varType, stage);
             setTimeout(() => {
-                stage.variables[singleSatRadarValue.id_].value = `${radarSatVars.ALL_SAT_RADAR_VALUE}`;
+                if (stage.variables[singleSatRadarValue.id_] !== undefined) {
+                    stage.variables[singleSatRadarValue.id_].value = `${radarSatVars.ALL_SAT_RADAR_VALUE}`;
+                } else if (stage.variables[singleSatRadarValue.id] !== undefined) {
+                    stage.variables[singleSatRadarValue.id].value = `${radarSatVars.ALL_SAT_RADAR_VALUE}`;
+                }
             }, 100);
         }
     }
@@ -572,13 +608,15 @@ class VirtualMachine extends EventEmitter {
             setTimeout(() => {
                 if (stage.variables[aliasVariable.id_] !== undefined) {
                     stage.variables[aliasVariable.id_].value = data.payload;
+                } else if (stage.variables[aliasVariable.id] !== undefined) {
+                    stage.variables[aliasVariable.id].value = data.payload;
                 }
             }, 100);
         }
     }
 
     setGroupVariables (data) {
-        const varName = 'All_Satellites';
+        const varName = data.group;
         const varType = 'list';
         if (Array.isArray(data.payload) && data.payload !== []) {
             const stage = this.runtime.getTargetForStage();
@@ -590,6 +628,8 @@ class VirtualMachine extends EventEmitter {
             setTimeout(() => {
                 if (stage.variables[groupVariable.id_] !== undefined) {
                     stage.variables[groupVariable.id_].value = data.payload;
+                } else if (stage.variables[groupVariable.id] !== undefined) {
+                    stage.variables[groupVariable.id].value = data.payload;
                 }
             }, 100);
         }
