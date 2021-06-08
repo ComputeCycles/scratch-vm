@@ -182,8 +182,8 @@ class VirtualMachine extends EventEmitter {
         this.runtime.on('ADD_SUB_MQTTCONTROL', topic => {
             this.emit('ADD_SUB_MQTTCONTROL', topic);
         });
-        this.runtime.on('RESET_GAME', data => {
-            this.emit('RESET_GAME', data);
+        this.runtime.on('START_GAME', () => {
+            this.greenFlag();
         });
         this.runtime.on('SEND_SOUND', data => {
             this.emit('SEND_SOUND', data);

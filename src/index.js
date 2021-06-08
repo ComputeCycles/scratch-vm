@@ -53,7 +53,11 @@ if (process.title === 'browser') {
         reader.readAsArrayBuffer(file);
     });
 
-    virtualMachine.start();    
+    virtualMachine.runtime.on(Runtime.CLIENT_CONNECTED, () => {
+        virtualMachine.runtime.emit('START_GAME');
+    });
+
+    virtualMachine.start();
 }
 
 
