@@ -96,6 +96,7 @@ class MqttControl extends EventEmitter{
                 touched: isTouched
             };
             this.runtime.emit('IS_TOUCHED', data);
+            this.runtime.emit('TOUCH_TO_MESSAGE', data, topic);
         } else if (t[0] === 'app' && t[1] === 'menu' && t[2] === 'mode') {
             if (this.props) {
                 this.props.vm.modeHandler(payload); // this is a presence message
@@ -219,8 +220,8 @@ class MqttControl extends EventEmitter{
             const message = decoder.decode(payload);
             console.log(topic[1], 'topic');
             console.log(message, 'message');
-            this.setTouchVars(topic, message, t)
-            this.touchHandler(t[1], message);
+            this.setTouchVars(topic, message, t);
+            this.touchHandler(t[1], message, topic);
         } else if (t[0] === 'sat' && t[2] === 'online') {
             this._satelliteStatusHandler(t[1]);
         } else if (t[0] === 'fwserver' && t[1] === 'files') {
@@ -335,7 +336,7 @@ class MqttControl extends EventEmitter{
         console.log(_sequencesByName, 'sequences');
     }
 
-    static touchHandler (sender, payload) {
+    static touchHandler (sender, payload, topic) {
         // log.info(`touchHandler fired for payload: ${payload}`);
         if (!sender.includes('BC')) {
             return;
@@ -347,6 +348,7 @@ class MqttControl extends EventEmitter{
                 sender: sender,
                 touched: true
             });
+            this.runtime.emit('TOUCH_TO_MESSAGE', sender, topic);
             console.log('hit for payload 1');
         } else {
             this.runtime.emit('IS_TOUCHED', {

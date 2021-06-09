@@ -127,6 +127,7 @@ class Scratch3Countdown {
             messages_sendValueToTopic: this.sendValueToTopic,
             messages_addSubscription: this.addSubscription,
             messages_deleteSubscriptions: this.deleteSubscriptions,
+            messages_assignTopicToMessage: this.assignTopicToMessage,
             countdown_gameMode: this.gameMode,
             countdown_startCelebration: this.startCelebration,
             countdown_whenTimerStarted: this.whenTimerStarted,
@@ -191,6 +192,10 @@ class Scratch3Countdown {
 
     deleteSubscriptions () {
         this.runtime.emit('DELETE_ALL_USER_MQTT_SUBSCRIPTIONS');
+    }
+
+    assignTopicToMessage (args) {
+        this.runtime.emit('ASSIGN_MQTT_TOPIC_TO_MSG_VAR', args);
     }
 
     makeBroadcastMsg (broadcastVar, data) {
