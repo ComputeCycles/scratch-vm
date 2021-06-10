@@ -232,14 +232,15 @@ class MqttControl extends EventEmitter{
                 satellite: t[1],
                 sensing: message
             };
-            this.setRadarVars(topic, message, t)
+            this.setRadarVars(topic, message, t);
             this.runtime.emit('HAS_PRESENCE', data);
+            this.runtime.emit('RADAR_TO_MESSAGE', data, topic);
         } else if (userSubTopics.includes(topic)) {
             const parsedPayload = decoder.decode(payload);
             const data = {
                 payload: parsedPayload,
                 topic: topic
-            }
+            };
             console.log('pub matching user input sub topic', data)
             this.runtime.emit('USER_SUB_MQTT_PUB', data);
         }
