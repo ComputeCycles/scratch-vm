@@ -397,13 +397,31 @@ class VirtualMachine extends EventEmitter {
                 // workspace.createVariable(varName, OPTIONALvarType, OPTIONALvarId, OPTIONALisLocal, OPTIONALisCloud)
                 broadcastMessageVariable = this.workspace.createVariable(varName, varType, false, false);
             } else {
-                // stage.createVariable(id, name, type, isCloud)
                 const newId = uid();
+                // stage.createVariable(id, name, type, isCloud)
                 stage.createVariable(newId, varName, varType, false);
                 broadcastMessageVariable = stage.variables[newId];
             }
             broadcastMessageVariable.topic = topic;
             return broadcastMessageVariable;
+        };
+
+        this.createCustomInputValueVars = (varName, stage, t) => {
+            debugger
+            let thisSatValueVar = {};
+            const varType = '';
+            if (t[3] === 'touch' || t[3] === 'radar') {
+                if (this.workspace.createVariable) {
+                    // workspace.createVariable(varName, OPTIONALvarType, OPTIONALvarId, OPTIONALisLocal, OPTIONALisCloud)
+                    thisSatValueVar = this.workspace.createVariable(varName, '', false, false);
+                } else {
+                    const newId = uid();
+                    // stage.createVariable(id, name, type, isCloud)
+                    stage.createVariable(newId, varName, varType, false);
+                    thisSatValueVar = stage.variables[newId];
+                }
+            }
+            return thisSatValueVar;
         };
 
         this.blockListener = this.blockListener.bind(this);
@@ -455,11 +473,12 @@ class VirtualMachine extends EventEmitter {
     }
 
     topicToMessage (args) {
-        debugger
+        const stage = this.runtime.getTargetForStage();
+        const t = args.TOPIC.split('/');
         const varName = args.MESSAGE;
         const varType = 'broadcast_msg';
-        const stage = this.runtime.getTargetForStage();
         this.createBroadcastMessageVariable(varName, varType, stage, args.TOPIC);
+        this.createCustomInputValueVars(varName, stage, t);
     }
 
     broadcastInputToMessageAlias (topic) {
@@ -597,6 +616,12 @@ class VirtualMachine extends EventEmitter {
                 }
             }, 100);
         }
+
+        const messageAlias = this.satAliasBindings[`sat/${touchedSatVars.ALL_SAT_TOUCH_SATID}/ev/touch`];
+        const aliasSatTouchValue = stage.lookupVariableByNameAndType(messageAlias, varType);
+        if (aliasSatTouchValue) {
+            aliasSatTouchValue.value = touchedSatVars.ALL_SAT_TOUCH_VALUE;
+        }
     }
 
     setRadarVariables (radarSatVars) {
@@ -643,6 +668,12 @@ class VirtualMachine extends EventEmitter {
                     stage.variables[singleSatRadarValue.id].value = `${radarSatVars.ALL_SAT_RADAR_VALUE}`;
                 }
             }, 100);
+        }
+
+        const messageAlias = this.satAliasBindings[`sat/${radarSatVars.ALL_SAT_TOUCH_SATID}/ev/radar`];
+        const aliasSatTouchValue = stage.lookupVariableByNameAndType(messageAlias, varType);
+        if (aliasSatTouchValue) {
+            aliasSatTouchValue.value = radarSatVars.ALL_SAT_TOUCH_VALUE;
         }
     }
 
