@@ -345,8 +345,8 @@ class VirtualMachine extends EventEmitter {
             this.broadcastInputToMessageAlias(topic);
         });
 
-        this.runtime.on('RADAR_TO_MESSAGE', (data, fullTopicString) => {
-            this.broadcastInputToMessageAlias(fullTopicString);
+        this.runtime.on('RADAR_TO_MESSAGE', (data, topic) => {
+            this.broadcastInputToMessageAlias(topic);
         });
 
         this.runtime.on('SET_TOUCH_VARS', touchedSatVars => {
@@ -391,7 +391,6 @@ class VirtualMachine extends EventEmitter {
         };
 
         this.createBroadcastMessageVariable = (varName, varType, stage, topic) => {
-            debugger
             let broadcastMessageVariable = {};
             if (this.workspace.createVariable) {
                 // workspace.createVariable(varName, OPTIONALvarType, OPTIONALvarId, OPTIONALisLocal, OPTIONALisCloud)
@@ -407,7 +406,6 @@ class VirtualMachine extends EventEmitter {
         };
 
         this.createCustomInputValueVars = (varName, stage, t) => {
-            debugger
             let thisSatValueVar = {};
             const varType = '';
             if (t[3] === 'touch' || t[3] === 'radar') {
@@ -482,7 +480,6 @@ class VirtualMachine extends EventEmitter {
     }
 
     broadcastInputToMessageAlias (topic) {
-        debugger
         let boundTopics = [];
         boundTopics = Object.keys(this.satAliasBindings);
         if (boundTopics.includes(topic)) {
@@ -670,10 +667,10 @@ class VirtualMachine extends EventEmitter {
             }, 100);
         }
 
-        const messageAlias = this.satAliasBindings[`sat/${radarSatVars.ALL_SAT_TOUCH_SATID}/ev/radar`];
+        const messageAlias = this.satAliasBindings[`sat/${radarSatVars.ALL_SAT_RADAR_SATID}/ev/radar`];
         const aliasSatTouchValue = stage.lookupVariableByNameAndType(messageAlias, varType);
         if (aliasSatTouchValue) {
-            aliasSatTouchValue.value = radarSatVars.ALL_SAT_TOUCH_VALUE;
+            aliasSatTouchValue.value = radarSatVars.ALL_SAT_RADAR_VALUE;
         }
     }
 
