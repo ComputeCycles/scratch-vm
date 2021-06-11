@@ -64,7 +64,7 @@ class TouchBlocks {
 
         console.log(this.runtime, ('from touch'));
 
-        this.runtime.on('IS_TOUCHED', (data) => {
+        this.runtime.on('IS_TOUCHED', data => {
             if (data.touched === true) {
                 this.touchedSatellite = data.sender;
                 this.isSatelliteTouched = (data.touched) ? true : false;
@@ -140,7 +140,7 @@ class TouchBlocks {
     }
 
     isTouched (args) {
-        if (args.SATELLITE !== 'SATELLITE' || args.SATELLITE !== '' || args.SATELLITE !== undefined) {
+        if (args.SATELLITE !== 'SATELLITE' && args.SATELLITE !== '' && args.SATELLITE !== undefined) {
             const satList = args.SATELLITE.split(' ');
             for (let i = 0; i < satList.length; i++) {
                 this.satelliteToCheck = satList[i];
@@ -148,7 +148,6 @@ class TouchBlocks {
                     return true;
                 }
             }
-            return this.isSatelliteTouched;
         }
     }
 
