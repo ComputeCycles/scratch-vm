@@ -341,6 +341,16 @@ class VirtualMachine extends EventEmitter {
             this.topicToMessage(args);
         });
 
+        this.runtime.on('UNASSIGN_MQTT_TOPIC_TO_MSG_VAR', args => {
+            for (const b in this.satAliasBindings) {
+                if (this.satAliasBindings.hasOwnProperty(b) && this.satAliasBindings[b] === args.MESSAGE) {
+                    delete this.satAliasBindings[b];
+                    console.log(`removed ${this.satAliasBindings[b]}`);
+                }
+            }
+            this.deleteAliasBoundVars(args)
+        });
+
         this.runtime.on('TOUCH_TO_MESSAGE', (sender, topic) => {
             this.broadcastInputToMessageAlias(topic);
         });
@@ -489,6 +499,15 @@ class VirtualMachine extends EventEmitter {
         }
     }
 
+    deleteAliasBoundVars (args) {
+        const varName = args.MESSAGE;
+        const stage = this.runtime.getTargetForStage();
+        const msgVar = stage.lookupVariableByNameAndType(varName, 'broadcast_msg');
+        const inputValueVar = stage.lookupVariableByNameAndType(`${varName}`, '');
+        this.workspace.deleteVariableById(msgVar.id);
+        this.workspace.deleteVariableById(inputValueVar.id);
+    }
+
     publishToClient (data) {
         console.log('publish', data);
         this.client.publish(data.topic, data.message);
@@ -555,16 +574,18 @@ class VirtualMachine extends EventEmitter {
         const varType = '';
         const stage = this.runtime.getTargetForStage();
         let singleSat = stage.lookupVariableByNameAndType(varName, varType);
-        if (!singleSat) {
+        if (singleSat) {
+            singleSat.value = varName;
+        } else if (!singleSat) {
             singleSat = this.createPlayspotVariable(varName, varType, stage);
+            setTimeout(() => {
+                if (stage.variables[singleSat] !== undefined && stage.variables[singleSat.id_]) {
+                    stage.variables[singleSat.id_].value = varName;
+                } else if (stage.variables[singleSat] !== undefined && stage.variables[singleSat.id]) {
+                    stage.variables[singleSat.id].value = varName;
+                }
+            }, 100);
         }
-        setTimeout(() => {
-            if (stage.variables[singleSat] !== undefined && stage.variables[singleSat.id_]) {
-                stage.variables[singleSat.id_].value = `${varName}`;
-            } else if (stage.variables[singleSat] !== undefined && stage.variables[singleSat.id]) {
-                stage.variables[singleSat.id].value = `${varName}`;
-            }
-        }, 100);
     }
     
 
