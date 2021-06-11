@@ -72,6 +72,8 @@ class VirtualMachine extends EventEmitter {
 
         this.workspace = {};
 
+        this.satAliasBindings = {};
+
         this.app = {
             mode: 0
         };
@@ -333,6 +335,20 @@ class VirtualMachine extends EventEmitter {
             this.deleteSubscriptions();
         });
 
+        this.runtime.on('ASSIGN_MQTT_TOPIC_TO_MSG_VAR', args => {
+            this.satAliasBindings[args.TOPIC] = args.MESSAGE;
+            console.log(this.satAliasBindings);
+            this.topicToMessage(args);
+        });
+
+        this.runtime.on('TOUCH_TO_MESSAGE', (sender, topic) => {
+            this.broadcastInputToMessageAlias(topic);
+        });
+
+        this.runtime.on('RADAR_TO_MESSAGE', (data, topic) => {
+            this.broadcastInputToMessageAlias(topic);
+        });
+
         this.runtime.on('SET_TOUCH_VARS', touchedSatVars => {
             this.setTouchVariables(touchedSatVars);
         });
@@ -367,11 +383,43 @@ class VirtualMachine extends EventEmitter {
                 playspotVariable = this.workspace.createVariable(varName, varType, false, false);
             } else {
                 // stage.createVariable(id, name, type, isCloud)
-                let newId = uid();
+                const newId = uid();
                 stage.createVariable(newId, varName, varType, false);
                 playspotVariable = stage.variables[newId];
             }
             return playspotVariable;
+        };
+
+        this.createBroadcastMessageVariable = (varName, varType, stage, topic) => {
+            let broadcastMessageVariable = {};
+            if (this.workspace.createVariable) {
+                // workspace.createVariable(varName, OPTIONALvarType, OPTIONALvarId, OPTIONALisLocal, OPTIONALisCloud)
+                broadcastMessageVariable = this.workspace.createVariable(varName, varType, false, false);
+            } else {
+                const newId = uid();
+                // stage.createVariable(id, name, type, isCloud)
+                stage.createVariable(newId, varName, varType, false);
+                broadcastMessageVariable = stage.variables[newId];
+            }
+            broadcastMessageVariable.topic = topic;
+            return broadcastMessageVariable;
+        };
+
+        this.createCustomInputValueVars = (varName, stage, t) => {
+            let thisSatValueVar = {};
+            const varType = '';
+            if (t[3] === 'touch' || t[3] === 'radar') {
+                if (this.workspace.createVariable) {
+                    // workspace.createVariable(varName, OPTIONALvarType, OPTIONALvarId, OPTIONALisLocal, OPTIONALisCloud)
+                    thisSatValueVar = this.workspace.createVariable(varName, '', false, false);
+                } else {
+                    const newId = uid();
+                    // stage.createVariable(id, name, type, isCloud)
+                    stage.createVariable(newId, varName, varType, false);
+                    thisSatValueVar = stage.variables[newId];
+                }
+            }
+            return thisSatValueVar;
         };
 
         this.blockListener = this.blockListener.bind(this);
@@ -420,6 +468,25 @@ class VirtualMachine extends EventEmitter {
             }
         }
         this.userSubscriptions.length = 0;
+    }
+
+    topicToMessage (args) {
+        const stage = this.runtime.getTargetForStage();
+        const t = args.TOPIC.split('/');
+        const varName = args.MESSAGE;
+        const varType = 'broadcast_msg';
+        this.createBroadcastMessageVariable(varName, varType, stage, args.TOPIC);
+        this.createCustomInputValueVars(varName, stage, t);
+    }
+
+    broadcastInputToMessageAlias (topic) {
+        let boundTopics = [];
+        boundTopics = Object.keys(this.satAliasBindings);
+        if (boundTopics.includes(topic)) {
+            this.runtime.startHats('event_whenbroadcastreceived', {
+                BROADCAST_OPTION: this.satAliasBindings[topic]
+            });
+        }
     }
 
     publishToClient (data) {
@@ -546,6 +613,12 @@ class VirtualMachine extends EventEmitter {
                 }
             }, 100);
         }
+
+        const messageAlias = this.satAliasBindings[`sat/${touchedSatVars.ALL_SAT_TOUCH_SATID}/ev/touch`];
+        const aliasSatTouchValue = stage.lookupVariableByNameAndType(messageAlias, varType);
+        if (aliasSatTouchValue) {
+            aliasSatTouchValue.value = touchedSatVars.ALL_SAT_TOUCH_VALUE;
+        }
     }
 
     setRadarVariables (radarSatVars) {
@@ -593,6 +666,12 @@ class VirtualMachine extends EventEmitter {
                 }
             }, 100);
         }
+
+        const messageAlias = this.satAliasBindings[`sat/${radarSatVars.ALL_SAT_RADAR_SATID}/ev/radar`];
+        const aliasSatTouchValue = stage.lookupVariableByNameAndType(messageAlias, varType);
+        if (aliasSatTouchValue) {
+            aliasSatTouchValue.value = radarSatVars.ALL_SAT_RADAR_VALUE;
+        }
     }
 
     setAliasVariables (data) {
@@ -603,7 +682,6 @@ class VirtualMachine extends EventEmitter {
             let aliasVariable = stage.lookupVariableByNameAndType(varName, varType);
             if (!aliasVariable) {
                 aliasVariable = this.createPlayspotVariable(varName, varType, stage);
-                console.log(varName, 'alias variable');
             }
             setTimeout(() => {
                 if (stage.variables[aliasVariable.id_] !== undefined) {
@@ -611,6 +689,7 @@ class VirtualMachine extends EventEmitter {
                 } else if (stage.variables[aliasVariable.id] !== undefined) {
                     stage.variables[aliasVariable.id].value = data.payload;
                 }
+                console.log('alias var:', stage.variables[aliasVariable.id], stage.variables[aliasVariable.id].value);
             }, 100);
         }
     }
@@ -623,7 +702,6 @@ class VirtualMachine extends EventEmitter {
             let groupVariable = stage.lookupVariableByNameAndType(varName, varType);
             if (!groupVariable) {
                 groupVariable = this.createPlayspotVariable(varName, varType, stage);
-                console.log(varName, 'group variable');
             }
             setTimeout(() => {
                 if (stage.variables[groupVariable.id_] !== undefined) {
@@ -631,6 +709,7 @@ class VirtualMachine extends EventEmitter {
                 } else if (stage.variables[groupVariable.id] !== undefined) {
                     stage.variables[groupVariable.id].value = data.payload;
                 }
+                console.log('group var:', stage.variables[groupVariable.id], stage.variables[groupVariable.id].value);
             }, 100);
         }
     }
