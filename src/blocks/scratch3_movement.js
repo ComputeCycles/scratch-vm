@@ -79,7 +79,7 @@ class MovementBlocks {
     }
 
     arePresencesSensed (args) {
-        if (args.SATELLITE !== 'SATELLITE' || args.SATELLITE !== '' || args.SATELLITE !== undefined) {
+        if (args.SATELLITE !== 'SATELLITE' && args.SATELLITE !== '' && args.SATELLITE !== undefined) {
             const satList = args.SATELLITE.split(' ');
             for (let i = 0; i < satList.length; i++) {
                 this.satelliteToCheck = satList[i];
@@ -87,8 +87,7 @@ class MovementBlocks {
                     return true;
                 }
             }
-        }    
-        return this.isSatelliteSensing;
+        }
     }
 
     whenAnyPresenceSensed (args, util) {
