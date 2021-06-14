@@ -373,6 +373,17 @@ class VirtualMachine extends EventEmitter {
         
         this.runtime.on('SET_ALIAS_VARS', data => {
             this.setAliasVariables(data);
+            const touchArgs = {};
+            const radarArgs = {};
+            touchArgs.MESSAGE = `${data.alias} Touch`;
+            touchArgs.TOPIC = `sat/${data.payload}/ev/touch`;
+            radarArgs.MESSAGE = `${data.alias} Radar`;
+            radarArgs.TOPIC = `sat/${data.payload}/ev/radar`;
+            this.satAliasBindings[touchArgs.TOPIC] = `${touchArgs.MESSAGE}`;
+            this.satAliasBindings[radarArgs.TOPIC] = `${radarArgs.MESSAGE}`;
+            console.log(this.satAliasBindings);
+            this.topicToMessage(touchArgs);
+            this.topicToMessage(radarArgs);
         });
         
         this.runtime.on('SET_GROUP_VARS', data => {
