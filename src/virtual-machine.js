@@ -74,6 +74,8 @@ class VirtualMachine extends EventEmitter {
 
         this.satAliasBindings = {};
 
+        this.satGroupBindings = {};
+
         this.app = {
             mode: 0
         };
@@ -353,10 +355,12 @@ class VirtualMachine extends EventEmitter {
 
         this.runtime.on('TOUCH_TO_MESSAGE', (sender, topic) => {
             this.broadcastInputToMessageAlias(topic);
+            this.broadcastInputToMessageGroupAlias(topic);
         });
 
         this.runtime.on('RADAR_TO_MESSAGE', (data, topic) => {
             this.broadcastInputToMessageAlias(topic);
+            this.broadcastInputToMessageGroupAlias(topic);
         });
 
         this.runtime.on('SET_TOUCH_VARS', touchedSatVars => {
@@ -388,6 +392,20 @@ class VirtualMachine extends EventEmitter {
         
         this.runtime.on('SET_GROUP_VARS', data => {
             this.setGroupVariables(data);
+            if (Array.isArray(data.payload)) {
+                for (let i = 0; i < data.payload.length; i++) { 
+                    this.satGroupBindings[data.payload[i]] = data.group;
+                }
+            }
+            const touchArgs = {};
+            const radarArgs = {};
+            touchArgs.MESSAGE = `${data.group} Touch`;
+            touchArgs.TOPIC = `sat/${data.payload}/ev/touch`;
+            radarArgs.MESSAGE = `${data.group} Radar`;
+            radarArgs.TOPIC = `sat/${data.payload}/ev/radar`;
+            console.log(this.satGroupBindings);
+            this.topicToMessage(touchArgs);
+            this.topicToMessage(radarArgs);
         });
 
         this.extensionManager = new ExtensionManager(this.runtime);
@@ -507,6 +525,23 @@ class VirtualMachine extends EventEmitter {
             this.runtime.startHats('event_whenbroadcastreceived', {
                 BROADCAST_OPTION: this.satAliasBindings[topic]
             });
+        }
+    }
+    
+    broadcastInputToMessageGroupAlias (topic) {
+        let boundIDs = [];
+        boundIDs = Object.keys(this.satGroupBindings);
+        const t = topic.split('/');
+        if (boundIDs.includes(t[1])) {
+            if (t[3] === 'touch') {
+                this.runtime.startHats('event_whenbroadcastreceived', {
+                    BROADCAST_OPTION: `${this.satGroupBindings[t[1]]} Touch`
+                });
+            } else if (t[3] === 'radar') {
+                this.runtime.startHats('event_whenbroadcastreceived', {
+                    BROADCAST_OPTION: `${this.satGroupBindings[t[1]]} Radar`
+                });
+            }
         }
     }
 
@@ -651,6 +686,11 @@ class VirtualMachine extends EventEmitter {
         if (aliasSatTouchValue) {
             aliasSatTouchValue.value = touchedSatVars.ALL_SAT_TOUCH_VALUE;
         }
+        const messageGroupAlias = this.satGroupBindings[touchedSatVars.ALL_SAT_TOUCH_SATID];
+        const groupAliasSatTouchValue = stage.lookupVariableByNameAndType(`${messageGroupAlias} Touch`, '');
+        if (groupAliasSatTouchValue) {
+            groupAliasSatTouchValue.value = touchedSatVars.ALL_SAT_TOUCH_VALUE;
+        }
     }
 
     setRadarVariables (radarSatVars) {
@@ -703,6 +743,11 @@ class VirtualMachine extends EventEmitter {
         const aliasSatTouchValue = stage.lookupVariableByNameAndType(messageAlias, varType);
         if (aliasSatTouchValue) {
             aliasSatTouchValue.value = radarSatVars.ALL_SAT_RADAR_VALUE;
+        }
+        const messageGroupAlias = this.satGroupBindings[radarSatVars.ALL_SAT_RADAR_SATID];
+        const groupAliasSatTouchValue = stage.lookupVariableByNameAndType(`${messageGroupAlias} Radar`, '');
+        if (groupAliasSatTouchValue) {
+            groupAliasSatTouchValue.value = radarSatVars.ALL_SAT_RADAR_VALUE;
         }
     }
 
