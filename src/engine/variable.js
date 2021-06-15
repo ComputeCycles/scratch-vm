@@ -29,6 +29,9 @@ class Variable {
         case Variable.BROADCAST_MESSAGE_TYPE:
             this.value = this.name;
             break;
+        case Variable.SAT_RAW_TYPE:
+            this.value = this.name;
+            break;
         default:
             throw new Error(`Invalid variable type: ${this.type}`);
         }
@@ -64,6 +67,14 @@ class Variable {
      */
     static get BROADCAST_MESSAGE_TYPE () {
         return 'broadcast_msg';
+    }
+    
+    /**
+     * Type representation for list variables.
+     * @const {string}
+     */
+    static get SAT_RAW_TYPE () {
+        return 'sat_raw';
     }
 }
 

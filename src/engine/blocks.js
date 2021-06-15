@@ -857,6 +857,9 @@ class Blocks {
             } else if (optIncludeBroadcast && blocks[blockId].fields.BROADCAST_OPTION) {
                 varOrListField = blocks[blockId].fields.BROADCAST_OPTION;
                 varType = Variable.BROADCAST_MESSAGE_TYPE;
+            } else if (optIncludeBroadcast && blocks[blockId].fields.SAT_RAW) {
+                varOrListField = blocks[blockId].fields.SAT_RAW;
+                varType = Variable.SAT_RAW_TYPE;
             }
             if (varOrListField) {
                 const currVarId = varOrListField.id;

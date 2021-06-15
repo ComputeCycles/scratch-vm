@@ -637,7 +637,7 @@ class VirtualMachine extends EventEmitter {
 
     setTouchVariables (touchedSatVars) {
         const stage = this.runtime.getTargetForStage();
-        const varType = '';
+        const varType = 'sat_raw';
 
         let allSatTouchSatIdVar = stage.lookupVariableByNameAndType('ALL_SAT_TOUCH_SATID', varType);
         if (allSatTouchSatIdVar) {
@@ -695,7 +695,7 @@ class VirtualMachine extends EventEmitter {
 
     setRadarVariables (radarSatVars) {
         const stage = this.runtime.getTargetForStage();
-        const varType = '';
+        const varType = 'sat_raw';
 
         let allSatRadarSatIdVar = stage.lookupVariableByNameAndType('ALL_SAT_RADAR_SATID', varType);
         if (allSatRadarSatIdVar) {
