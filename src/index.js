@@ -16,7 +16,7 @@ program.parse(process.argv);
 const inputs = program.opts();
     
 const virtualMachine = new VirtualMachine();
-    
+    debugger
 if (process.title === 'browser') {
 
     virtualMachine.start();
@@ -25,9 +25,9 @@ if (process.title === 'browser') {
 
     const reader = new FileReader();
     
-    const host = inputs.host ? `${inputs.host}` : 'localhost';
+    const host = inputs.host ? `${inputs.host}` : '10.8.0.28';
     const port = inputs.port ? `${inputs.port}` : '1883';
-    const gamePath = inputs.game ? `${inputs.game}` : `${process.cwd()}/game/DefaultGame.sb3`;
+    const gamePath = inputs.game ? `${inputs.game}` : `${process.cwd()}/game/HeadlessPointerGame.sb3`;
     // params: (extensionId, peripheralId/connection address, port, userName, password)
     
     const file = new File('DefaultGame.sb3', {

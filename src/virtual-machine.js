@@ -31,6 +31,13 @@ require('canvas-toBlob');
 const FileReader = require('filereader');
 const File = require('file-class');
 
+// const fs = require('fs');
+
+// fs.readFile('my-file.txt', 'utf8', function(err, data) {
+//     if (err) throw err;
+//     console.log(data);
+// });
+
 const RESERVED_NAMES = ['_mouse_', '_stage_', '_edge_', '_myself_', '_random_'];
 
 const CORE_EXTENSIONS = [
@@ -78,6 +85,8 @@ class VirtualMachine extends EventEmitter {
         this.satAliasBindings = {};
 
         this.satGroupBindings = {};
+
+        this.reader = {};
 
         this.app = {
             mode: 0
@@ -329,22 +338,8 @@ class VirtualMachine extends EventEmitter {
         });
 
         this.runtime.on('LOAD_SB3_FILE', args => {
-            debugger
-            const reader = new FileReader();
-            const gamePath = `../game/${args.GAMENAME}.sb3`;
-            const file = new File('ChildGame.sb3', {
-                name: 'ChildGame.sb3',
-                path: gamePath
-            });
-            reader.readAsArrayBuffer(file);
-            setTimeout(() => {
-                reader.onload = () => {
-                    debugger
-                    log.info(`Loading ${gamePath}`);
-                    this.loadProject(reader.result);
-                    this.start();
-                };
-            }, 100);
+            // debugger
+            this.loadGameFile(args);
         });
 
         this.runtime.on('ADD_MQTT_SUBSCRIPTION', topic => {
@@ -487,6 +482,27 @@ class VirtualMachine extends EventEmitter {
         this.flyoutBlockListener = this.flyoutBlockListener.bind(this);
         this.monitorBlockListener = this.monitorBlockListener.bind(this);
         this.variableListener = this.variableListener.bind(this);
+    }
+
+    loadGameFile (args) {
+        this.reader = new FileReader();
+        const gamePath = `/Users/bschweiz/workspace/ComputeCycles/scratch-vm/game/${args.GAMENAME}.sb3`;
+        const file = new File('ChildGame.sb3', {
+            name: 'ChildGame.sb3',
+            path: gamePath
+        });
+        // debugger
+        this.DisconnectMqtt();
+        this.start();
+        this.clear();
+        this.reader.readAsArrayBuffer(file);
+        this.reader.onload = () => {
+            log.info(`Loading ${gamePath}`);
+            this.loadProject(this.reader.result);
+            this.runtime.on(Runtime.CLIENT_CONNECTED, () => {
+                this.runtime.emit('START_GAME');
+            });
+        };
     }
 
     setClient (client) {
@@ -817,7 +833,12 @@ class VirtualMachine extends EventEmitter {
     clearAllScratchVariables () {
         const variableIds = Object.keys(this.runtime.getTargetForStage().variables);
         for (let i = 0; i < variableIds.length; i++) {
-            this.workspace.deleteVariableById(variableIds[i]);
+            if (this.workspace.deleteVariableById) {
+                this.workspace.deleteVariableById(variableIds[i]);
+            } else {
+                const stage = this.runtime.getTargetForStage();
+                stage.deleteVariable(variableIds[i]);
+            }
         }
     }
 

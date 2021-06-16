@@ -35,8 +35,9 @@ const base = {
         }]
     },
     node: {
-        fs: 'empty',
-        child_process: "empty"
+        path: 'true',
+        // fs: 'empty',
+        child_process: 'empty'
     },
     optimization: {
         minimizer: [

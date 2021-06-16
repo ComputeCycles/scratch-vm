@@ -137,7 +137,7 @@ class MqttConnect extends EventEmitter {
         console.log(`onDisconnect fired`);
         // subscribe to all status, radar detection and touch events
         if (this._client) {
-            performConnection();
+            this.performConnection();
         }
     }
 
