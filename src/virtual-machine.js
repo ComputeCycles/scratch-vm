@@ -28,6 +28,9 @@ const {serializeSounds, serializeCostumes} = require('./serialization/serialize-
 const uid = require('./util/uid');
 require('canvas-toBlob');
 
+const FileReader = require('filereader');
+const File = require('file-class');
+
 const RESERVED_NAMES = ['_mouse_', '_stage_', '_edge_', '_myself_', '_random_'];
 
 const CORE_EXTENSIONS = [
@@ -323,6 +326,25 @@ class VirtualMachine extends EventEmitter {
                 const message = utf8Encode.encode(value);
                 this.client.publish(topic, message);
             }
+        });
+
+        this.runtime.on('LOAD_SB3_FILE', args => {
+            debugger
+            const reader = new FileReader();
+            const gamePath = `../game/${args.GAMENAME}.sb3`;
+            const file = new File('ChildGame.sb3', {
+                name: 'ChildGame.sb3',
+                path: gamePath
+            });
+            reader.readAsArrayBuffer(file);
+            setTimeout(() => {
+                reader.onload = () => {
+                    debugger
+                    log.info(`Loading ${gamePath}`);
+                    this.loadProject(reader.result);
+                    this.start();
+                };
+            }, 100);
         });
 
         this.runtime.on('ADD_MQTT_SUBSCRIPTION', topic => {

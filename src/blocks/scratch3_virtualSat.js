@@ -49,7 +49,8 @@ class VirtualSatBlocks {
             virtualsat_addNewVirtualSat: this.addNewSat,
             virtualsat_setRadarSensitivities: this.setRadarSensitivity,
             virtualsat_cycleSatellitePower: this.cycleSatellitePower,
-            virtualsat_rebootSatellite: this.rebootSatellite
+            virtualsat_rebootSatellite: this.rebootSatellite,
+            virtualsat_loadGameFile: this.loadSb3File
         };
     }
 
@@ -67,6 +68,10 @@ class VirtualSatBlocks {
 
     rebootSatellite (args) {
         this.runtime.emit('REBOOT_SATELLITE', args);
+    }
+
+    loadSb3File (args) {
+        this.runtime.emit('LOAD_SB3_FILE', args);
     }
 
     stopSequence () {
