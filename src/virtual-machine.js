@@ -486,7 +486,7 @@ class VirtualMachine extends EventEmitter {
 
     loadGameFile (args) {
         this.reader = new FileReader();
-        const gamePath = `/Users/bschweiz/workspace/ComputeCycles/scratch-vm/game/${args.GAMENAME}.sb3`;
+        const gamePath = `${process.cwd()}/game/${args.GAMENAME}.sb3`;
         const file = new File('ChildGame.sb3', {
             name: 'ChildGame.sb3',
             path: gamePath
