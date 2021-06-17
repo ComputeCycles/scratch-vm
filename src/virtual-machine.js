@@ -276,14 +276,40 @@ class VirtualMachine extends EventEmitter {
                     const bMagTopic = `sat/${satList[i]}/cfg/radar/bMag`;
                     const detEnTopic = `sat/${satList[i]}/cfg/radar/detEn`;
                     if (this.client && this.client != undefined) {
-                        if (data.SENSITIVITY == "off") {
+                        const sensitivitySetting = data.SENSITIVITY;
+                        
+                        switch (sensitivitySetting) {
+                        case 'off':
                             this.client.publish(detEnTopic, utf8Encode.encode('0'), options);
-                        } else {
+                            break;
+                        case 'near':
+                            this.client.publish(detEnTopic, utf8Encode.encode('1'), options);
+                            this.client.publish(fSpeedTopic, utf8Encode.encode('8'), options);
+                            this.client.publish(bSpeedTopic, utf8Encode.encode('8'), options);
+                            this.client.publish(fMagTopic, utf8Encode.encode('8'), options);
+                            this.client.publish(bMagTopic, utf8Encode.encode('8'), options);
+                            break;
+                        case 'medium':
                             this.client.publish(detEnTopic, utf8Encode.encode('1'), options);
                             this.client.publish(fSpeedTopic, utf8Encode.encode('2'), options);
                             this.client.publish(bSpeedTopic, utf8Encode.encode('2'), options);
                             this.client.publish(fMagTopic, utf8Encode.encode('5'), options);
                             this.client.publish(bMagTopic, utf8Encode.encode('5'), options);
+                            break;
+                        case 'long':
+                            this.client.publish(detEnTopic, utf8Encode.encode('1'), options);
+                            this.client.publish(fSpeedTopic, utf8Encode.encode('2'), options);
+                            this.client.publish(bSpeedTopic, utf8Encode.encode('2'), options);
+                            this.client.publish(fMagTopic, utf8Encode.encode('3'), options);
+                            this.client.publish(bMagTopic, utf8Encode.encode('3'), options);
+                            break;
+                        case 'max':
+                            this.client.publish(detEnTopic, utf8Encode.encode('1'), options);
+                            this.client.publish(fSpeedTopic, utf8Encode.encode('2'), options);
+                            this.client.publish(bSpeedTopic, utf8Encode.encode('2'), options);
+                            this.client.publish(fMagTopic, utf8Encode.encode('1'), options);
+                            this.client.publish(bMagTopic, utf8Encode.encode('1'), options);
+                            break;
                         }
                     }
                 }
