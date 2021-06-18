@@ -284,15 +284,15 @@ class VirtualMachine extends EventEmitter {
                             break;
                         case 'near':
                             this.client.publish(detEnTopic, utf8Encode.encode('1'), options);
-                            this.client.publish(fSpeedTopic, utf8Encode.encode('8'), options);
-                            this.client.publish(bSpeedTopic, utf8Encode.encode('8'), options);
+                            this.client.publish(fSpeedTopic, utf8Encode.encode('5'), options);
+                            this.client.publish(bSpeedTopic, utf8Encode.encode('5'), options);
                             this.client.publish(fMagTopic, utf8Encode.encode('8'), options);
                             this.client.publish(bMagTopic, utf8Encode.encode('8'), options);
                             break;
                         case 'medium':
                             this.client.publish(detEnTopic, utf8Encode.encode('1'), options);
-                            this.client.publish(fSpeedTopic, utf8Encode.encode('2'), options);
-                            this.client.publish(bSpeedTopic, utf8Encode.encode('2'), options);
+                            this.client.publish(fSpeedTopic, utf8Encode.encode('3'), options);
+                            this.client.publish(bSpeedTopic, utf8Encode.encode('3'), options);
                             this.client.publish(fMagTopic, utf8Encode.encode('5'), options);
                             this.client.publish(bMagTopic, utf8Encode.encode('5'), options);
                             break;
@@ -305,8 +305,8 @@ class VirtualMachine extends EventEmitter {
                             break;
                         case 'max':
                             this.client.publish(detEnTopic, utf8Encode.encode('1'), options);
-                            this.client.publish(fSpeedTopic, utf8Encode.encode('2'), options);
-                            this.client.publish(bSpeedTopic, utf8Encode.encode('2'), options);
+                            this.client.publish(fSpeedTopic, utf8Encode.encode('1'), options);
+                            this.client.publish(bSpeedTopic, utf8Encode.encode('1'), options);
                             this.client.publish(fMagTopic, utf8Encode.encode('1'), options);
                             this.client.publish(bMagTopic, utf8Encode.encode('1'), options);
                             break;
