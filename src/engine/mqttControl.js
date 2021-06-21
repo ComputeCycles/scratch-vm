@@ -124,13 +124,13 @@ class MqttControl extends EventEmitter{
         } else if (t[0] === 'sat' && t[2] === 'cmd' && t[3] === 'fx') {
             const message = decoder.decode(payload);
             // this.props.setProjectState(true);
-            console.log(topic, message, 'DISPLAYMESSAGE');
+            // console.log(topic, message, 'DISPLAYMESSAGE');
             if (message === 'LS: STOPCLEAR' || message.includes('AS') || message === 'Stop') {
                 return;
             }
             const satellite = this.findSatelliteName(t[1]);
             if (satellite === 1) {
-                console.log(this._time1, 'time1');
+                // console.log(this._time1, 'time1');
                 if (this._time1 > 1) {
                     this.stopSequences1();
                     setTimeout(() => {
@@ -171,14 +171,14 @@ class MqttControl extends EventEmitter{
         } else if (t[1] === 'sat' && t[3] === 'cmd' && t[4] === 'fx') {
             const message = decoder.decode(payload);
             this.props.setProjectState(true);
-            console.log(topic, message, 'DISPLAYMESSAGE');
+            // console.log(topic, message, 'DISPLAYMESSAGE');
             if (message === 'LS: STOPCLEAR' || message.includes('AS')) {
                 return;
             }
-            console.log(topic, 'topicWE HIT!');
+            // console.log(topic, 'topicWE HIT!');
             const satellite = this.findSatelliteName(t[2]);
             if (satellite === 1) {
-                console.log(this._time1, 'time1');
+                // console.log(this._time1, 'time1');
                 if (this._time1 > 1) {
                     this.stopSequences1();
                     setTimeout(() => {
@@ -218,8 +218,8 @@ class MqttControl extends EventEmitter{
 
         } else if (t[0] === 'sat' && t[2] === 'ev' && t[3] === 'touch') {
             const message = decoder.decode(payload);
-            console.log(topic[1], 'topic');
-            console.log(message, 'message');
+            // console.log(topic[1], 'topic');
+            // console.log(message, 'message');
             this.setTouchVars(topic, message, t);
             this.touchHandler(t[1], message, topic);
         } else if (t[0] === 'sat' && t[2] === 'online') {
@@ -241,7 +241,7 @@ class MqttControl extends EventEmitter{
                 payload: parsedPayload,
                 topic: topic
             };
-            console.log('pub matching user input sub topic', data)
+            // console.log('pub matching user input sub topic', data)
             this.runtime.emit('USER_SUB_MQTT_PUB', data);
         }
     }
@@ -334,7 +334,7 @@ class MqttControl extends EventEmitter{
         
         // Setup the variable
         this.runtime.emit('SET_LIGHTS', txts);
-        console.log(_sequencesByName, 'sequences');
+        // console.log(_sequencesByName, 'sequences');
     }
 
     static touchHandler (sender, payload, topic) {
@@ -343,20 +343,20 @@ class MqttControl extends EventEmitter{
             return;
         }
         satellites[sender].isTouched = payload[0] === 0x31;
-        console.log(payload, 'TOUCHpayload');
+        // console.log(payload, 'TOUCHpayload');
         if (payload === '1') {
             this.runtime.emit('IS_TOUCHED', {
                 sender: sender,
                 touched: true
             });
             this.runtime.emit('TOUCH_TO_MESSAGE', sender, topic);
-            console.log('hit for payload 1');
+            // console.log('hit for payload 1');
         } else {
             this.runtime.emit('IS_TOUCHED', {
                 sender: sender,
                 touched: false
             });
-            console.log('hit for payload 0');
+            // console.log('hit for payload 0');
         }
     }
 
@@ -364,12 +364,12 @@ class MqttControl extends EventEmitter{
         if (!userSubTopics.includes(topic)) {
             userSubTopics.push(topic);
         }
-        console.log(`current array of User Subscriptions from Mqtt Control: ${userSubTopics}`)
+        // console.log(`current array of User Subscriptions from Mqtt Control: ${userSubTopics}`)
     }
 
     static isTouched (sat) {
         // const sat = this.findSatelliteSerial(satellite);
-        console.log(sat, 'sat');
+        // console.log(sat, 'sat');
         return sat &&
         sat !== this.NOT_FOUND &&
         this.satellites &&
@@ -380,7 +380,7 @@ class MqttControl extends EventEmitter{
     }
 
     static hasPresence (sat) {
-        console.log(sat, 'sat from has Presence');
+        // console.log(sat, 'sat from has Presence');
         return sat &&
         sat !== this.NOT_FOUND &&
         this.satellites &&
@@ -392,7 +392,7 @@ class MqttControl extends EventEmitter{
 
     static playSoundMQTT (args, runtime) {
         this.runtime = runtime;
-        console.log('PlaySoundMQTT', args);
+        // console.log('PlaySoundMQTT', args);
         if (this._soundsByName !== undefined) {
             const outboundTopic = `sat/${args.SATELLITE}/cmd/fx`;
             const string = [this._soundsByName[args.SOUND]];
@@ -409,10 +409,10 @@ class MqttControl extends EventEmitter{
     }
 
     static playSound (args) {
-        console.log(args, 'args');
+        // console.log(args, 'args');
         // const satellite = this.findSatelliteSerial(args.SATELLITE);
         const outboundTopic = `sat/${args.satellite}/cmd/fx`;
-        console.log(outboundTopic, 'topic');
+        // console.log(outboundTopic, 'topic');
         const sounds = SoundFiles.sounds;
         const ext = sounds.find((x) => x.name === args.sound);
         const audio = `AS: 1,${ext.md5ext}`;
@@ -424,7 +424,7 @@ class MqttControl extends EventEmitter{
 
     static playLightSequence (args) {
         // const satellite = this.findSatelliteSerial(args.satellite);
-        console.log('PlayLights', args);
+        // console.log('PlayLights', args);
         // const outboundTopic = `sat/${args.SATELLITE}/cmd/fx`;
         // const string = [this._sequencesByName[args.SOUND]];
         // const utf8Encode = new TextEncoder();
