@@ -31,12 +31,8 @@ require('canvas-toBlob');
 const FileReader = require('filereader');
 const File = require('file-class');
 
-// const fs = require('fs');
-
-// fs.readFile('my-file.txt', 'utf8', function(err, data) {
-//     if (err) throw err;
-//     console.log(data);
-// });
+const fs = require('fs');
+// const path = require('path');
 
 const RESERVED_NAMES = ['_mouse_', '_stage_', '_edge_', '_myself_', '_random_'];
 
@@ -194,6 +190,9 @@ class VirtualMachine extends EventEmitter {
         });
         this.runtime.on(Runtime.HAS_CLOUD_DATA_UPDATE, hasCloudData => {
             this.emit(Runtime.HAS_CLOUD_DATA_UPDATE, hasCloudData);
+        });
+        this.runtime.on(Runtime.LOAD_GAME_FROM_VM, file => {
+            this.emit(Runtime.LOAD_GAME_FROM_VM, file);
         });
         this.runtime.on('ADD_SUB_MQTTCONTROL', topic => {
             this.emit('ADD_SUB_MQTTCONTROL', topic);
@@ -517,17 +516,27 @@ class VirtualMachine extends EventEmitter {
             name: 'ChildGame.sb3',
             path: gamePath
         });
-        // debugger
-        this.DisconnectMqtt();
-        this.start();
-        this.clear();
+
+        // const uri = path.resolve(__dirname, `${process.cwd()}/game/${args.GAMENAME}.sb3`);
+        // const projectData = readFileToBuffer(uri);
+        debugger
+        this.runtime.emit('LOAD_GAME_FROM_VM', file);
+        this.runtime.emit('PROJECT_CHANGED');
         this.reader.readAsArrayBuffer(file);
         this.reader.onload = () => {
+            if (this.client) {
+                this.DisconnectMqtt();
+            }
+            this.start();
+            this.clear();
+            this.setCompatibilityMode(false);
+            this.setTurboMode(false);
             log.info(`Loading ${gamePath}`);
             this.loadProject(this.reader.result);
-            this.runtime.on(Runtime.CLIENT_CONNECTED, () => {
-                this.runtime.emit('START_GAME');
-            });
+            // this.emitWorkspaceUpdate();
+            // this.runtime.on(Runtime.CLIENT_CONNECTED, () => {
+            //     this.runtime.emit('START_GAME');
+            // });
         };
     }
 
@@ -620,7 +629,9 @@ class VirtualMachine extends EventEmitter {
 
     publishToClient (data) {
         console.log('publish', data);
-        this.client.publish(data.topic, data.message);
+        if (this.client) {
+            this.client.publish(data.topic, data.message);
+        }
         return Promise.resolve();
     }
 
