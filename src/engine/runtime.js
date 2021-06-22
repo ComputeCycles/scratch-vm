@@ -2490,6 +2490,8 @@ class Runtime extends EventEmitter {
         for (let i = 0; i < this.targets.length; i++) {
             const target = this.targets[i];
             if (target.isStage) {
+                debugger
+                console.log(target.variables);
                 return target;
             }
         }

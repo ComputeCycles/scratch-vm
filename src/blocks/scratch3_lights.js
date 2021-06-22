@@ -57,7 +57,7 @@ class LightBlocks {
     }
 
     mqttSendSequence (args, util) {
-        console.log(args, 'from mqttSendSequence');
+        // console.log(args, 'from mqttSendSequence');
         if (args.SATELLITE && args.VALUE) {
             const satList = args.SATELLITE.split(' ');
             for (let i = 0; i < satList.length; i++) {

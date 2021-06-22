@@ -62,7 +62,7 @@ class TouchBlocks {
             }
         });
 
-        console.log(this.runtime, ('from touch'));
+        // console.log(this.runtime, ('from touch'));
 
         this.runtime.on('IS_TOUCHED', data => {
             if (data.touched === true) {
@@ -73,7 +73,7 @@ class TouchBlocks {
                 this.isSatelliteTouched = (data.touched) ? true : false;
             };
             this.translateTouchInput(data);
-            console.log(this.touchedSatellite, "touched sat", this.isSatelliteTouched, "is sat touched");
+            // console.log(this.touchedSatellite, "touched sat", this.isSatelliteTouched, "is sat touched");
         });
 
         this.runtime.on('TOUCH_EVENT_SATELLITE', (args) => {
