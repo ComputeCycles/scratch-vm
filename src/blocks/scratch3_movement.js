@@ -24,7 +24,6 @@ class MovementBlocks {
         this.satelliteToCheck = '';
 
         this.runtime.on('HAS_PRESENCE', data => {
-            // console.log(data, 'data from issensed movement');
             if (data.sensing === '1') {
                 this.sensingSattelite = data.satellite;
                 this.isSatelliteSensing = true;
@@ -33,7 +32,6 @@ class MovementBlocks {
                 this.isSatelliteSensing = false;
             }
             this.translateMovementInput(data);
-            // console.log(this.sensingSattelite, 'sensed sat', this.isSatelliteSensing, 'is sat sensed');
         });
 
         this.runtime.on('TOUCH_EVENT_SATELLITE', args => {
