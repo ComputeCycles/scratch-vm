@@ -283,7 +283,6 @@ class MqttControl extends EventEmitter{
     }
 
     static _satelliteStatusHandler (sender) {
-        // log.info(`satelliteStatusHandler fired for sender: ${sender}`);
         satellites[sender] = {
             isTouched: false,
             hasPresence: false
@@ -297,7 +296,6 @@ class MqttControl extends EventEmitter{
     }
 
     static firmwareHandler (payload) {
-        // log.info(`firmware handler fired`);
         const json = JSON.parse(payload);
         const files = json.files;
         this.setupSoundVar(files);
