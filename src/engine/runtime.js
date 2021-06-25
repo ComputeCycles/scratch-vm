@@ -567,6 +567,14 @@ class Runtime extends EventEmitter {
     }
 
     /**
+     * Event name for loading a local project from a block.
+     * @const {string}
+     */
+    static get LOAD_GAME_FROM_VM () {
+        return 'LOAD_GAME_FROM_VM';
+    }
+
+    /**
      * Event name for block drag update.
      * @const {string}
      */

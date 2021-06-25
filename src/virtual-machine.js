@@ -520,6 +520,7 @@ class VirtualMachine extends EventEmitter {
         // const uri = path.resolve(__dirname, `${process.cwd()}/game/${args.GAMENAME}.sb3`);
         // const projectData = readFileToBuffer(uri);
         debugger
+        if (this.workspace) {console.log('do you have a FileReader')}
         this.runtime.emit('LOAD_GAME_FROM_VM', file);
         this.runtime.emit('PROJECT_CHANGED');
         this.reader.readAsArrayBuffer(file);
@@ -1028,7 +1029,9 @@ class VirtualMachine extends EventEmitter {
      * @return {!Promise} Promise that resolves after targets are installed.
      */
     loadProject (input) {
-        // 6/23=> does this function get called when loading a game in GUI? i can't remember...
+        // this function DOES get called when loading a game in GUI,
+        // however, input has already been read/parsed by React at this point
+        //  example: input = ArrayBuffer(45321)
         debugger
         if (typeof input === 'object' && !(input instanceof ArrayBuffer) &&
           !ArrayBuffer.isView(input)) {
