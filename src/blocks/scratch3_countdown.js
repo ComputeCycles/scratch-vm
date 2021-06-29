@@ -64,9 +64,7 @@ class Scratch3Countdown {
         });
 
         this.runtime.on('IS_TOUCHED', data => {
-            console.log(this.satelliteToCheck, 'satelliteToCheck');
-            console.log(data.sender, 'data.sender');
-            console.log(data, 'DATAINisTOUCH');
+
             if (data.touched === true) {
                 this.touchedSatellite = data.sender;
                 this.isSatelliteTouched = !!(data.touched);
@@ -74,7 +72,6 @@ class Scratch3Countdown {
                 this.touchedSatellite = '';
                 this.isSatelliteTouched = !!(data.touched);
             }
-            console.log(this.touchedSatellite, 'touched sat', this.isSatelliteTouched, 'is sat touched');
         });
 
 
@@ -211,7 +208,6 @@ class Scratch3Countdown {
     }
 
     waitUntil (args, util) {
-        console.log(args, 'args from waitUntil');
         const topic = args.TOPIC.split('/');
         const last = topic.length - 1;
         const action = topic[last];
@@ -281,7 +277,6 @@ class Scratch3Countdown {
     whenCelebrationStarted (args, util) {
         if (!this.celebrateFirst) {
             this.runtime.emit('ADD_CELEBRATE_START_LISTENER');
-            console.log('celebrated');
         }
 
         this.celebrateFirst = true;

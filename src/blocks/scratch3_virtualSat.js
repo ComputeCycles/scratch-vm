@@ -96,7 +96,6 @@ class VirtualSatBlocks {
 
 
     addNewSat (args, util) {
-        console.log(args.NAME, 'args');
         if (args.NAME === undefined) {
             return;
         }
