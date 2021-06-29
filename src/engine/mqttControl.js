@@ -217,8 +217,6 @@ class MqttControl extends EventEmitter{
 
         } else if (t[0] === 'sat' && t[2] === 'ev' && t[3] === 'touch') {
             const message = decoder.decode(payload);
-            console.log(topic[1], 'topic');
-            console.log(message, 'message');
             this.setTouchVars(topic, message, t);
             this.touchHandler(t[1], message, topic);
         } else if (t[0] === 'sat' && t[2] === 'online') {

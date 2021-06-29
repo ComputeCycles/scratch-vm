@@ -795,7 +795,8 @@ class VirtualMachine extends EventEmitter {
                 } else if (stage.variables[aliasVariable.id] !== undefined) {
                     stage.variables[aliasVariable.id].value = data.payload;
                 }
-                console.log('alias var:', stage.variables[aliasVariable.id], stage.variables[aliasVariable.id].value);
+                console.log(stage.variables[aliasVariable.id] ? `alias var: ${stage.variables[aliasVariable.id].name}
+                    ${stage.variables[aliasVariable.id].value}` : '');
             }, 100);
         }
     }
@@ -815,7 +816,8 @@ class VirtualMachine extends EventEmitter {
                 } else if (stage.variables[groupVariable.id] !== undefined) {
                     stage.variables[groupVariable.id].value = data.payload;
                 }
-                console.log('group var:', stage.variables[groupVariable.id], stage.variables[groupVariable.id].value);
+                console.log(stage.variables[groupVariable.id] ? `group var: ${stage.variables[groupVariable.id].name}
+                    ${stage.variables[groupVariable.id].value}` : '');
             }, 100);
         }
     }

@@ -39,7 +39,7 @@ const defaultBlockPackages = {
     scratch3_sound: require('../blocks/scratch3_sound'),
     scratch3_sensing: require('../blocks/scratch3_sensing'),
     scratch3_data: require('../blocks/scratch3_data'),
-    scratch3_microworld: require('../blocks/scratch3_microworld')
+    scratch3_microworld: require('../blocks/scratch3_microworld'),
     scratch3_procedures: require('../blocks/scratch3_procedures'),
     scratch3_countdown: require('../blocks/scratch3_countdown'),
     scratch3_display: require('../blocks/scratch3_display'),
