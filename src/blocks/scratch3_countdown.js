@@ -64,7 +64,6 @@ class Scratch3Countdown {
         });
 
         this.runtime.on('IS_TOUCHED', data => {
-
             if (data.touched === true) {
                 this.touchedSatellite = data.sender;
                 this.isSatelliteTouched = !!(data.touched);
