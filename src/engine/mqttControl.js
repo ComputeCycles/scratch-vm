@@ -175,7 +175,6 @@ class MqttControl extends EventEmitter{
             if (message === 'LS: STOPCLEAR' || message.includes('AS')) {
                 return;
             }
-            console.log(topic, 'topicWE HIT!');
             const satellite = this.findSatelliteName(t[2]);
             if (satellite === 1) {
                 console.log(this._time1, 'time1');
@@ -343,20 +342,17 @@ class MqttControl extends EventEmitter{
             return;
         }
         satellites[sender].isTouched = payload[0] === 0x31;
-        console.log(payload, 'TOUCHpayload');
         if (payload === '1') {
             this.runtime.emit('IS_TOUCHED', {
                 sender: sender,
                 touched: true
             });
             this.runtime.emit('TOUCH_TO_MESSAGE', sender, topic);
-            console.log('hit for payload 1');
         } else {
             this.runtime.emit('IS_TOUCHED', {
                 sender: sender,
                 touched: false
             });
-            console.log('hit for payload 0');
         }
     }
 
