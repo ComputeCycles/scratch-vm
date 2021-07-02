@@ -945,9 +945,13 @@ class VirtualMachine extends EventEmitter {
     }
 
     connectMqtt (extensionId, peripheralId, port, userName, password) {
+        debugger
         const client = MqttConnect.connect(peripheralId, port, userName, password, this.runtime);
         this.setClient(client);
         (console.log(extensionId, peripheralId, userName, password, 'from connectMqtt'));
+        if (extensionId === 'newScratchGui') {
+            return client;
+        }
     }
 
     DisconnectMqtt () {
