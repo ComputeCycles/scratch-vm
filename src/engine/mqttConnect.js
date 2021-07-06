@@ -14,7 +14,6 @@ class MqttConnect extends EventEmitter {
     }
 
     static connect (host, port, username, password, runtime) {
-        // debugger
         console.log(`connected fired with url = ${host} on port ${port}`);
         this.runtime = runtime;
         console.log(this.runtime, 'runtime from connect');
