@@ -14,7 +14,7 @@ class MqttConnect extends EventEmitter {
     }
 
     static connect (host, port, username, password, runtime) {
-        debugger
+        // debugger
         console.log(`connected fired with url = ${host} on port ${port}`);
         this.runtime = runtime;
         console.log(this.runtime, 'runtime from connect');
@@ -92,7 +92,6 @@ class MqttConnect extends EventEmitter {
         this._client.on('close', () => this.onClose());
         this._client.on('error', error => this.onError(error));
         this._client.on('reconnect', () => this.onReconnect());
-        debugger
         this._client.on('message', (topic, payload) => MqttControl.onMessage(topic, payload, this.runtime));
         this._client.on('disconnect', () => this.onDisconnect());
     }

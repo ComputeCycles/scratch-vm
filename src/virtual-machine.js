@@ -445,6 +445,7 @@ class VirtualMachine extends EventEmitter {
         }
 
         this.createPlayspotVariable = (varName, varType, stage) => {
+            debugger
             let playspotVariable = {};
             if (this.workspace.createVariable) {
                 // workspace.createVariable(varName, OPTIONALvarType, OPTIONALvarId, OPTIONALisLocal, OPTIONALisCloud)
@@ -945,7 +946,7 @@ class VirtualMachine extends EventEmitter {
     }
 
     connectMqtt (extensionId, peripheralId, port, userName, password) {
-        debugger
+        // debugger
         const client = MqttConnect.connect(peripheralId, port, userName, password, this.runtime);
         this.setClient(client);
         (console.log(extensionId, peripheralId, userName, password, 'from connectMqtt'));
