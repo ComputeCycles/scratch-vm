@@ -36,7 +36,7 @@ const base = {
     },
     node: {
         fs: 'empty',
-        child_process: "empty"
+        child_process: 'empty'
     },
     optimization: {
         minimizer: [

@@ -27,7 +27,7 @@ const {loadSound} = require('./import/load-sound.js');
 const {serializeSounds, serializeCostumes} = require('./serialization/serialize-assets');
 const uid = require('./util/uid');
 require('canvas-toBlob');
-
+const FileSaver = require('file-saver');
 const RESERVED_NAMES = ['_mouse_', '_stage_', '_edge_', '_myself_', '_random_'];
 
 const CORE_EXTENSIONS = [
@@ -198,6 +198,9 @@ class VirtualMachine extends EventEmitter {
         this.runtime.on('PLAY_SOUND_MQTT', data => {
             this.emit('PLAY_SOUND_MQTT', data);
         });
+        this.runtime.on('HAS_PRESENCE', data => {
+            this.emit('HAS_PRESENCE', data);
+        });
         this.runtime.on('SET_ALL_SATELLITES', data => {
             this.setAllSatellites(data);
         });
@@ -263,9 +266,6 @@ class VirtualMachine extends EventEmitter {
                 this.client.publish(data.topic, data.message);
                 return Promise.resolve();
             }
-        });
-        this.runtime.on('HAS_PRESENCE', data => {
-            this.emit('HAS_PRESENCE', data);
         });
         this.runtime.on('SET_RADAR', data => {
             if (data.SATELLITE !== 'satellite') {
@@ -948,6 +948,9 @@ class VirtualMachine extends EventEmitter {
         const client = MqttConnect.connect(peripheralId, port, userName, password, this.runtime);
         this.setClient(client);
         (console.log(extensionId, peripheralId, userName, password, 'from connectMqtt'));
+        if (extensionId === 'newScratchGui') {
+            return client;
+        }
     }
 
     DisconnectMqtt () {
@@ -1055,7 +1058,6 @@ class VirtualMachine extends EventEmitter {
      * @returns {string} Project in a Scratch 3.0 JSON representation.
      */
     saveProjectSb3 () {
-        
         const soundDescs = serializeSounds(this.runtime);
         const costumeDescs = serializeCostumes(this.runtime);
         const projectJson = this.toJSON();
@@ -1087,6 +1089,45 @@ class VirtualMachine extends EventEmitter {
                 .concat(target.sprite.sounds.map(sound => sound.asset))
                 .concat(target.sprite.costumes.map(costume => costume.asset))
         ), []);
+    }
+
+    saveNEWSCRATCHProjectSb3 (filename) {
+        const soundDescs = serializeSounds(this.runtime);
+        const costumeDescs = serializeCostumes(this.runtime);
+
+        const projectJson = this.toJSON();
+        // TODO want to eventually move zip creation out of here, and perhaps
+        // into scratch-storage
+        const zip = new JSZip();
+
+        // Put everything in a zip file
+        zip.file('project.json', projectJson);
+        this._addFileDescsToZip(soundDescs.concat(costumeDescs), zip);
+
+        return zip.generateAsync({
+            type: 'blob',
+            mimeType: 'application/x.scratch.sb3',
+            compression: 'DEFLATE',
+            compressionOptions: {
+                level: 6 // Tradeoff between best speed (1) and best compression (9)
+            }
+        }).then(content => {
+            FileSaver.saveAs(content, `${filename}.sb3`);
+        });
+    }
+    extractProjectJson (file) {
+        return new Promise((resolve, reject) =>
+            JSZip.loadAsync(file).then(zip => {
+                Object.keys(zip.files).forEach(filename => {
+                    zip.files[filename].async('string').then(fileData => {
+                        if (filename === 'project.json') {
+                            console.log(fileData, 'fileData'); // These are your file contents
+                            resolve(fileData);
+                        }
+                    });
+                });
+            })
+        );
     }
 
     _addFileDescsToZip (fileDescs, zip) {
